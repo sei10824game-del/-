@@ -59,7 +59,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg0);
 .le{background:rgba(8,7,10,.72);border-left:3px solid #666;padding:3px 8px;font-size:11px;border-radius:0 5px 5px 0;
   animation:lein .25s ease-out;backdrop-filter:blur(3px)}
 @keyframes lein{from{transform:translateX(-14px);opacity:0}to{transform:none;opacity:1}}
-.le.t{border-color:var(--tcol)} .le.x{border-color:var(--xcol)} .le.n{border-color:var(--ncol)} .le.h{border-color:var(--hcol)} .le.w{border-color:#e8e8f2} .le.a{border-color:#c8a24a} .le.big{font-weight:800}
+.le.t{border-color:var(--tcol)} .le.x{border-color:var(--xcol)} .le.n{border-color:var(--ncol)} .le.h{border-color:var(--hcol)} .le.w{border-color:#e8e8f2} .le.a{border-color:#c8a24a} .le.big{font-weight:800} .le.srp{border-color:#d04050}
 
 /* ─── minimap ─── */
 #miniWrap{position:absolute;right:10px;bottom:12px;background:var(--panel);border:1px solid var(--panelB);
@@ -4816,6 +4816,7 @@ function drawUnit(u) {
     else if (u.sp.kind === 'bird') drawBird(u, pose);
     else if (u.sp.kind === 'hugger') drawHugger(u, pose);
     else if (u.sp.kind === 'burster') drawBurster(u, pose);
+    if (u.sp.ov && u.fac === 'srp') drawSRPOverlay(u);
   } catch (e) { }
 }
 
@@ -6882,6 +6883,7 @@ function drawHugger(u, pose) {
   if (u.sp.head === 'agrub') { drawAGrub(u, pose); return; }
   if (u.sp.ai === 'slime' || u.sp.ai === 'kingslime') { drawDQSlime(u, pose); return; }
   if (u.sp.ai === 'guardian') { drawMCGuardian(u, pose); return; }
+  if (u.sp.srp) { drawSRP(u, pose); return; }
   const baseX = u.x, baseY = u.y * SQ - u.z;
   const attached = u.state === 'attached';
   const hf = u.fxT > 0;
@@ -7278,6 +7280,7 @@ function unitTopY(u) {
   if (sp.kind === 'biped') return (BP.legU + BP.legL + BP.footH + BP.spine1 + BP.spine2 + BP.headR * 2.2) * sp.scale * u.sizeMul * (sp.fx.tail ? 1.1 : 1);
   if (sp.kind === 'quad') return (QP.legU + QP.legL + QP.bodyR * 2 + QP.headR) * sp.scale * u.sizeMul;
   if (sp.kind === 'bird') return 20 * sp.scale + (u.z || 0);
+  if (sp.srp) return sp.r * sp.scale * (u.sizeMul || 1) * (sp.plan === 'fly' || sp.plan === 'overlord' ? 3 : sp.plan === 'nexus' ? 3.2 : 1.8);
   return 16 * sp.scale;
 }
 
@@ -7635,6 +7638,7 @@ function spawnUnit(key, x, y, o = {}) {
     if (sp.fac === 'gd' && countFac('gd') >= (G.capGd || 28)) return null;
     if (sp.fac === 'sp' && countFac('sp') >= (G.capSp || 40)) return null;
     if (sp.fac === 'pv' && countFac('pv') >= (G.capPv || 48)) return null;
+    if (sp.fac === 'srp' && countFac('srp') >= (G.capSrp || 70)) return null;
     if (key === 'mikeTyson' && countKey('mikeTyson') >= 1) return null;
     if (sp.fac === 'F' && countFac('F') >= (G.capF || 8)) return null;
     if (sp.fac === 'K' && countFac('K') >= (G.capK || 6)) return null;
@@ -7851,7 +7855,9 @@ function dealDamage(att, tgt, dmg, o = {}) {
     if (tgt.hunger != null) tgt.hunger = Math.max(0, tgt.hunger - 38);
     tgt.slowT = Math.max(tgt.slowT || 0, 3.5);
   }
+  if (tgt.fac === 'srp' && att && att.fac !== 'srp' && dmg > 0) dmg = srpOnHit(tgt, att, dmg, o); // 寄生体: 攻撃毎の適応
   tgt.hp -= dmg;
+  if (att && att.fac === 'srp' && dmg > 0 && tgt.fac !== 'srp') srpInfect(tgt, att); // COTH 感染
   tgt.idleT = 0;
   if (nitaOwner(tgt) || (tgt.mrPId || tgt.key === 'mrP' || tgt.key === 'nita')) {
     const n = nitaOwner(tgt);
@@ -8151,6 +8157,7 @@ function killUnit(att, u, o = {}) {
   if (u.host && u.state === 'attached') { u.host.hug = null; }
   if (G.sel === u) { G.sel = null; updateInspector(); }
 
+  if (srpDeathHook(att, u, o)) return; // SRP: 同化種として蘇生 / 肉塊化
   const capT = countFac('T'), capX = countFac('X');
   // 死体と蘇生の判定
   if (isInfectHost(u)) {
@@ -8514,6 +8521,8 @@ function hostileTo(u, o) {
   if (u.fac === 'gd') return o.fac !== 'gd';
   if (u.fac === 'sp') return o.fac !== 'sp';
   if (u.fac === 'pv') return o.fac !== 'pv';
+  if (u.fac === 'srp') return o.fac !== 'srp';
+  if (o.fac === 'srp') return true;
   // 擬態中のゴーストフェイスは生存者扱い
   if (o.disguiseN && u.fac !== 'F') {
     if (u.fac === 'N') return false;
@@ -8932,6 +8941,8 @@ function applyHit(u, d, o, ang) {
     o2.decap = true; o2.noRise = true;
     addLog('🦖 ハンターが獲物の首を刈り取った！', 't');
   }
+  if (d.slowT) o.slowT = Math.max(o.slowT || 0, 1.8);
+  if (d.leech && !u.gone) u.hp = Math.min(u.mhp, u.hp + d.dmg * d.leech);
   dealDamage(u, o, d.dmg * (u.stealth && !canSee(o, u) ? 3.4 : 1), o2);
   if (u.stealth && !canSee(o, u)) { u.stealth = 0; addLog('🦂 ゼノモーフの奇襲！', 'x'); }
   if (u.key === 'predalien' && d.hold === 'implant') { /* handled by grab */ }
@@ -9245,6 +9256,8 @@ function aiThink(u) {
       case 'mutZ': case 'mutH': thinkMonster(u); break;
       case 'guardian': thinkGuardian(u); break;
       case 'pv': thinkMonster(u); break;
+      case 'srp': thinkMonster(u); break;
+      case 'srpNexus': thinkSrpNexus(u); break;
       case 'zomboss': thinkZomboss(u); break;
       case 'spider': thinkSpider(u); break;
       case 'spNurse': thinkSpNurse(u); break;
@@ -12569,6 +12582,7 @@ function stepSim(dt) {
     if (G.monument.hp <= 0) addLog('🏛️ 海底神殿が崩壊し、ガーディアンの湧出が止まった', 'gd', true);
   }
   updateNests(dt);
+  updateSRP(dt);
   if (G.quicks) {
     for (let i = G.quicks.length - 1; i >= 0; i--) {
       const q = G.quicks[i]; q.t -= dt;
@@ -13029,7 +13043,7 @@ function startGame(cfg) {
   G.cfg = Object.assign(G.cfg, cfg);
   G.units = []; G.corpses = []; G.eggs = []; G.projs = []; G.parts = []; G.arcs = []; G.shocks = [];
   G.time = 0; G.over = false; G.winner = null; G.sel = null; G.focus = null; G.follow = false; G.mzRaidDone = 0; G.mzRaid = 0;
-  G.stats = { T: { kills: 0, inf: 0, born: 0, lost: 0 }, X: { kills: 0, imp: 0, born: 0, lost: 0 }, D: { kills: 0, born: 0, lost: 0 }, H: { kills: 0, imp: 0, born: 0, lost: 0, hug: 0 }, G: { kills: 0, inf: 0, born: 0, lost: 0 }, C: { kills: 0, inf: 0, born: 0, lost: 0 }, W: { kills: 0, born: 0, lost: 0 }, A: { kills: 0, born: 0, lost: 0 }, S: { kills: 0, born: 0, lost: 0 }, J: { kills: 0, born: 0, lost: 0 }, F: { kills: 0, born: 0, lost: 0 }, K: { kills: 0, born: 0, lost: 0 }, M: { kills: 0, born: 0, lost: 0 }, Y: { kills: 0, born: 0, lost: 0 }, Q: { kills: 0, born: 0, lost: 0 }, B: { kills: 0, born: 0, lost: 0 }, P: { kills: 0, born: 0, lost: 0 }, R: { kills: 0, born: 0, lost: 0 }, I: { kills: 0, born: 0, lost: 0 }, U: { kills: 0, born: 0, lost: 0 }, L: { kills: 0, born: 0, lost: 0 }, O: { kills: 0, born: 0, lost: 0 }, "3": { kills: 0, born: 0, lost: 0 }, "4": { kills: 0, born: 0, lost: 0 }, V: { kills: 0, born: 0, lost: 0 }, E: { kills: 0, born: 0, lost: 0 }, "5": { kills: 0, born: 0, lost: 0 }, "6": { kills: 0, born: 0, lost: 0 }, "8": { kills: 0, born: 0, lost: 0 }, "0": { kills: 0, born: 0, lost: 0 }, jk: { kills: 0, born: 0, lost: 0 }, hg: { kills: 0, born: 0, lost: 0 }, pg: { kills: 0, born: 0, lost: 0 }, bk: { kills: 0, born: 0, lost: 0 }, nt: { kills: 0, born: 0, lost: 0 }, mp: { kills: 0, born: 0, lost: 0 }, mz: { kills: 0, born: 0, lost: 0 }, pv: { kills: 0, born: 0, lost: 0 }, gd: { kills: 0, born: 0, lost: 0 }, sp: { kills: 0, born: 0, lost: 0 } };
+  G.stats = { srp: { kills: 0, inf: 0, born: 0, lost: 0, conv: 0 }, T: { kills: 0, inf: 0, born: 0, lost: 0 }, X: { kills: 0, imp: 0, born: 0, lost: 0 }, D: { kills: 0, born: 0, lost: 0 }, H: { kills: 0, imp: 0, born: 0, lost: 0, hug: 0 }, G: { kills: 0, inf: 0, born: 0, lost: 0 }, C: { kills: 0, inf: 0, born: 0, lost: 0 }, W: { kills: 0, born: 0, lost: 0 }, A: { kills: 0, born: 0, lost: 0 }, S: { kills: 0, born: 0, lost: 0 }, J: { kills: 0, born: 0, lost: 0 }, F: { kills: 0, born: 0, lost: 0 }, K: { kills: 0, born: 0, lost: 0 }, M: { kills: 0, born: 0, lost: 0 }, Y: { kills: 0, born: 0, lost: 0 }, Q: { kills: 0, born: 0, lost: 0 }, B: { kills: 0, born: 0, lost: 0 }, P: { kills: 0, born: 0, lost: 0 }, R: { kills: 0, born: 0, lost: 0 }, I: { kills: 0, born: 0, lost: 0 }, U: { kills: 0, born: 0, lost: 0 }, L: { kills: 0, born: 0, lost: 0 }, O: { kills: 0, born: 0, lost: 0 }, "3": { kills: 0, born: 0, lost: 0 }, "4": { kills: 0, born: 0, lost: 0 }, V: { kills: 0, born: 0, lost: 0 }, E: { kills: 0, born: 0, lost: 0 }, "5": { kills: 0, born: 0, lost: 0 }, "6": { kills: 0, born: 0, lost: 0 }, "8": { kills: 0, born: 0, lost: 0 }, "0": { kills: 0, born: 0, lost: 0 }, jk: { kills: 0, born: 0, lost: 0 }, hg: { kills: 0, born: 0, lost: 0 }, pg: { kills: 0, born: 0, lost: 0 }, bk: { kills: 0, born: 0, lost: 0 }, nt: { kills: 0, born: 0, lost: 0 }, mp: { kills: 0, born: 0, lost: 0 }, mz: { kills: 0, born: 0, lost: 0 }, pv: { kills: 0, born: 0, lost: 0 }, gd: { kills: 0, born: 0, lost: 0 }, sp: { kills: 0, born: 0, lost: 0 } };
   G.items = []; G.noises = []; G.farms = []; G.pools = []; G.daRainT = 34; G.daRally = null; G.contT = .5; G.breedT = 3; G.tankAt = 170; G.spawnG = null; G.hordeRainT = 40; G.sporeBloomT = 50; G.spawnC = null; G.hiveIntel = []; G.hiveOrder = null; G.wsRally = null; G.spawnW = null; G.spawnA = null; G.aKingAt = 200 + rnd(0, 60);
   G.nextId = 1; G.queenDeadT = 0; G.vicT = 3; G.t002At = 55; G.eggDecayLogged = false;
   for (const k in nameCounter) delete nameCounter[k];
@@ -13203,6 +13217,7 @@ function startGame(cfg) {
   spawnMcZombies();
   spawnGuardians(); spawnSpiders();
   spawnZomboss();
+  spawnSRP();
   const fRoom = rpick(G.map.preyRooms);
   spawnUnit('ghostface', randWalkIn(fRoom).x, randWalkIn(fRoom).y, { silent: true, force: true });
   spawnUnit('ghostface', randWalkIn(fRoom).x, randWalkIn(fRoom).y, { silent: true, force: true });
@@ -13566,6 +13581,727 @@ function spawnZomboss() {
 }
 
 /* ══════════════════════════════════════════════════════════
+   Scape and Run: Parasites 陣営 (fac 'srp')
+   階級: 先天種 → 同化種/乗っ取り種 → 野生種/アシマラ → 粗雑種 → 原始種 → 適応種
+         ネクサス種 (ベコン/ディスパッチャー/ルーター, Stage I〜IV) / 純粋種・抜群種 / 古代種
+   ・攻撃を受けるたびに、その攻撃への「適応 (被ダメージ軽減)」が蓄積する (個体 + 陣営共有)
+   ・生存者と MC ゾンビは被弾で COTH (Call of the Hive) に感染し、死ぬと同化種として蘇る
+   ══════════════════════════════════════════════════════════ */
+const SRP_TIER = {
+  inborn: { jp: '先天種', rate: .05, cap: .35 },
+  assim: { jp: '同化種', rate: .06, cap: .45 },
+  hijack: { jp: '乗っ取り種', rate: .06, cap: .5 },
+  feral: { jp: '野生種', rate: .07, cap: .55 },
+  assimara: { jp: 'アシマラ種', rate: .08, cap: .6 },
+  crude: { jp: '粗雑種', rate: .06, cap: .45 },
+  primitive: { jp: '原始種', rate: .09, cap: .65 },
+  adapted: { jp: '適応種', rate: .13, cap: .82 },
+  nexus: { jp: 'ネクサス種', rate: .07, cap: .6 },
+  pure: { jp: '純粋種', rate: .1, cap: .75 },
+  preem: { jp: '抜群種', rate: .11, cap: .78 },
+  ancient: { jp: '古代種', rate: .09, cap: .8 },
+};
+const SRP_PAL = {
+  flesh: { skin: '#8a2a2e', skinD: '#4a1016', skinL: '#b8504a', cloth: '#5a1a20', clothD: '#2a080c', clothL: '#8a3a3a', acc: '#e0d0b0', eye: '#f0d040', blood: '#5a0a18' },
+  pale: { skin: '#b89a8a', skinD: '#7a5a50', skinL: '#dac0b0', cloth: '#6a2a2a', clothD: '#3a1414', clothL: '#8a4a44', acc: '#e8dcc0', eye: '#f0d040', blood: '#5a0a18' },
+  dark: { skin: '#3a1a22', skinD: '#1a080e', skinL: '#6a3040', cloth: '#2a0a12', clothD: '#120408', clothL: '#4a1a24', acc: '#d8c8a8', eye: '#ff4030', blood: '#3a0610' },
+  bone: { skin: '#c8b898', skinD: '#8a7a60', skinL: '#e8dcc0', cloth: '#7a2a2a', clothD: '#3a1010', clothL: '#a04a44', acc: '#8a2a2e', eye: '#f0d040', blood: '#5a0a18' },
+  sickly: { skin: '#7a8a5a', skinD: '#4a5a30', skinL: '#9aac78', cloth: '#6a2a2a', clothD: '#3a1414', clothL: '#8a4a44', acc: '#d8c8a8', eye: '#e8f060', blood: '#4a2a0a' },
+  purple: { skin: '#5a2a5a', skinD: '#2a0e2e', skinL: '#8a4a8a', cloth: '#3a1040', clothD: '#1a0620', clothL: '#6a2a70', acc: '#e0c8f0', eye: '#e060ff', blood: '#3a0a3a' },
+};
+const srpPal = (base, o) => Object.assign({}, SRP_PAL[base] || SRP_PAL.flesh, o || {});
+/* 独自描画の寄生体 (kind 'hugger' に載せて drawSRP で描く) */
+function SRPC(name, ic, tier, plan, hp, r, scale, walk, run, pal, atks, extra) {
+  return Object.assign({
+    name, ic, fac: 'srp', kind: 'hugger', head: 'hugger', ai: 'srp', srp: tier, plan,
+    r, scale, hp, walk, run, mass: Math.max(.3, hp / 120), pal, pp: {}, fx: {}, gait: { freq: 1 },
+    pose0: { armS: 0, armE: 0, lean: 0, crouch: 0, headP: 0 }, atks
+  }, extra || {});
+}
+/* 人型の寄生体 (drawBiped + 寄生の肉塊オーバーレイ) */
+function SRPB(name, ic, tier, hp, scale, walk, run, pal, atks, extra) {
+  const e = extra || {};
+  return Object.assign({
+    name, ic, fac: 'srp', kind: 'biped', head: e.head || 'human', ai: 'srp', srp: tier,
+    r: e.r || 9, scale, hp, walk, run, mass: e.mass || Math.max(1, hp / 110), pal,
+    pp: e.pp || {}, fx: Object.assign({ wounds: 1 }, e.fx || {}),
+    gait: e.gait || { amp: .5, freq: .9, armSwing: .45, bob: .4 },
+    pose0: e.pose0 || { armS: .45, armE: .45, lean: .18, crouch: .08, headP: .15 },
+    ov: e.ov || { lumps: 3, tend: 2, eyes: 1 }, atks
+  }, e, { head: e.head || 'human' });
+}
+/* 同化された動物 (drawQuad + 寄生の肉塊オーバーレイ) */
+function SRPQ(name, ic, tier, head, hp, r, scale, walk, run, pal, atks, extra) {
+  return Object.assign({
+    name, ic, fac: 'srp', kind: 'quad', head, ai: 'srp', srp: tier,
+    r, scale, hp, walk, run, mass: Math.max(.8, hp / 110), pal, pp: {}, fx: { tail: 1, earUp: 1, snout: 1 },
+    gait: { amp: .6, freq: 1.1 }, ov: { lumps: 3, tend: 2, eyes: 2 }, atks
+  }, extra || {});
+}
+const S_ = (o) => AT(Object.assign({ snd: 'slash', coth: 1 }, o));
+
+/* ── 1. 先天種 (Inborn) ── */
+SP.srpBuglin = SRPC('バグリン', '🪲', 'inborn', 'bug', 34, 6, .8, 52, 118, srpPal('flesh'), [S_({ n: '噛みつき', dmg: 6, reach: 11, windup: .22, active: .1, rec: .3, cd: .55, anim: 'bite' })], { desc: '先天種。寄生体の幼生。群れて素早く噛みつき、COTHを植え付ける。', legs: 6 });
+SP.srpRupter = SRPC('ルプター', '💥', 'inborn', 'bug', 40, 7, .85, 48, 126, srpPal('sickly'), [S_({ n: '体当たり', dmg: 8, reach: 12, windup: .3, active: .2, rec: .4, cd: 1.2, type: 'dash', dash: 120, anim: 'h_leap' })], { desc: '先天種。膨れた嚢を抱えた突撃個体。死ぬと破裂して感染液を撒く。', legs: 6, sacs: 3, burst: 18 });
+SP.srpMangler = SRPC('マングラー', '🦂', 'inborn', 'bug', 70, 8, 1.05, 50, 112, srpPal('dark'), [S_({ n: '鎌腕', dmg: 11, reach: 14, windup: .26, active: .12, rec: .36, cd: .7, anim: 'slash' }), S_({ n: '連続鎌', dmg: 6, reach: 14, windup: .2, active: .3, rec: .3, cd: 2, multi: 3, anim: 'flurry' })], { desc: '先天種。鎌状の前肢を振るう小型の狩人。', legs: 4, scythes: 1 });
+SP.srpGnat = SRPC('グナット', '🦟', 'inborn', 'fly', 20, 5, .7, 60, 150, srpPal('flesh'), [S_({ n: '刺針', dmg: 5, reach: 12, windup: .2, active: .1, rec: .3, cd: .6, anim: 'b_dive' })], { desc: '先天種。羽虫のように飛び回り、刺針で感染させる。', wings: 2 });
+SP.srpLice = SRPC('ライス', '🦠', 'inborn', 'bug', 16, 4, .55, 58, 140, srpPal('pale'), [S_({ n: '食いつき', dmg: 4, reach: 9, windup: .18, active: .1, rec: .25, cd: .45, anim: 'bite' })], { desc: '先天種。宿主に群がる小さな寄生虫。', legs: 6 });
+SP.srpWorker = SRPC('ワーカー', '🐜', 'inborn', 'bug', 55, 7, .95, 46, 100, srpPal('bone'), [S_({ n: '顎', dmg: 8, reach: 12, windup: .28, active: .12, rec: .36, cd: .8, anim: 'bite' })], { desc: '先天種。死骸を運び寄生バイオームを広げる働き手。', legs: 6, pack: 1 });
+SP.srpFlyCarrier = SRPC('フライングキャリアー', '🎈', 'inborn', 'fly', 90, 10, 1.2, 38, 70, srpPal('flesh'), [S_({ n: '体液滴下', dmg: 9, reach: 0, windup: .4, active: .1, rec: .5, cd: 2, type: 'proj', projKind: 'bile', minR: 20, maxR: 240, anim: 'spit' })], { desc: '先天種。腹の嚢に先天種を抱え、戦場へ投下する飛行体。', wings: 4, sac: 1, dropK: ['srpBuglin', 'srpLice', 'srpRupter'], dropT: 9 });
+SP.srpLightCarrier = SRPC('ライトキャリアー', '🪰', 'inborn', 'fly', 50, 7, .9, 52, 110, srpPal('pale'), [S_({ n: '刺突', dmg: 7, reach: 12, windup: .22, active: .1, rec: .3, cd: .7, anim: 'b_dive' })], { desc: '先天種。小型の運搬飛行体。バグリンを1体ずつ落とす。', wings: 2, sac: 1, dropK: ['srpBuglin'], dropT: 14 });
+
+/* ── 2. 同化種 (Assimilated) & 乗っ取り種 (Hijacked) ── */
+const asHumanPal = srpPal('pale', { cloth: '#4a5a6a', clothD: '#2a3440', clothL: '#6a7a8a' });
+SP.srpAsHuman = SRPB('同化人間', '🧟', 'assim', 120, 1, 44, 98, asHumanPal, [S_({ n: '爪', dmg: 11, reach: 15, windup: .3, active: .12, rec: .4, cd: .7, anim: 'slash' }), S_({ n: '触手鞭', dmg: 9, reach: 40, windup: .34, active: .12, rec: .4, cd: 2, anim: 'tongue' })], { fx: { claws: 1 }, ov: { lumps: 3, tend: 2, eyes: 1, jaw: 1 }, desc: '同化種。寄生体に乗っ取られた人間。やがて野生種へ変異する。', evo: ['srpFeralHuman', 40] });
+SP.srpAsAdventurer = SRPB('同化冒険者', '🗡️', 'assim', 150, 1.02, 46, 102, srpPal('pale', { cloth: '#6a5030', clothD: '#3a2a18', clothL: '#8a7050', acc: '#a0a0b0' }), [S_({ n: '錆びた剣', dmg: 14, reach: 17, windup: .32, active: .12, rec: .42, cd: .8, anim: 'heavy' }), S_({ n: '突き', dmg: 12, reach: 18, windup: .26, active: .12, rec: .36, cd: 1.4, anim: 'thrust' })], { held: 'knife', fx: { claws: 1 }, ov: { lumps: 2, tend: 3, eyes: 1, jaw: 1 }, desc: '同化種。装備ごと寄生された冒険者。', evo: ['srpFeralHuman', 45] });
+SP.srpAsCow = SRPQ('同化牛', '🐄', 'assim', 'mchoglin', 140, 11, 1.25, 38, 80, srpPal('pale', { skin: '#6a5a50', skinD: '#3a2e28' }), [S_({ n: '突き上げ', dmg: 12, reach: 16, windup: .36, active: .12, rec: .44, cd: 1, anim: 'q_bite' })], { desc: '同化種。寄生された牛。', evo: ['srpFeralCow', 45] });
+SP.srpAsPig = SRPQ('同化豚', '🐖', 'assim', 'mchoglin', 90, 9, 1, 40, 86, srpPal('pale', { skin: '#c88a8a', skinD: '#8a5050' }), [S_({ n: '噛みつき', dmg: 9, reach: 14, windup: .3, active: .12, rec: .4, cd: .8, anim: 'q_bite' })], { desc: '同化種。寄生された豚。' });
+SP.srpAsSheep = SRPQ('同化羊', '🐑', 'assim', 'dog', 90, 9, 1, 40, 84, srpPal('pale', { skin: '#d8d0c0', skinD: '#9a9080' }), [S_({ n: '頭突き', dmg: 9, reach: 14, windup: .3, active: .12, rec: .4, cd: .8, anim: 'q_bite' })], { desc: '同化種。羊毛の下から肉塊が溢れ出した羊。' });
+SP.srpAsHorse = SRPQ('同化馬', '🐎', 'assim', 'dog', 170, 11, 1.35, 50, 150, srpPal('pale', { skin: '#6a4a30', skinD: '#3a2818' }), [S_({ n: '蹴り', dmg: 14, reach: 17, windup: .32, active: .12, rec: .4, cd: .9, anim: 'q_bite', knock: 220 }), S_({ n: '突進', dmg: 16, reach: 18, windup: .3, active: .3, rec: .5, cd: 3, type: 'dash', dash: 220, anim: 'q_pounce' })], { desc: '同化種。俊足の寄生馬。' });
+SP.srpAsWolf = SRPQ('同化狼', '🐺', 'assim', 'dog', 110, 8, 1.05, 56, 150, srpPal('pale', { skin: '#8a8a8a', skinD: '#4a4a4a' }), [S_({ n: '噛み裂き', dmg: 12, reach: 14, windup: .24, active: .12, rec: .34, cd: .6, anim: 'q_bite' }), S_({ n: '飛びかかり', dmg: 14, reach: 16, windup: .3, active: .3, rec: .4, cd: 2.4, type: 'leap', leap: 160, anim: 'q_pounce' })], { desc: '同化種。寄生された狼(飼い犬もこれになる)。', evo: ['srpFeralWolf', 40] });
+SP.srpAsBear = SRPQ('同化熊', '🐻', 'assim', 'mchoglin', 260, 12, 1.5, 38, 96, srpPal('pale', { skin: '#5a3a24', skinD: '#2e1c10' }), [S_({ n: '豪腕', dmg: 20, reach: 18, windup: .4, active: .14, rec: .5, cd: 1.1, anim: 'q_bite', knock: 260 })], { desc: '同化種。寄生された熊。', evo: ['srpFeralBear', 50] });
+SP.srpAsSpider = SRPC('同化大グモ', '🕷️', 'assim', 'spider', 150, 11, 1.3, 50, 120, srpPal('dark'), [S_({ n: '毒牙', dmg: 13, reach: 15, windup: .28, active: .12, rec: .38, cd: .8, anim: 'bite' }), S_({ n: '跳躍', dmg: 14, reach: 16, windup: .3, active: .3, rec: .4, cd: 2.6, type: 'leap', leap: 170, anim: 'h_leap' })], { desc: '同化種。寄生された大型のクモ。' });
+SP.srpAsEnderman = SRPB('同化エンダーマン', '🟪', 'assim', 200, 1.45, 50, 120, srpPal('dark', { skin: '#141418', skinD: '#060608', skinL: '#2a2a30', cloth: '#141418', clothD: '#060608', clothL: '#2a2a30', eye: '#e060ff' }), [S_({ n: '長腕打ち', dmg: 18, reach: 22, windup: .34, active: .12, rec: .44, cd: .9, anim: 'heavy' })], { pp: { legU: 9, legL: 9, armU: 9, armL: 9 }, ov: { lumps: 3, tend: 3, eyes: 2, eye: '#e060ff' }, blinker: 1, desc: '同化種。瞬間移動を保ったまま寄生されたエンダーマン。', evo: ['srpAssimaraEnderman', 60] });
+SP.srpAsVillager = SRPB('同化村人', '🧑‍🌾', 'assim', 110, 1, 40, 92, srpPal('pale', { cloth: '#6a4a2a', clothD: '#3a2814', clothL: '#8a6a4a' }), [S_({ n: '引っ掻き', dmg: 10, reach: 14, windup: .3, active: .12, rec: .4, cd: .7, anim: 'slash' })], { head: 'mcillager', ov: { lumps: 3, tend: 2, eyes: 1 }, desc: '同化種。寄生された村人。' });
+SP.srpHjGolem = SRPB('乗っ取りゴーレム', '🗿', 'hijack', 420, 1.7, 36, 64, srpPal('bone', { skin: '#a8a8a0', skinD: '#6a6a64', skinL: '#c8c8c0', cloth: '#8a8a84', clothD: '#5a5a54', clothL: '#b0b0a8' }), [S_({ n: '振り上げ', dmg: 30, reach: 22, windup: .5, active: .14, rec: .6, cd: 1.4, anim: 'uppercut', toss: 1, knock: 320 }), S_({ n: '地響き', dmg: 22, reach: 0, windup: .6, active: .14, rec: .7, cd: 3.4, type: 'aoe', aoeR: 70, anim: 'hammerFist', down: 1 })], { head: 'blocky', superArmor: 1, mass: 6, pp: { shoulder: 5, torsoW: 6.4, armU: 9, armL: 9 }, ov: { lumps: 5, tend: 4, eyes: 3 }, desc: '乗っ取り種。寄生体が内部に巣食い操るアイアンゴーレム。' });
+SP.srpHjBlaze = SRPC('乗っ取りブレイズ', '🔥', 'hijack', 'blaze', 160, 9, 1.1, 36, 70, srpPal('flesh', { acc: '#f0a020' }), [S_({ n: '寄生火球', dmg: 12, reach: 0, windup: .4, active: .1, rec: .5, cd: 1.3, type: 'proj', projKind: 'bullet', minR: 30, maxR: 340, anim: 'spit', burn: 4 })], { desc: '乗っ取り種。肉塊に絡め取られたブレイズ。火球を撃つ。' });
+
+/* ── 3. 野生種 (Feral) & アシマラ種 (Assimara) ── */
+SP.srpFeralHuman = SRPB('野生人間', '🩸', 'feral', 210, 1.1, 50, 128, srpPal('flesh', { cloth: '#5a1a20' }), [S_({ n: '裂爪', dmg: 16, reach: 17, windup: .26, active: .12, rec: .36, cd: .6, anim: 'slash' }), S_({ n: '触手連打', dmg: 8, reach: 30, windup: .2, active: .36, rec: .34, cd: 1.8, multi: 3, anim: 'flurry' })], { fx: { claws: 2 }, ov: { lumps: 5, tend: 4, eyes: 3, jaw: 1, spikes: 2 }, desc: '野生種。皮膚が剥がれ肉が露出した凶暴な人型。', evo: ['srpAssimaraHuman', 60], burstFlesh: 1 });
+SP.srpFeralWolf = SRPQ('野生狼', '🐺', 'feral', 'zdog', 180, 9, 1.2, 60, 160, srpPal('flesh'), [S_({ n: '噛み千切り', dmg: 17, reach: 15, windup: .22, active: .12, rec: .3, cd: .55, anim: 'q_bite' }), S_({ n: '飛びかかり', dmg: 18, reach: 16, windup: .26, active: .3, rec: .4, cd: 2.2, type: 'leap', leap: 190, anim: 'q_pounce' })], { ov: { lumps: 4, tend: 3, eyes: 3, spikes: 3 }, desc: '野生種。筋肉が剥き出しの狼。' });
+SP.srpFeralBear = SRPQ('野生熊', '🐻', 'feral', 'mchoglin', 380, 13, 1.65, 40, 100, srpPal('flesh'), [S_({ n: '叩き潰し', dmg: 28, reach: 20, windup: .42, active: .14, rec: .5, cd: 1.1, anim: 'q_bite', knock: 300, down: 1 })], { superArmor: 1, ov: { lumps: 6, tend: 4, eyes: 3, spikes: 4 }, desc: '野生種。異形の巨熊。', evo: ['srpAssimaraBear', 70] });
+SP.srpFeralCow = SRPQ('野生牛', '🐂', 'feral', 'mchoglin', 220, 12, 1.35, 44, 110, srpPal('flesh'), [S_({ n: '突撃', dmg: 20, reach: 18, windup: .34, active: .3, rec: .5, cd: 2.2, type: 'dash', dash: 200, anim: 'q_pounce', knock: 280 }), S_({ n: '角', dmg: 15, reach: 16, windup: .3, active: .12, rec: .4, cd: .9, anim: 'q_bite' })], { ov: { lumps: 5, tend: 3, eyes: 2, spikes: 3 }, desc: '野生種。角と骨が突き出た牛。' });
+SP.srpAssimaraHuman = SRPB('アシマラ人間', '👁️', 'assimara', 330, 1.3, 50, 120, srpPal('dark', { eye: '#f0d040' }), [S_({ n: '骨刃', dmg: 24, reach: 20, windup: .3, active: .12, rec: .4, cd: .7, anim: 'heavy', knock: 200 }), S_({ n: '背触手', dmg: 12, reach: 60, windup: .34, active: .14, rec: .4, cd: 2, anim: 'tongue', pull: 150 }), S_({ n: '乱撃', dmg: 9, reach: 22, windup: .2, active: .4, rec: .34, cd: 2.4, multi: 4, anim: 'clawFrenzy' })], { fx: { claws: 2, bigClawR: 1 }, superArmor: 1, ov: { lumps: 6, tend: 6, eyes: 5, jaw: 1, spikes: 4 }, desc: 'アシマラ種。完全に寄生体の肉体へと作り替えられた人型。', burstFlesh: 1 });
+SP.srpAssimaraBear = SRPQ('アシマラ熊', '🐻', 'assimara', 'mchoglin', 520, 14, 1.85, 44, 104, srpPal('dark'), [S_({ n: '破砕', dmg: 34, reach: 22, windup: .42, active: .14, rec: .5, cd: 1.1, anim: 'q_bite', knock: 340, down: 1 }), S_({ n: '地鳴り', dmg: 22, reach: 0, windup: .55, active: .14, rec: .6, cd: 3.4, type: 'aoe', aoeR: 76, anim: 'q_rip', down: 1 })], { superArmor: 1, ov: { lumps: 7, tend: 5, eyes: 5, spikes: 6 }, desc: 'アシマラ種。骨の鎧をまとった熊の成れの果て。', burstFlesh: 1 });
+SP.srpAssimaraEnderman = SRPB('アシマラエンダーマン', '🟣', 'assimara', 360, 1.65, 54, 130, srpPal('purple'), [S_({ n: '虚無の爪', dmg: 26, reach: 26, windup: .3, active: .12, rec: .4, cd: .8, anim: 'rip' }), S_({ n: '転移強襲', dmg: 22, reach: 20, windup: .2, active: .12, rec: .4, cd: 3, anim: 'pierce' })], { pp: { legU: 10, legL: 10, armU: 10, armL: 11 }, fx: { claws: 2 }, superArmor: 1, blinker: 1, ov: { lumps: 5, tend: 5, eyes: 4, eye: '#e060ff', spikes: 3 }, desc: 'アシマラ種。転移を繰り返す長身の寄生体。', burstFlesh: 1 });
+
+/* ── 4. 粗雑種 (Crude) ── */
+SP.srpFlesh = SRPC('動く肉塊', '🥩', 'crude', 'blob', 70, 8, .9, 22, 40, srpPal('flesh'), [S_({ n: '肉塊打ち', dmg: 7, reach: 12, windup: .4, active: .14, rec: .5, cd: 1, anim: 'h_leap' })], { desc: '粗雑種。死骸から寄り集まった肉。3体集まると融合し、やがて原始種へ進化する。', lumps: 5, evo: ['srpIncompS', 26] });
+SP.srpIncompS = SRPC('不完全体(小)', '🫀', 'crude', 'blob', 130, 10, 1.15, 26, 48, srpPal('flesh'), [S_({ n: '叩きつけ', dmg: 12, reach: 15, windup: .4, active: .14, rec: .5, cd: 1, anim: 'h_leap' })], { desc: '粗雑種。形を成しつつある肉塊。', lumps: 7, limbs: 2, evo: ['srpIncompM', 28] });
+SP.srpIncompM = SRPC('不完全体(中)', '🫁', 'crude', 'blob', 220, 13, 1.45, 28, 52, srpPal('flesh'), [S_({ n: '肉腕', dmg: 18, reach: 18, windup: .44, active: .14, rec: .5, cd: 1.1, anim: 'h_leap', knock: 180 })], { desc: '粗雑種。原始種の姿へ変わりつつある肉塊。', lumps: 9, limbs: 4, evo: ['*primitive', 32] });
+SP.srpAirscrew = SRPC('エアスクリュー', '🌀', 'crude', 'fly', 90, 8, 1, 50, 104, srpPal('bone'), [S_({ n: '回転刃', dmg: 10, reach: 14, windup: .24, active: .3, rec: .3, cd: 1.1, multi: 3, anim: 'b_dive' })], { desc: '粗雑種。回転翼を持つ飛行型。', rotor: 1, evo: ['*primitive', 70] });
+SP.srpCrux = SRPC('クラックス', '✝️', 'crude', 'blob', 150, 10, 1.2, 30, 60, srpPal('bone'), [S_({ n: '骨杭', dmg: 14, reach: 20, windup: .36, active: .12, rec: .44, cd: 1, anim: 'h_leap' })], { desc: '粗雑種。骨の十字に肉が張り付いた個体。', lumps: 4, cross: 1, evo: ['*primitive', 70] });
+SP.srpDredge = SRPC('ドレッジ', '🪱', 'crude', 'worm', 130, 9, 1.1, 34, 70, srpPal('sickly'), [S_({ n: '吸い込み', dmg: 10, reach: 30, windup: .34, active: .14, rec: .4, cd: 1.4, anim: 'h_leap', pull: 120 })], { desc: '粗雑種。這いずり獲物を引き寄せる。', segs: 5, evo: ['*primitive', 70] });
+SP.srpHeed = SRPC('ヒード', '👂', 'crude', 'blob', 110, 9, 1.05, 30, 62, srpPal('pale'), [S_({ n: '叫声', dmg: 6, reach: 0, windup: .5, active: .2, rec: .5, cd: 5, type: 'roar', anim: 'roar' }), S_({ n: '叩き', dmg: 9, reach: 13, windup: .34, active: .12, rec: .4, cd: .9, anim: 'h_leap' })], { desc: '粗雑種。音を聞きつけ、叫びで仲間を呼び寄せる。', lumps: 5, ears: 1, evo: ['*primitive', 70] });
+SP.srpHost = SRPC('ホスト', '🧫', 'crude', 'blob', 170, 11, 1.25, 26, 50, srpPal('flesh'), [S_({ n: '寄生体放出', dmg: 0, reach: 0, windup: .5, active: .12, rec: .6, cd: 7, type: 'summon', summon: 'srpBuglin', minR: 10, maxR: 200, anim: 'h_leap' }), S_({ n: '叩き', dmg: 11, reach: 14, windup: .36, active: .12, rec: .44, cd: 1, anim: 'h_leap' })], { desc: '粗雑種。体内で先天種を育て吐き出す。', lumps: 8, pores: 1, evo: ['*primitive', 70] });
+SP.srpThrall = SRPB('スロール', '⛓️', 'crude', 160, 1.05, 40, 92, srpPal('flesh'), [S_({ n: '肉鎚', dmg: 15, reach: 16, windup: .36, active: .12, rec: .44, cd: .9, anim: 'heavy' })], { head: 'zombie', fx: { claws: 1 }, ov: { lumps: 6, tend: 3, eyes: 2, jaw: 1 }, desc: '粗雑種。複数の死骸を縫い合わせたような人型。', evo: ['*primitive', 70] });
+SP.srpHerd = SRPC('ハード', '🐗', 'crude', 'maw', 200, 12, 1.3, 40, 100, srpPal('flesh'), [S_({ n: '突撃', dmg: 16, reach: 16, windup: .3, active: .3, rec: .5, cd: 2.2, type: 'dash', dash: 200, anim: 'h_leap', knock: 240 }), S_({ n: '噛みつき', dmg: 13, reach: 14, windup: .3, active: .12, rec: .4, cd: .9, anim: 'bite' })], { desc: '粗雑種。群れで走る四足の肉塊。', legs: 4, evo: ['*primitive', 70] });
+
+/* ── 5. 原始種 (Primitive) / 6. 適応種 (Adapted) ── */
+const SRP_BASE = {
+  Longarms: { jp: 'ロングアームズ', ic: '🦾', kind: 'b', hp: 300, sc: 1.45, w: 46, r: 120, pal: 'flesh', pp: { armU: 13, armL: 14 }, ov: { lumps: 4, tend: 3, eyes: 2, jaw: 1, spikes: 2 },
+    atks: [{ n: '長腕薙ぎ', dmg: 22, reach: 36, arc: 2.6, windup: .36, active: .14, rec: .44, cd: .8, anim: 'sweep', knock: 220 }, { n: '引き寄せ', dmg: 12, reach: 90, windup: .4, active: .14, rec: .5, cd: 2.6, anim: 'tongue', pull: 190 }, { n: '振り下ろし', dmg: 30, reach: 34, windup: .5, active: .14, rec: .6, cd: 3, anim: 'overhead', down: 1 }], desc: '異様に長い腕で遠くの獲物を薙ぎ払い、引き寄せる。' },
+  Reeker: { jp: 'リーカー', ic: '🤢', kind: 'b', hp: 260, sc: 1.2, w: 40, r: 96, pal: 'sickly', ov: { lumps: 7, tend: 2, eyes: 1, jaw: 1, gas: 1 },
+    atks: [{ n: '腐臭ガス', dmg: 6, reach: 0, windup: .4, active: .5, rec: .5, cd: 2.6, type: 'cone', coneR: 120, arc: .7, col: 'rgba(150,180,60,.5)', anim: 'vomit', slowT: 1 }, { n: '殴打', dmg: 18, reach: 16, windup: .34, active: .12, rec: .44, cd: .9, anim: 'heavy' }], desc: '腐臭のガスを吐き、動きを鈍らせる。' },
+  Yelloweye: { jp: 'イエローアイ', ic: '🟡', kind: 'b', hp: 240, sc: 1.2, w: 44, r: 104, pal: 'dark', ov: { lumps: 3, tend: 2, eyes: 1, bigEye: 1, eye: '#f0d040' },
+    atks: [{ n: '酸液弾', dmg: 16, reach: 0, windup: .4, active: .1, rec: .5, cd: 1.3, type: 'proj', projKind: 'acid', minR: 30, maxR: 420, anim: 'spit' }, { n: '爪', dmg: 14, reach: 16, windup: .28, active: .12, rec: .4, cd: .8, anim: 'slash' }], desc: '巨大な黄色い単眼を持ち、遠距離から酸を撃つ。' },
+  Summoner: { jp: 'サモナー', ic: '📯', kind: 'b', hp: 260, sc: 1.25, w: 38, r: 90, pal: 'purple', ov: { lumps: 5, tend: 5, eyes: 3, horn: 1 },
+    atks: [{ n: '先天種召喚', dmg: 0, reach: 0, windup: .6, active: .14, rec: .6, cd: 6, type: 'summon', summon: 'srpBuglin', minR: 10, maxR: 260, anim: 'roar' }, { n: '呼び声', dmg: 8, reach: 0, windup: .5, active: .2, rec: .5, cd: 9, type: 'roar', anim: 'roar' }, { n: '殴打', dmg: 14, reach: 15, windup: .3, active: .12, rec: .4, cd: .9, anim: 'slash' }], desc: '角笛のような器官で先天種を呼び出す。' },
+  Manducater: { jp: 'マンデュケーター', ic: '👄', kind: 'c', plan: 'maw', hp: 340, rr: 13, sc: 1.4, w: 42, r: 104, pal: 'flesh', legs: 4,
+    atks: [{ n: '丸呑み噛み', dmg: 32, reach: 18, windup: .4, active: .14, rec: .5, cd: 1.1, anim: 'bite', leech: .3 }, { n: '噛み砕き', dmg: 26, reach: 16, windup: .4, active: .12, rec: .5, cd: 4, type: 'grab', hold: 'maul', anim: 'bite', cond: (u, t) => t.sp.mass < 4 }], desc: '体の半分が顎。噛みついて肉を喰らい回復する。' },
+  Bolster: { jp: 'ボルスター', ic: '🛡️', kind: 'b', hp: 420, sc: 1.55, w: 34, r: 70, pal: 'bone', pp: { shoulder: 5, torsoW: 6.4 }, ov: { lumps: 6, tend: 2, eyes: 2, spikes: 6, plates: 1 },
+    atks: [{ n: '盾殴り', dmg: 22, reach: 18, windup: .4, active: .14, rec: .5, cd: 1, anim: 'bash', knock: 280 }, { n: '士気の咆哮', dmg: 4, reach: 0, windup: .5, active: .2, rec: .5, cd: 8, type: 'roar', anim: 'roar' }], desc: '骨の装甲で身を固め、周囲の寄生体を回復・強化する。', aura: 1 },
+  Arachnida: { jp: 'アラクニダ', ic: '🕸️', kind: 'c', plan: 'spider', hp: 300, rr: 13, sc: 1.45, w: 52, r: 128, pal: 'dark', legs: 8,
+    atks: [{ n: '鋏角', dmg: 22, reach: 17, windup: .3, active: .12, rec: .4, cd: .8, anim: 'bite' }, { n: '跳躍強襲', dmg: 24, reach: 18, windup: .34, active: .3, rec: .4, cd: 2.4, type: 'leap', leap: 220, anim: 'h_leap', down: 1 }, { n: '粘糸', dmg: 6, reach: 0, windup: .4, active: .1, rec: .5, cd: 3, type: 'proj', projKind: 'bile', minR: 30, maxR: 300, anim: 'spit' }], desc: '8本脚の寄生蜘蛛。跳躍と粘糸で狩る。' },
+  Burrower: { jp: 'バロワー', ic: '🕳️', kind: 'c', plan: 'worm', hp: 280, rr: 11, sc: 1.35, w: 40, r: 90, pal: 'sickly', segs: 7,
+    atks: [{ n: '地中突き上げ', dmg: 26, reach: 0, windup: .5, active: .14, rec: .5, cd: 3, type: 'aoe', aoeR: 56, anim: 'h_leap', toss: 1 }, { n: '噛みつき', dmg: 18, reach: 16, windup: .3, active: .12, rec: .4, cd: .8, anim: 'bite' }], desc: '地中を掘り進み、足元から襲いかかる。', burrow: 1 },
+  Devourer: { jp: 'デヴァウアー', ic: '🦷', kind: 'c', plan: 'maw', hp: 400, rr: 14, sc: 1.6, w: 36, r: 90, pal: 'dark', legs: 6,
+    atks: [{ n: '捕食', dmg: 40, reach: 18, windup: .45, active: .12, rec: .6, cd: 4, type: 'grab', hold: 'crush', anim: 'bite', cond: (u, t) => t.sp.mass < 4 }, { n: '咬撃', dmg: 26, reach: 18, windup: .34, active: .12, rec: .44, cd: .9, anim: 'bite', leech: .25 }], desc: '獲物を丸ごと呑み込む大顎の捕食者。' },
+  Tozoon: { jp: 'トゾーン', ic: '🟤', kind: 'c', plan: 'ball', hp: 360, rr: 12, sc: 1.35, w: 44, r: 150, pal: 'bone',
+    atks: [{ n: '転がり突進', dmg: 26, reach: 18, windup: .3, active: .4, rec: .5, cd: 2, type: 'dash', dash: 280, anim: 'h_leap', knock: 300, down: 1 }, { n: '棘弾き', dmg: 16, reach: 16, windup: .3, active: .12, rec: .4, cd: .9, anim: 'h_leap' }], desc: '骨殻に包まれた球体。転がって突撃する。' },
+  Viscera: { jp: 'ヴィセラ', ic: '🫀', kind: 'c', plan: 'blob', hp: 320, rr: 13, sc: 1.45, w: 34, r: 76, pal: 'flesh', lumps: 10, limbs: 4,
+    atks: [{ n: '臓物爆散', dmg: 22, reach: 0, windup: .5, active: .14, rec: .6, cd: 3.2, type: 'aoe', aoeR: 70, anim: 'h_leap', slowT: 1 }, { n: '腸鞭', dmg: 12, reach: 44, windup: .3, active: .3, rec: .4, cd: 1.6, multi: 2, anim: 'h_leap' }], desc: '剥き出しの臓物の塊。破裂させた内臓で周囲を侵す。' },
+  Vermin: { jp: 'ヴァーミン', ic: '🐀', kind: 'c', plan: 'bug', hp: 160, rr: 8, sc: 1, w: 60, r: 160, pal: 'dark', legs: 6, adaptedOnly: 1,
+    atks: [{ n: '急襲', dmg: 16, reach: 14, windup: .18, active: .1, rec: .26, cd: .45, anim: 'bite' }, { n: '連噛み', dmg: 8, reach: 14, windup: .16, active: .3, rec: .3, cd: 1.6, multi: 3, anim: 'bite' }], desc: '素早く群れる小型の適応種。' },
+};
+const SRP_PRIM = [], SRP_ADPT = [];
+for (const [id, b] of Object.entries(SRP_BASE)) {
+  for (const adp of [0, 1]) {
+    if (!adp && b.adaptedOnly) continue;
+    const key = (adp ? 'srpAd' : 'srpPr') + id;
+    const tier = adp ? 'adapted' : 'primitive';
+    const m = adp ? 1.55 : 1, dm = adp ? 1.35 : 1;
+    const nm = (adp ? '適応' : '原始') + b.jp;
+    const pal = adp ? srpPal(b.pal, { skinD: '#1a0408', eye: '#ff3a3a', acc: '#f0e0c0' }) : srpPal(b.pal);
+    const atks = b.atks.map(a => S_(Object.assign({}, a, { dmg: Math.round(a.dmg * dm), cd: a.cd * (adp ? .85 : 1) })));
+    const desc = (adp ? '適応種。原始種がさらに進化し、攻撃への適応能力を極めた個体。' : '原始種。') + b.desc;
+    const hp = Math.round(b.hp * m);
+    let sp;
+    if (b.kind === 'b') sp = SRPB(nm, b.ic, tier, hp, b.sc * (adp ? 1.12 : 1), b.w, b.r, pal, atks, { pp: b.pp, ov: Object.assign({}, b.ov, adp ? { spikes: (b.ov.spikes || 0) + 3, tend: (b.ov.tend || 0) + 2 } : {}), fx: { claws: adp ? 2 : 1 }, superArmor: adp ? 1 : 0, desc, aura: b.aura });
+    else sp = SRPC(nm, b.ic, tier, b.plan, hp, b.rr, b.sc * (adp ? 1.12 : 1), b.w, b.r, pal, atks, { desc, legs: b.legs, segs: b.segs, lumps: b.lumps, limbs: b.limbs, burrow: b.burrow, superArmor: adp ? 1 : 0, spikes: adp ? 1 : 0 });
+    if (!adp && !b.adaptedOnly) sp.evo = ['srpAd' + id, 80];
+    SP[key] = sp;
+    (adp ? SRP_ADPT : SRP_PRIM).push(key);
+  }
+}
+
+/* ── 7. ネクサス種 (Nexus) — Stage I〜IV ── */
+SP.srpBeckon = SRPC('ベコン', '📡', 'nexus', 'nexus', 300, 12, 1.2, 0, 0, srpPal('flesh'), [S_({ n: '触手叩き', dmg: 14, reach: 30, windup: .4, active: .14, rec: .5, cd: 1.2, anim: 'h_leap' })], { ai: 'srpNexus', nexus: 'beckon', mass: 20, superArmor: 1, desc: 'ネクサス種。寄生体を呼び寄せ湧かせる拠点。時間とともに Stage IV まで成長する。' });
+SP.srpDispatcher = SRPC('ディスパッチャー', '🚀', 'nexus', 'nexus', 280, 12, 1.2, 0, 0, srpPal('dark'), [S_({ n: '寄生弾', dmg: 14, reach: 0, windup: .6, active: .1, rec: .6, cd: 2.2, type: 'proj', projKind: 'bile', minR: 30, maxR: 380, anim: 'spit' }), S_({ n: '触手叩き', dmg: 12, reach: 30, windup: .4, active: .14, rec: .5, cd: 1.2, anim: 'h_leap' })], { ai: 'srpNexus', nexus: 'dispatcher', mass: 20, superArmor: 1, desc: 'ネクサス種。寄生弾を放ち、飛行体を送り出す砲台。' });
+SP.srpRooter = SRPC('ルーター', '🌳', 'nexus', 'nexus', 420, 13, 1.25, 0, 0, srpPal('bone'), [S_({ n: '根の槍', dmg: 18, reach: 0, windup: .6, active: .14, rec: .6, cd: 2.6, type: 'aoe', aoeR: 70, anim: 'h_leap', toss: 1 })], { ai: 'srpNexus', nexus: 'rooter', mass: 20, superArmor: 1, desc: 'ネクサス種。根を張り寄生バイオームを広げ、侵食フェーズを進める。' });
+
+/* ── 8. 純粋種 (Pure) & 抜群種 (Preeminent) ── */
+SP.srpGrunt = SRPB('グラント', '💪', 'pure', 520, 1.6, 44, 108, srpPal('dark'), [S_({ n: '剛腕', dmg: 34, reach: 22, windup: .4, active: .14, rec: .5, cd: 1, anim: 'heavy', knock: 320 }), S_({ n: 'ラリアット', dmg: 28, reach: 24, arc: 2.8, windup: .44, active: .16, rec: .6, cd: 2.8, anim: 'lariat', knock: 360 }), S_({ n: '地砕き', dmg: 26, reach: 0, windup: .6, active: .14, rec: .7, cd: 3.6, type: 'aoe', aoeR: 76, anim: 'hammerFist', down: 1 })], { head: 'tyrant', superArmor: 1, pp: { shoulder: 5, torsoW: 6.4, armU: 9, armL: 9 }, fx: { claws: 2 }, ov: { lumps: 6, tend: 4, eyes: 4, spikes: 6, plates: 1 }, desc: '純粋種。群れの前衛を担う重装の兵士。' });
+SP.srpOverseer = SRPC('オーバーシーア', '👁️‍🗨️', 'pure', 'fly', 480, 13, 1.5, 34, 70, srpPal('purple'), [S_({ n: '監視光線', dmg: 18, reach: 0, windup: .7, active: .2, rec: .6, cd: 2.4, type: 'proj', projKind: 'laser', minR: 30, maxR: 420, anim: 'spit' }), S_({ n: '指揮', dmg: 0, reach: 0, windup: .6, active: .14, rec: .6, cd: 8, type: 'summon', summon: 'srpGnat', minR: 10, maxR: 300, anim: 'roar' })], { superArmor: 1, bigEye: 1, wings: 0, tend: 6, aura: 1, desc: '純粋種。巨大な眼で戦場を見張り、群れを統率する浮遊体。' });
+SP.srpSeeker = SRPB('シーカー', '🔎', 'pure', 380, 1.3, 62, 170, srpPal('dark', { eye: '#f06030' }), [S_({ n: '追跡斬', dmg: 26, reach: 20, windup: .22, active: .12, rec: .3, cd: .6, anim: 'slash' }), S_({ n: '跳び裂き', dmg: 30, reach: 20, windup: .26, active: .3, rec: .4, cd: 2.2, type: 'leap', leap: 240, anim: 'pounce' })], { head: 'licker', fx: { claws: 2 }, ov: { lumps: 3, tend: 3, eyes: 4, eye: '#f06030', spikes: 3 }, desc: '純粋種。獲物を執拗に追跡する俊敏な狩人。' });
+SP.srpVigilante = SRPB('ヴィジランテ', '⚔️', 'pure', 460, 1.45, 50, 124, srpPal('bone'), [S_({ n: '骨剣', dmg: 32, reach: 24, windup: .3, active: .14, rec: .4, cd: .8, anim: 'slash', knock: 220 }), S_({ n: '串刺し', dmg: 40, reach: 26, arc: 1.1, windup: .5, active: .14, rec: .6, cd: 3.4, anim: 'pierce', down: 1 }), S_({ n: '回転斬り', dmg: 26, reach: 0, windup: .4, active: .16, rec: .5, cd: 3, type: 'aoe', aoeR: 66, anim: 'bigSpin', knock: 240 })], { fx: { bigClawR: 1, claws: 2 }, superArmor: 1, ov: { lumps: 4, tend: 3, eyes: 3, spikes: 5, plates: 1 }, desc: '純粋種。腕が骨の刃と化した剣士。' });
+SP.srpMonarch = SRPB('モナーク', '👑', 'pure', 900, 1.9, 40, 96, srpPal('purple', { acc: '#f0d040' }), [S_({ n: '王の爪', dmg: 40, reach: 26, windup: .4, active: .14, rec: .5, cd: .9, anim: 'rip', knock: 320 }), S_({ n: '群れ召喚', dmg: 0, reach: 0, windup: .7, active: .14, rec: .6, cd: 7, type: 'summon', summon: 'srpPrLongarms', minR: 10, maxR: 300, anim: 'roar' }), S_({ n: '支配の咆哮', dmg: 14, reach: 0, windup: .6, active: .2, rec: .6, cd: 6, type: 'roar', anim: 'roar' })], { head: 'xenoQueen', unique: 1, superArmor: 1, mass: 8, pp: { shoulder: 5, torsoW: 6.4 }, fx: { claws: 2, tentacle: 1 }, ov: { lumps: 8, tend: 7, eyes: 6, spikes: 8, crown: 1 }, desc: '純粋種。群れの頂点に立つ女王。' });
+SP.srpBogle = SRPB('ボーグル', '👻', 'preem', 420, 1.35, 60, 150, srpPal('dark'), [S_({ n: '闇討ち', dmg: 34, reach: 20, windup: .2, active: .12, rec: .3, cd: .7, anim: 'stabFrenzy' }), S_({ n: '這い寄る爪', dmg: 12, reach: 18, windup: .2, active: .36, rec: .3, cd: 2, multi: 4, anim: 'clawFrenzy' })], { head: 'licker', fx: { claws: 2 }, ov: { lumps: 3, tend: 5, eyes: 5, spikes: 4 }, phase: 1, desc: '抜群種。闇に紛れる奇襲者。攻撃をすり抜ける。' });
+SP.srpHaunter = SRPC('ホーンター', '🦇', 'preem', 'fly', 380, 11, 1.35, 60, 150, srpPal('dark'), [S_({ n: '急降下', dmg: 30, reach: 18, windup: .3, active: .14, rec: .4, cd: 1.2, anim: 'b_dive', knock: 240 }), S_({ n: '悲鳴', dmg: 10, reach: 0, windup: .5, active: .2, rec: .5, cd: 6, type: 'roar', anim: 'roar' })], { wings: 2, bat: 1, desc: '抜群種。巨大な翼で空から襲う。' });
+SP.srpWraith = SRPC('レイス', '🌫️', 'preem', 'fly', 340, 10, 1.3, 64, 160, srpPal('purple'), [S_({ n: '霊爪', dmg: 28, reach: 20, windup: .24, active: .12, rec: .34, cd: .7, anim: 'b_dive' }), S_({ n: '霊弾', dmg: 18, reach: 0, windup: .4, active: .1, rec: .5, cd: 1.8, type: 'proj', projKind: 'acid', minR: 30, maxR: 360, anim: 'spit' })], { ghost: 1, phase: 1, desc: '抜群種。半ば実体を持たない亡霊。攻撃をすり抜ける。' });
+SP.srpArchitect = SRPB('アーキテクト', '🏗️', 'preem', 560, 1.6, 36, 80, srpPal('bone', { eye: '#60f0c0' }), [S_({ n: '構築杭', dmg: 24, reach: 0, windup: .6, active: .14, rec: .6, cd: 3, type: 'aoe', aoeR: 64, anim: 'stomp', toss: 1 }), S_({ n: '骨槌', dmg: 30, reach: 22, windup: .4, active: .14, rec: .5, cd: 1, anim: 'overhead', down: 1 })], { superArmor: 1, pp: { armU: 10, armL: 11 }, ov: { lumps: 5, tend: 6, eyes: 3, eye: '#60f0c0', spikes: 4, horn: 1 }, builder: 1, desc: '抜群種。ネクサス種を建造して侵食を広げる設計者。' });
+SP.srpColonyCarrier = SRPC('コロニーキャリアー', '🛸', 'preem', 'fly', 620, 15, 1.75, 30, 56, srpPal('flesh'), [S_({ n: '爆撃嚢', dmg: 20, reach: 0, windup: .6, active: .1, rec: .6, cd: 2.6, type: 'proj', projKind: 'bile', minR: 20, maxR: 300, anim: 'spit' })], { wings: 6, sac: 2, dropK: ['srpFlesh', 'srpHost', 'srpThrall', 'srpBuglin'], dropT: 8, superArmor: 1, desc: '抜群種。粗雑種を抱えて運ぶ巨大な飛行コロニー。' });
+SP.srpHeavyBomber = SRPC('ヘビーボンバー', '💣', 'preem', 'fly', 540, 14, 1.6, 34, 64, srpPal('sickly'), [S_({ n: '寄生爆弾', dmg: 30, reach: 0, windup: .7, active: .1, rec: .7, cd: 2.4, type: 'proj', projKind: 'nade', minR: 40, maxR: 380, anim: 'spit' })], { wings: 4, sac: 1, bomb: 1, superArmor: 1, desc: '抜群種。巨大な爆弾嚢から寄生爆弾を落とす。' });
+SP.srpSuccor = SRPB('サッカー', '💉', 'preem', 400, 1.3, 42, 100, srpPal('pale', { eye: '#80f080' }), [S_({ n: '吸血管', dmg: 18, reach: 40, windup: .34, active: .14, rec: .44, cd: 1.2, anim: 'tongue', leech: .6 }), S_({ n: '爪', dmg: 20, reach: 18, windup: .3, active: .12, rec: .4, cd: .8, anim: 'slash' })], { fx: { claws: 1, tentacle: 1 }, ov: { lumps: 5, tend: 6, eyes: 2, eye: '#80f080' }, healer: 1, desc: '抜群種。仲間の傷を癒やす補給役。' });
+
+/* ── 9. 古代種 (Ancient) ── */
+SP.srpDreadnaut = SRPC('エンシェント・ドレッドノート', '🦖', 'ancient', 'titan', 2600, 22, 2.4, 34, 70, srpPal('dark', { acc: '#e8dcc0' }), [
+  S_({ n: '巨脚踏み潰し', dmg: 60, reach: 0, windup: .7, active: .16, rec: .8, cd: 3, type: 'aoe', aoeR: 110, anim: 'stomp', down: 1 }),
+  S_({ n: '顎砕き', dmg: 70, reach: 30, windup: .5, active: .14, rec: .6, cd: 1.4, anim: 'bite', knock: 400 }),
+  S_({ n: '寄生弾幕', dmg: 20, reach: 0, windup: .5, active: .1, rec: .5, cd: 2, type: 'proj', projKind: 'bile', minR: 50, maxR: 460, anim: 'spit' }),
+  S_({ n: '暴走突進', dmg: 50, reach: 30, windup: .6, active: .4, rec: .7, cd: 5, type: 'dash', dash: 320, anim: 'h_leap', down: 1, knock: 420 })
+], { ai: 'srp', unique: 1, superArmor: 1, mass: 30, legs: 6, desc: '古代種。寄生体の頂点に立つ巨獣。歩くだけで大地が揺れる。' });
+SP.srpOverlord = SRPC('エンシェント・オーバーロード', '🌌', 'ancient', 'overlord', 2200, 20, 2.3, 30, 60, srpPal('purple', { acc: '#f0d040', eye: '#ff3a3a' }), [
+  S_({ n: '支配の光線', dmg: 40, reach: 0, windup: .8, active: .2, rec: .6, cd: 2.2, type: 'proj', projKind: 'laser', minR: 30, maxR: 500, anim: 'spit' }),
+  S_({ n: '触手嵐', dmg: 22, reach: 60, windup: .4, active: .5, rec: .5, cd: 2, multi: 4, anim: 'h_leap' }),
+  S_({ n: '群体召喚', dmg: 0, reach: 0, windup: .8, active: .14, rec: .6, cd: 9, type: 'summon', summon: 'srpSeeker', minR: 10, maxR: 400, anim: 'roar' }),
+  S_({ n: '重圧', dmg: 30, reach: 0, windup: .7, active: .2, rec: .6, cd: 5, type: 'aoe', aoeR: 120, anim: 'h_leap', down: 1 })
+], { ai: 'srp', unique: 1, superArmor: 1, mass: 30, tend: 10, desc: '古代種。空に浮かぶ寄生体の支配者。無数の触手と光線で全てを制圧する。' });
+
+const SRP_INBORN = ['srpBuglin', 'srpRupter', 'srpMangler', 'srpGnat', 'srpLice', 'srpWorker', 'srpFlyCarrier', 'srpLightCarrier'];
+const SRP_CRUDE = ['srpFlesh', 'srpAirscrew', 'srpCrux', 'srpDredge', 'srpHeed', 'srpHost', 'srpThrall', 'srpHerd'];
+const SRP_PURE = ['srpGrunt', 'srpOverseer', 'srpSeeker', 'srpVigilante', 'srpMonarch'];
+const SRP_PREEM = ['srpBogle', 'srpHaunter', 'srpWraith', 'srpArchitect', 'srpColonyCarrier', 'srpHeavyBomber', 'srpSuccor'];
+const SRP_ORDER = SRP_INBORN.concat(['srpAsHuman', 'srpAsAdventurer', 'srpAsCow', 'srpAsPig', 'srpAsSheep', 'srpAsHorse', 'srpAsWolf', 'srpAsBear', 'srpAsSpider', 'srpAsEnderman', 'srpAsVillager', 'srpHjGolem', 'srpHjBlaze',
+  'srpFeralHuman', 'srpFeralWolf', 'srpFeralBear', 'srpFeralCow', 'srpAssimaraHuman', 'srpAssimaraBear', 'srpAssimaraEnderman'],
+  SRP_CRUDE, ['srpIncompS', 'srpIncompM'], SRP_PRIM, SRP_ADPT, ['srpBeckon', 'srpDispatcher', 'srpRooter'], SRP_PURE, SRP_PREEM, ['srpDreadnaut', 'srpOverlord']);
+const SRP_PHASE = [0, 12, 35, 70, 120, 190, 280, 400, 560];
+const SRP_ROMAN = ['I', 'II', 'III', 'IV'];
+for (const k of SRP_ORDER) BIRTH_LOG[k] = BIRTH_LOG[k] || null;
+BIRTH_LOG.srpAsHuman = ['🧬 生存者が寄生体に同化された', 'srp'];
+BIRTH_LOG.srpAsAdventurer = ['🧬 生存者が同化冒険者として蘇った', 'srp'];
+BIRTH_LOG.srpAsWolf = ['🧬 犬が寄生され同化狼と化した', 'srp'];
+BIRTH_LOG.srpFlesh = ['🥩 死骸が寄り集まり「動く肉塊」になった', 'srp'];
+
+/* ── 適応 (攻撃毎の免疫) ── */
+function srpDmgType(att, o) {
+  if (o && o.thorn) return '棘の反撃';
+  if (o && o.burnTick) return '炎';
+  if (att && att.atk && att.atk.def && att.atk.def.n) return att.atk.def.n;
+  if (o && o.acid) return '酸';
+  if (att && att.sp) return att.sp.name + 'の射撃';
+  return '環境';
+}
+function srpAdaptOf(u, ty) {
+  const tr = SRP_TIER[u.sp.srp] || SRP_TIER.crude;
+  return Math.min(tr.cap, ((u.adapt && u.adapt[ty]) || 0) + ((G.srpAdapt && G.srpAdapt[ty]) || 0) * .6);
+}
+function srpOnHit(tgt, att, dmg, o) {
+  const ty = srpDmgType(att, o);
+  const ad = srpAdaptOf(tgt, ty);
+  const tr = SRP_TIER[tgt.sp.srp] || SRP_TIER.crude;
+  tgt.adapt = tgt.adapt || {};
+  tgt.adapt[ty] = Math.min(tr.cap, (tgt.adapt[ty] || 0) + tr.rate);
+  G.srpAdapt = G.srpAdapt || {};
+  const was = G.srpAdapt[ty] || 0;
+  G.srpAdapt[ty] = Math.min(.55, was + tr.rate * .12);
+  if (was < .2 && G.srpAdapt[ty] >= .2) addLog(`🧬 寄生体が「${ty}」に適応した — 群れ全体の被ダメージ減少`, 'srp', true);
+  if (ad >= .25 && rchance(.5)) { // 適応の閃き: 肉が硬化して弾く
+    addPart({ k: 'spark', x: tgt.x + rnd(-5, 5), y: tgt.y + rnd(-3, 3), z: unitTopY(tgt) * .55, vx: rnd(-30, 30), vy: rnd(-20, 20), vz: rnd(20, 60), life: .4, t: 0, s: 1.6, col: '#f0d060' });
+    tgt.adaptFx = .35;
+  }
+  return dmg * (1 - ad);
+}
+
+/* ── COTH (Call of the Hive) 感染: 生存者と MC ゾンビ ── */
+function srpCothHost(u) {
+  if (!u || u.gone || u.dead) return false;
+  if (u.fac === 'mz') return true;
+  return u.fac === 'N' && !!u.sp.mortal && u.sp.kind !== 'bird' || (u.fac === 'N' && u.key === 'crow');
+}
+function srpInfect(tgt, att) {
+  if (!srpCothHost(tgt)) return;
+  const was = tgt.coth || 0;
+  const pow = { inborn: .14, assim: .18, hijack: .18, feral: .22, assimara: .28, crude: .16, primitive: .24, adapted: .3, nexus: .2, pure: .3, preem: .3, ancient: .4 }[att.sp.srp] || .2;
+  tgt.coth = Math.min(1, was + pow);
+  if (was <= 0) { G.stats.srp.inf++; if (rchance(.35)) addLog(`🧬 ${tgt.sp.name}がCOTH(集合の呼び声)に感染した`, 'srp'); }
+  tgt.threat = true;
+}
+function srpRiseKey(u) {
+  if (u.fac === 'mz') return (u.key === 'mutZombie' || u.key === 'mutHusk') ? 'srpAssimaraHuman' : 'srpAsHuman';
+  if (u.key === 'dog') return 'srpAsWolf';
+  if (u.key === 'cat' || u.key === 'rat') return 'srpLice';
+  if (u.key === 'crow') return 'srpGnat';
+  if (u.sp.kind === 'biped') return rchance(.28) ? 'srpAsAdventurer' : (rchance(.12) ? 'srpAsVillager' : 'srpAsHuman');
+  return 'srpBuglin';
+}
+/* killUnit から: 感染宿主なら同化種として蘇らせる (true で処理済み) */
+function srpDeathHook(att, u, o) {
+  const byP = att && att.fac === 'srp';
+  if (srpCothHost(Object.assign({}, u, { gone: false, dead: false })) && ((u.coth || 0) > 0 || byP) && !o.gib) {
+    if (countFac('srp') + srpPending() < (G.capSrp || 70)) {
+      const k = srpRiseKey(u);
+      makeCorpse(u, { riseT: 2.6 + rnd(0, 1.6), riseAs: k, decap: o.decap });
+      G.stats.srp.conv++; G.srpPts = (G.srpPts || 0) + 3;
+      return true;
+    }
+  }
+  // 同化種・野生種の死骸は寄り集まって「動く肉塊」になる
+  if (u.fac === 'srp' && u.sp.burstFlesh !== 0 && /^(assim|feral|assimara|hijack)$/.test(u.sp.srp) && !o.gib && rchance(.5) && countFac('srp') + srpPending() < (G.capSrp || 70)) {
+    makeCorpse(u, { riseT: 4 + rnd(0, 3), riseAs: 'srpFlesh' });
+    return true;
+  }
+  if (u.sp.burst) { // ルプター: 破裂して感染液を撒く
+    addAcidBurst(u.x, u.y, 6, 10); addDecal('acid', u.x, u.y, 20);
+    Spatial.query(u.x, u.y, 50, _q);
+    for (const t of _q.slice()) if (!t.gone && !t.dead && t.fac !== 'srp' && dist(u.x, u.y, t.x, t.y) < 44) { dealDamage(u, t, u.sp.burst, { acid: true }); srpInfect(t, u); }
+  }
+  if (u.fac === 'srp' && u.sp.nexus) addLog(`🌳 ネクサス種「${u.sp.name}」が破壊された`, 'srp', true);
+  return false;
+}
+function srpPending() { let n = 0; for (const c of G.corpses) if (c.riseAs && c.riseT > 0 && SP[c.riseAs] && SP[c.riseAs].fac === 'srp') n++; return n; }
+
+/* ── 変異 (別種への置換) ── */
+function srpMorph(u, key, msg) {
+  if (key === '*primitive') key = rpick(SRP_PRIM);
+  if (!SP[key]) return null;
+  const n = spawnUnit(key, u.x, u.y, { force: true, silent: true });
+  if (!n) return null;
+  n.adapt = Object.assign({}, u.adapt || {});
+  n.kills = u.kills; n.tgt = u.tgt; n.state = 'spawn'; n.st = 0; n.transDur = 1.1;
+  u.gone = true; u.dead = true;
+  if (G.sel === u) { G.sel = n; }
+  addDust(u.x, u.y, 14, '#8a2a2e'); addBlood(u.x, u.y, 10, 10, '#5a0a18'); Sfx.play('morph', u.x, u.y);
+  addLog(msg || `🧬 ${u.sp.name}が${n.sp.name}へと進化した`, 'srp', SP[key].hp >= 300);
+  G.srpPts = (G.srpPts || 0) + 1;
+  return n;
+}
+function srpStage(u) { return u.srpStage || 1; }
+function srpSetStage(u, s) {
+  u.srpStage = s;
+  const m = [1, 1.6, 2.3, 3.1][s - 1];
+  const hpF = u.hp / u.mhp;
+  u.mhp = Math.round(u.sp.hp * m); u.hp = Math.max(1, Math.round(u.mhp * hpF));
+  u.sizeMul = [1, 1.2, 1.4, 1.6][s - 1]; u.r = u.sp.r * u.sizeMul;
+}
+function srpSpawnNear(key, x, y, rad) {
+  for (let i = 0; i < 6; i++) {
+    const a = Math.random() * TAU, d = rnd(10, rad || 50);
+    const px = x + Math.cos(a) * d, py = y + Math.sin(a) * d;
+    if (walkAtPx(px, py)) return spawnUnit(key, px, py, { silent: true });
+  }
+  return spawnUnit(key, x, y, { silent: true });
+}
+function srpPickSpawn(stage) {
+  const pool = SRP_INBORN.slice(0, 6);
+  if (stage >= 2) pool.push('srpFlesh', 'srpHost', 'srpHeed', 'srpDredge');
+  if (stage >= 3) pool.push('srpThrall', 'srpHerd', 'srpCrux', 'srpAirscrew', 'srpFlyCarrier');
+  if (stage >= 4) pool.push(rpick(SRP_PRIM), rpick(SRP_PRIM));
+  return rpick(pool);
+}
+
+/* ── 陣営の毎フレーム処理 ── */
+function updateSRP(dt) {
+  if (!G.stats || !G.stats.srp) return;
+  // 侵食フェーズ
+  G.srpPts = (G.srpPts || 0) + dt * .12; // 侵食は時間とともに進む
+  const pts = G.srpPts + (G.stats.srp.kills || 0);
+  let ph = 0; while (ph + 1 < SRP_PHASE.length && pts >= SRP_PHASE[ph + 1]) ph++;
+  if (ph > (G.srpPhase || 0)) {
+    G.srpPhase = ph;
+    addLog(`☣️ 寄生体の侵食がフェーズ ${ph} に移行した`, 'srp', true);
+    const nx = G.units.filter(u => !u.gone && u.fac === 'srp' && u.sp.nexus);
+    const base = nx.length ? rpick(nx) : G.units.find(u => !u.gone && u.fac === 'srp');
+    if (base) {
+      if (ph === 2 || ph === 4) { const k = rpick(['srpBeckon', 'srpDispatcher']); srpSpawnNear(k, base.x, base.y, 120); addLog(`📡 新たなネクサス種「${SP[k].name}」が根を張った`, 'srp', true); }
+      if (ph >= 3) srpSpawnNear(rpick(SRP_PURE.filter(k => k !== 'srpMonarch')), base.x, base.y, 80);
+      if (ph >= 5) srpSpawnNear(rpick(SRP_PREEM), base.x, base.y, 80);
+      if (ph >= 6 && !countKey('srpMonarch')) { srpSpawnNear('srpMonarch', base.x, base.y, 60); addLog('👑 純粋種の女王「モナーク」が誕生した', 'srp', true); }
+      if (ph >= 7 && !G.srpDread) { G.srpDread = 1; const d = spawnUnit('srpDreadnaut', base.x, base.y, { force: true }); if (d) { addLog('🦖 古代種「エンシェント・ドレッドノート」が目覚めた！', 'srp', true); addShake(16); } }
+      if (ph >= 8 && !G.srpOver) { G.srpOver = 1; const d = spawnUnit('srpOverlord', base.x, base.y, { force: true }); if (d) { addLog('🌌 古代種「エンシェント・オーバーロード」が降臨した！', 'srp', true); addShake(18); } }
+    }
+  }
+  // COTH 感染の進行
+  for (const u of G.units) {
+    if (u.gone || u.dead || !(u.coth > 0)) continue;
+    u.coth = Math.min(1, u.coth + dt * .012);
+    u.hp -= (1 + u.coth * 4) * dt;
+    if (rchance(dt * 2 * u.coth)) addPart({ k: 'spark', x: u.x + rnd(-5, 5), y: u.y + rnd(-3, 3), z: unitTopY(u) * .6, vx: rnd(-4, 4), vy: rnd(-3, 3), vz: rnd(4, 12), life: .8, t: 0, s: 1.4, col: '#b03040' });
+    if (u.hp <= 0) killUnit(null, u, {});
+  }
+  const live = G.units.filter(u => !u.gone && !u.dead && u.fac === 'srp');
+  // 肉塊の融合: 3体集まると不完全体(中)へ
+  for (const u of live) {
+    if (u.gone || u.key !== 'srpFlesh') continue;
+    const near = live.filter(v => !v.gone && v !== u && v.key === 'srpFlesh' && dist(u.x, u.y, v.x, v.y) < 44);
+    if (near.length >= 2) { near[0].gone = true; near[1].gone = true; srpMorph(u, 'srpIncompM', '🫁 動く肉塊が3体融合し、不完全体へと成長した'); }
+  }
+  for (const u of live) {
+    if (u.gone || u.dead) continue;
+    u.adaptFx = Math.max(0, (u.adaptFx || 0) - dt);
+    const sp = u.sp;
+    // 進化
+    if (sp.evo && u.state !== 'transform' && u.state !== 'spawn') {
+      if (u.srpEvoT == null) u.srpEvoT = sp.evo[1] * rnd(.85, 1.2);
+      u.srpEvoT -= dt * (1 + (u.kills || 0) * .25);
+      if (u.srpEvoT <= 0 && countFac('srp') < (G.capSrp || 70) + 6) { srpMorph(u, sp.evo[0]); continue; }
+    }
+    // ネクサス: Stage 成長 / 召喚 / 侵食
+    if (sp.nexus) {
+      u.srpGrowT = (u.srpGrowT || 0) + dt;
+      if (srpStage(u) < 4 && u.srpGrowT > 45 * srpStage(u)) { srpSetStage(u, srpStage(u) + 1); addLog(`🌳 ${sp.name}が Stage ${SRP_ROMAN[srpStage(u) - 1]} に成長した`, 'srp', srpStage(u) >= 3); G.srpPts += 4; }
+      u.srpSpT = (u.srpSpT == null ? 4 : u.srpSpT) - dt;
+      if (u.srpSpT <= 0) {
+        const st = srpStage(u);
+        u.srpSpT = (sp.nexus === 'beckon' ? 8 : sp.nexus === 'dispatcher' ? 14 : 16) - st * 1.5;
+        if (countFac('srp') < (G.capSrp || 70)) {
+          const k = sp.nexus === 'dispatcher' ? rpick(st >= 3 ? ['srpFlyCarrier', 'srpLightCarrier', 'srpGnat', 'srpAirscrew'] : ['srpGnat', 'srpLightCarrier'])
+            : sp.nexus === 'rooter' ? rpick(['srpWorker', 'srpLice', st >= 2 ? 'srpFlesh' : 'srpBuglin'])
+            : srpPickSpawn(st);
+          const n = srpSpawnNear(k, u.x, u.y, 40 + st * 10);
+          if (n) { addDust(n.x, n.y, 6, '#8a2a2e'); if (sp.nexus === 'beckon' && st >= 2 && rchance(.3 + st * .15)) srpSpawnNear(srpPickSpawn(st), u.x, u.y, 60); }
+        }
+        if (sp.nexus === 'rooter') { addDecal('blood', u.x + rnd(-60, 60) * srpStage(u), u.y + rnd(-40, 40) * srpStage(u), 18 + srpStage(u) * 6); }
+      }
+      u.hp = Math.min(u.mhp, u.hp + dt * 2 * srpStage(u));
+    }
+    // 運搬飛行体: 先天種/粗雑種を投下
+    if (sp.dropK) {
+      u.srpDropT = (u.srpDropT == null ? sp.dropT * .5 : u.srpDropT) - dt;
+      if (u.srpDropT <= 0) { u.srpDropT = sp.dropT; if (countFac('srp') < (G.capSrp || 70)) { const n = srpSpawnNear(rpick(sp.dropK), u.x, u.y, 20); if (n) { addDust(n.x, n.y, 5, '#8a2a2e'); } } }
+    }
+    // ボルスター/オーバーシーア: 周囲の寄生体を回復  サッカー: 仲間を癒やす
+    if (sp.aura || sp.healer) {
+      for (const v of live) if (v !== u && !v.gone && dist(u.x, u.y, v.x, v.y) < (sp.healer ? 110 : 90)) v.hp = Math.min(v.mhp, v.hp + dt * (sp.healer ? 7 : 3.5));
+      if (rchance(dt * 3)) addPart({ k: 'spark', x: u.x + rnd(-40, 40), y: u.y + rnd(-30, 30), z: 4, vx: 0, vy: 0, vz: rnd(8, 18), life: .9, t: 0, s: 1.6, col: sp.healer ? '#80f080' : '#f0d060' });
+    }
+    // すり抜け (ボーグル/レイス)
+    if (sp.phase) u.phaseDodge = 1;
+    // 転移 (エンダーマン系)
+    if (sp.blinker && u.tgt && !u.tgt.gone && (u.blinkCd || 0) <= G.time && dist(u.x, u.y, u.tgt.x, u.tgt.y) > 140) {
+      const t = u.tgt, a = Math.random() * TAU, px = t.x + Math.cos(a) * 30, py = t.y + Math.sin(a) * 24;
+      if (walkAtPx(px, py)) { u.blinkCd = G.time + 5; addDust(u.x, u.y, 10, '#c060ff'); u.x = px; u.y = py; addDust(u.x, u.y, 10, '#c060ff'); Sfx.play('whoosh', u.x, u.y); }
+    }
+    // 潜行 (バロワー): 地中を進んで足元に出る
+    if (sp.burrow && u.tgt && !u.tgt.gone && (u.burCd || 0) <= G.time && dist(u.x, u.y, u.tgt.x, u.tgt.y) > 110) {
+      const t = u.tgt;
+      if (walkAtPx(t.x + 14, t.y)) { u.burCd = G.time + 7; addDust(u.x, u.y, 12, '#6a5030'); u.x = t.x + 14; u.y = t.y; addDust(u.x, u.y, 14, '#6a5030'); addShake(3); Sfx.play('thud', u.x, u.y); }
+    }
+    // アーキテクト: ネクサス種を建造
+    if (sp.builder) {
+      u.buildT = (u.buildT == null ? 30 : u.buildT) - dt;
+      if (u.buildT <= 0) { u.buildT = 45; if (G.units.filter(v => !v.gone && v.sp.nexus).length < 8) { const k = rpick(['srpBeckon', 'srpDispatcher', 'srpRooter']); srpSpawnNear(k, u.x, u.y, 50); addLog(`🏗️ アーキテクトが「${SP[k].name}」を建造した`, 'srp'); } }
+    }
+  }
+}
+function srpPanelInfo() {
+  const nx = G.units.filter(u => !u.gone && u.fac === 'srp' && u.sp.nexus).length;
+  const top = Object.entries(G.srpAdapt || {}).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k, v]) => `${k} -${Math.round(v * 60)}%`).join(' / ');
+  return `<div class="substat"><span>同化 ${G.stats.srp.conv}</span><span>COTH ${G.stats.srp.inf}</span><span>ネクサス ${nx}</span></div>` + (top ? `<div class="substat" style="color:#f0d060"><span>🧬 ${top}</span></div>` : '');
+}
+function thinkSrpNexus(u) {
+  u.dest = null; u.path = null;
+  if (!u.tgt || u.tgt.gone || u.tgt.dead || dist(u.x, u.y, u.tgt.x, u.tgt.y) > 420) u.tgt = acquireTarget(u, 400);
+  const t = u.tgt;
+  if (t) { u.faceA = angTo(u.x, u.y, t.x, t.y); const atk = chooseAttack(u, t); if (atk && (u.state === 'idle' || u.state === 'move')) startAttack(u, atk, t); }
+}
+function spawnSRP() {
+  G.capSrp = 70; G.srpPts = 0; G.srpPhase = 0; G.srpAdapt = {}; G.srpDread = 0; G.srpOver = 0;
+  const rooms = G.map.rooms;
+  const r = rpick(rooms);
+  const c = { x: (r.cx + .5) * TILE, y: (r.cy + .5) * TILE };
+  spawnUnit('srpRooter', c.x, c.y, { silent: true, force: true });
+  const p2 = randWalkIn(r); spawnUnit('srpBeckon', p2.x, p2.y, { silent: true, force: true });
+  const ks = ['srpBuglin', 'srpBuglin', 'srpRupter', 'srpMangler', 'srpLice', 'srpWorker', 'srpGnat', 'srpAsHuman', 'srpAsWolf', 'srpFlesh'];
+  for (const k of ks) { const q = randWalkIn(r); spawnUnit(k, q.x, q.y, { silent: true, force: true }); }
+  addLog('☣️ 館の一室で寄生体 (Scape and Run: Parasites) が根を張った', 'srp', true);
+}
+
+/* ── 描画 ── */
+function srpEyes(x, y, n, R, col, seed, blink) {
+  const rd = srand(seed || 3);
+  for (let i = 0; i < n; i++) {
+    const ex = x + (rd() - .5) * R * 1.6, ey = y + (rd() - .5) * R * 1.1, er = R * (.1 + rd() * .12);
+    ctx.fillStyle = '#1a0406'; ctx.beginPath(); ctx.ellipse(ex, ey, er * 1.25, er, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = col; ctx.beginPath(); ctx.ellipse(ex, ey, er, er * (blink ? .2 : .85), 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#120202'; ctx.fillRect(ex - er * .15, ey - er * .6, er * .3, er * 1.2);
+  }
+}
+function srpTendril(x0, y0, len, ang, w, col, t, wav) {
+  ctx.strokeStyle = col; ctx.lineCap = 'round';
+  let px = x0, py = y0;
+  const N = 6;
+  for (let i = 1; i <= N; i++) {
+    const f = i / N, a = ang + Math.sin(t * 3 + f * 4 + wav) * .55 * f;
+    const nx = px + Math.cos(a) * len / N, ny = py + Math.sin(a) * len / N;
+    ctx.lineWidth = Math.max(.6, w * (1 - f * .8));
+    ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(nx, ny); ctx.stroke();
+    px = nx; py = ny;
+  }
+  return { x: px, y: py };
+}
+function srpLumps(x, y, R, n, pal, seed, t, puls) {
+  const rd = srand(seed || 5);
+  for (let i = 0; i < n; i++) {
+    const a = rd() * TAU, d = R * (.2 + rd() * .7), rr = R * (.28 + rd() * .3) * (1 + Math.sin(t * 3 + i) * (puls || .05));
+    const lx = x + Math.cos(a) * d, ly = y + Math.sin(a) * d * .7;
+    blob(lx, ly, rr, rr * .85, i % 3 === 0 ? pal.skinL : i % 3 === 1 ? pal.skin : shade(pal.skin, -.15), 'rgba(255,220,220,.18)');
+    if (i % 4 === 0) { ctx.strokeStyle = shade(pal.skinD, -.2); ctx.lineWidth = .8; ctx.beginPath(); ctx.arc(lx, ly, rr * .6, .3, 2.2); ctx.stroke(); }
+  }
+}
+/* 人型・四足の上に被せる寄生の肉塊 (触手/眼/棘/顎) */
+function drawSRPOverlay(u) {
+  const ov = u.sp.ov; if (!ov) return;
+  const T = G.time + (u.id || 0) * .37, pal = u.pal, dir = u.dir || 1, s = u.sp.scale * u.sizeMul;
+  const top = unitTopY(u), x = u.x, gy = u.y * SQ - u.z;
+  const quad = u.sp.kind === 'quad';
+  const bx = quad ? x - dir * top * .15 : x - dir * 2 * s, by = gy - top * (quad ? .62 : .72);
+  const hx = quad ? x + dir * top * .55 : x + dir * 1 * s, hy = gy - top * (quad ? .55 : .93);
+  const atk = u.state === 'attack' ? 1 : 0;
+  // 背中の触手
+  for (let i = 0; i < (ov.tend || 0); i++) {
+    const a = -Math.PI / 2 - dir * (.4 + i * .35) + Math.sin(T * 2 + i) * .2 + (atk ? dir * .9 : 0);
+    const tip = srpTendril(bx, by, (13 + i * 4) * s * (atk ? 1.5 : 1), a, 2.8 * s, shade(pal.skin, -.1), T, i * 1.7);
+    if (i % 2 === 0) { ctx.fillStyle = pal.acc; ctx.beginPath(); ctx.arc(tip.x, tip.y, 1.1 * s, 0, TAU); ctx.fill(); }
+  }
+  // 肉の瘤
+  if (ov.lumps) { srpLumps(bx, by + 3 * s, 7.5 * s, ov.lumps, srpPal('flesh'), u.seed, T, .07); if (!quad) srpLumps(x + dir * 3 * s, gy - top * .45, 4 * s, Math.ceil(ov.lumps / 2), srpPal('flesh'), (u.seed || 1) + 7, T, .05); }
+  // 骨の棘・装甲
+  if (ov.spikes) {
+    ctx.fillStyle = pal.acc; ctx.strokeStyle = shade(pal.acc, -.4); ctx.lineWidth = .7;
+    for (let i = 0; i < ov.spikes; i++) {
+      const sx = bx + (i - ov.spikes / 2) * 2.4 * s * -dir, sy = by - 2 * s + Math.abs(i - ov.spikes / 2) * 1.2 * s, L = (5 + (i % 3) * 2) * s;
+      ctx.beginPath(); ctx.moveTo(sx - 1.2 * s, sy); ctx.lineTo(sx - dir * 2 * s, sy - L); ctx.lineTo(sx + 1.2 * s, sy); ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
+  }
+  if (ov.plates) { ctx.fillStyle = shade(pal.acc, -.15); for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.ellipse(bx + dir * i * 2 * s, by + i * 4 * s, 5 * s, 2.4 * s, dir * .4, 0, TAU); ctx.fill(); } }
+  if (ov.crown) { ctx.fillStyle = pal.acc; for (let i = -2; i <= 2; i++) { ctx.beginPath(); ctx.moveTo(hx + i * 2.4 * s - 1.2 * s, hy - 4 * s); ctx.lineTo(hx + i * 2.4 * s, hy - (10 + (2 - Math.abs(i)) * 3) * s); ctx.lineTo(hx + i * 2.4 * s + 1.2 * s, hy - 4 * s); ctx.fill(); } }
+  if (ov.horn) { ctx.strokeStyle = pal.acc; ctx.lineWidth = 2 * s; ctx.beginPath(); ctx.moveTo(hx, hy - 3 * s); ctx.quadraticCurveTo(hx - dir * 8 * s, hy - 12 * s, hx - dir * 3 * s, hy - 17 * s); ctx.stroke(); }
+  if (ov.gas && rchance(.25)) addPart({ k: 'smoke', x: x + rnd(-6, 6), y: u.y + rnd(-3, 3), z: top * .7, vx: rnd(-6, 6), vy: rnd(-3, 3), vz: rnd(4, 10), life: 1.2, t: 0, s: rnd(3, 6), col: '#8aa040' });
+  // 頭: 割れた顎と増殖した眼
+  if (ov.jaw) {
+    const o2 = (atk ? .8 : .25 + Math.sin(T * 4) * .1) * 3 * s;
+    ctx.fillStyle = '#2a0408';
+    ctx.beginPath(); ctx.moveTo(hx + dir * 1 * s, hy + 1 * s); ctx.lineTo(hx + dir * 6 * s, hy + 1 * s - o2); ctx.lineTo(hx + dir * 6 * s, hy + 1 * s + o2); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = pal.acc; for (let i = 0; i < 3; i++) ctx.fillRect(hx + dir * (2.5 + i * 1.2) * s, hy + 1 * s - o2 * .7, .8 * s, 1.2 * s);
+  }
+  if (ov.bigEye) {
+    const er = 4.2 * s * (1 + Math.sin(T * 2) * .05);
+    ctx.fillStyle = '#1a0406'; ctx.beginPath(); ctx.arc(hx, hy, er * 1.2, 0, TAU); ctx.fill();
+    const g = ctx.createRadialGradient(hx, hy, 0, hx, hy, er); g.addColorStop(0, '#fff8b0'); g.addColorStop(.5, ov.eye || pal.eye); g.addColorStop(1, shade(ov.eye || pal.eye, -.4));
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(hx, hy, er, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#100'; ctx.beginPath(); ctx.ellipse(hx + dir * er * .25, hy, er * .2, er * .75, 0, 0, TAU); ctx.fill();
+  }
+  if (ov.eyes) srpEyes(hx - dir * 1 * s, hy - 1 * s, ov.eyes, 5 * s, ov.eye || pal.eye, u.seed, Math.sin(T * 1.3) > .96);
+  if (u.adaptFx > 0) { ctx.globalAlpha = u.adaptFx * 1.6; ctx.strokeStyle = '#f0d060'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(x, gy - top * .5, top * .38, top * .55, 0, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1; }
+}
+/* 独自体型の寄生体 */
+function drawSRP(u, pose) {
+  const sp = u.sp, pal = u.pal, dir = u.dir || 1, hf = u.fxT > 0;
+  const T = (u.state === 'dead' ? 0 : G.time) + (u.id || 0) * .37;
+  const S = Math.max(4, sp.r * sp.scale * (u.sizeMul || 1) * (sp.plan === 'bug' || sp.plan === 'fly' ? 1.25 : 1.05));
+  const x = u.x; let gy = u.y * SQ - (u.z || 0);
+  const mv = (u.moveSpd || 0) > 3, ph = (u.gait || 0) * 1.4;
+  const at = u.state === 'attack' && u.atk ? u.atk.t / (u.atk.def.windup + u.atk.def.active + u.atk.def.rec) : 0;
+  const strike = at > .35 && at < .8 ? Math.sin((at - .35) / .45 * Math.PI) : 0;
+  const skin = hf ? '#f0c0b0' : pal.skin;
+  const dead = u.state === 'dead';
+  ctx.save();
+  if (dead) { ctx.translate(x, gy); ctx.scale(1, .45); ctx.translate(-x, -gy); ctx.globalAlpha *= .85; }
+  switch (sp.plan) {
+    case 'bug': {
+      const cy = gy - S * .7 - (mv ? Math.abs(Math.sin(ph)) * S * .08 : 0);
+      const L = sp.legs || 6;
+      ctx.strokeStyle = shade(pal.skinD, -.2); ctx.lineWidth = Math.max(1, S * .14);
+      for (let i = 0; i < L; i++) {
+        const side = i % 2 ? 1 : -1, k = Math.floor(i / 2), n = L / 2;
+        const lx = x + dir * (k - (n - 1) / 2) * S * .5, sw = mv ? Math.sin(ph + i * 1.3) * S * .25 : 0;
+        const kx = lx + dir * sw + side * S * .15, ky = cy - S * .4 + side * S * .1;
+        ctx.beginPath(); ctx.moveTo(lx, cy); ctx.lineTo(kx, ky); ctx.lineTo(kx + dir * sw * .6 + dir * (k - 1) * S * .2, gy + (side > 0 ? S * .08 : -S * .05)); ctx.stroke();
+      }
+      blob(x - dir * S * .45, cy + S * .05, S * .62, S * .48, shade(skin, -.08), 'rgba(255,220,220,.15)');
+      if (sp.sacs) for (let i = 0; i < sp.sacs; i++) blob(x - dir * S * (.3 + i * .3), cy - S * .35, S * .26 * (1 + Math.sin(T * 5 + i) * .12), S * .24, '#b8c060', 'rgba(255,255,200,.3)');
+      if (sp.pack) blob(x - dir * S * .5, cy - S * .45, S * .4, S * .3, '#6a4030');
+      blob(x + dir * S * .25, cy - S * .05, S * .45, S * .38, skin, 'rgba(255,220,220,.2)');
+      const hx = x + dir * S * .75, hy = cy - S * .1 - strike * S * .15;
+      blob(hx, hy, S * .3, S * .28, shade(skin, .1));
+      const op = .25 + strike * .9;
+      ctx.strokeStyle = pal.acc; ctx.lineWidth = Math.max(1, S * .1);
+      for (const sd of [-1, 1]) { ctx.beginPath(); ctx.moveTo(hx + dir * S * .2, hy + sd * S * .08); ctx.quadraticCurveTo(hx + dir * S * .55, hy + sd * S * (.1 + op * .35), hx + dir * S * .45, hy + sd * S * op * .1); ctx.stroke(); }
+      if (sp.scythes) for (const sd of [0, 1]) { ctx.strokeStyle = pal.acc; ctx.lineWidth = S * .12; const a0 = -1.2 + strike * 2 + sd * .3; ctx.beginPath(); ctx.moveTo(x + dir * S * .4, cy - S * .2); ctx.lineTo(x + dir * (S * .4 + Math.cos(a0) * S * .7), cy - S * .2 + Math.sin(a0) * S * .7); ctx.lineTo(x + dir * (S * .4 + Math.cos(a0 + .9) * S * 1.1), cy - S * .2 + Math.sin(a0 + .9) * S * 1.1); ctx.stroke(); }
+      srpEyes(hx + dir * S * .08, hy - S * .08, 2, S * .35, pal.eye, u.seed);
+      if (sp.spikes) { ctx.fillStyle = pal.acc; for (let i = 0; i < 4; i++) { const sx = x - dir * S * (i * .25 - .1); ctx.beginPath(); ctx.moveTo(sx - S * .08, cy - S * .4); ctx.lineTo(sx - dir * S * .1, cy - S * .85); ctx.lineTo(sx + S * .08, cy - S * .4); ctx.fill(); } }
+      break;
+    }
+    case 'fly': {
+      const hov = S * 1.6 + Math.sin(T * 2.2) * S * .2;
+      const cy = gy - hov - (strike ? -strike * S * .5 : 0);
+      ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.beginPath(); ctx.ellipse(x, gy, S * .9, S * .3, 0, 0, TAU); ctx.fill();
+      if (sp.ghost) { ctx.globalAlpha *= .72; for (let i = 0; i < 4; i++) { ctx.fillStyle = `rgba(90,40,110,${.25 - i * .05})`; ctx.beginPath(); ctx.ellipse(x - dir * i * S * .35, cy + i * S * .2, S * (.8 - i * .12), S * (.6 - i * .08), 0, 0, TAU); ctx.fill(); } }
+      const wN = sp.wings || 0;
+      for (let i = 0; i < wN; i++) {
+        const side = i % 2 ? 1 : -1, row = Math.floor(i / 2), fl = Math.sin(T * (sp.bat ? 9 : 26) + row) ;
+        ctx.fillStyle = sp.bat ? shade(skin, -.25) : 'rgba(230,200,190,.35)'; ctx.strokeStyle = sp.bat ? shade(pal.skinD, -.3) : 'rgba(120,40,40,.5)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.ellipse(x - dir * row * S * .4, cy - S * .3 - fl * S * .25, S * (sp.bat ? 1.5 : 1), S * (sp.bat ? .5 : .32), side * (.5 + fl * .5), 0, TAU); ctx.fill(); ctx.stroke();
+      }
+      if (sp.rotor) { ctx.strokeStyle = pal.acc; ctx.lineWidth = S * .16; const ra = T * 30; for (let i = 0; i < 3; i++) { const a = ra + i * TAU / 3; ctx.beginPath(); ctx.moveTo(x, cy - S * .6); ctx.lineTo(x + Math.cos(a) * S * 1.3, cy - S * .6 + Math.sin(a) * S * .35); ctx.stroke(); } }
+      for (let i = 0; i < (sp.tend || 3); i++) srpTendril(x + (i - 1) * S * .3, cy + S * .4, S * (1 + (i % 3) * .4) * (1 + strike * .6), Math.PI / 2 + (i - 1) * .3, S * .14, shade(skin, -.15), T, i);
+      if (sp.sac) { const sr = S * (sp.bomb ? .95 : .7) * (1 + Math.sin(T * 3) * .06); blob(x, cy + S * .55, sr, sr * .85, sp.bomb ? '#8a9a40' : '#c07060', 'rgba(255,230,200,.25)'); ctx.strokeStyle = shade(pal.skinD, -.1); ctx.lineWidth = .8; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(x, cy + S * .55, sr * (.4 + i * .2), .4, 2.7); ctx.stroke(); } }
+      blob(x, cy, S * .75, S * .55, skin, 'rgba(255,220,220,.2)');
+      srpLumps(x - dir * S * .2, cy - S * .1, S * .5, 3, pal, u.seed, T);
+      if (sp.bigEye) {
+        const er = S * .55; ctx.fillStyle = '#1a0406'; ctx.beginPath(); ctx.arc(x + dir * S * .25, cy, er * 1.15, 0, TAU); ctx.fill();
+        const g = ctx.createRadialGradient(x + dir * S * .25, cy, 0, x + dir * S * .25, cy, er); g.addColorStop(0, '#fff'); g.addColorStop(.45, pal.eye); g.addColorStop(1, shade(pal.eye, -.5));
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x + dir * S * .25, cy, er, 0, TAU); ctx.fill();
+        ctx.fillStyle = '#100'; ctx.beginPath(); ctx.ellipse(x + dir * S * .4, cy, er * .18, er * .7, 0, 0, TAU); ctx.fill();
+      } else srpEyes(x + dir * S * .45, cy - S * .1, 3, S * .4, pal.eye, u.seed);
+      if (strike) { ctx.fillStyle = '#2a0408'; ctx.beginPath(); ctx.ellipse(x + dir * S * .6, cy + S * .2, S * .2, S * .2 * strike + 1, 0, 0, TAU); ctx.fill(); }
+      break;
+    }
+    case 'blob': case 'nexus': {
+      if (sp.plan === 'nexus') {
+        const st = srpStage(u), H = S * (1.8 + st * .5), cyN = gy - H;
+        // 根
+        ctx.strokeStyle = shade(pal.skinD, -.1); ctx.lineCap = 'round';
+        const rd = srand(u.seed || 9);
+        for (let i = 0; i < 6 + st * 2; i++) { const a = rd() * TAU, L = S * (1 + rd() * (1 + st * .6)); ctx.lineWidth = S * .18; ctx.beginPath(); ctx.moveTo(x, gy); ctx.quadraticCurveTo(x + Math.cos(a) * L * .5, gy + Math.sin(a) * L * .25 - S * .2, x + Math.cos(a) * L, gy + Math.sin(a) * L * .45); ctx.stroke(); }
+        // 幹
+        ctx.fillStyle = shade(skin, -.1); ctx.beginPath(); ctx.moveTo(x - S * .6, gy); ctx.quadraticCurveTo(x - S * .3 + Math.sin(T) * S * .1, gy - H * .5, x - S * .35, cyN); ctx.lineTo(x + S * .35, cyN); ctx.quadraticCurveTo(x + S * .3 + Math.sin(T) * S * .1, gy - H * .5, x + S * .6, gy); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = shade(pal.skinD, -.3); ctx.lineWidth = 1; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(x - S * .3 + i * S * .2, gy - S * .1); ctx.lineTo(x - S * .2 + i * S * .13, cyN + S * .3); ctx.stroke(); }
+        srpLumps(x, gy - H * .35, S * .6, 3 + st, pal, u.seed, T, .08);
+        const pulse = 1 + Math.sin(T * (2 + st * .5)) * .08;
+        if (sp.nexus === 'beckon') {
+          for (let i = 0; i < 4 + st * 2; i++) srpTendril(x, cyN, S * (1.2 + st * .3), -Math.PI / 2 + (i - (2 + st)) * .35, S * .16, shade(skin, -.05), T, i);
+          blob(x, cyN - S * .3, S * .85 * pulse, S * .75 * pulse, skin, 'rgba(255,200,200,.25)');
+          ctx.globalAlpha *= .5; const g = ctx.createRadialGradient(x, cyN - S * .3, 0, x, cyN - S * .3, S * 2.2); g.addColorStop(0, 'rgba(255,60,60,.5)'); g.addColorStop(1, 'rgba(255,60,60,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, cyN - S * .3, S * 2.2, 0, TAU); ctx.fill(); ctx.globalAlpha /= .5;
+          srpEyes(x, cyN - S * .35, 2 + st, S * .7, pal.eye, u.seed);
+        } else if (sp.nexus === 'dispatcher') {
+          const a = u.faceA || 0, mx = x + Math.cos(a) * S * .9, my = cyN - S * .2 + Math.sin(a) * S * .3;
+          blob(x, cyN, S * .8 * pulse, S * .7, skin, 'rgba(255,200,200,.2)');
+          ctx.strokeStyle = shade(skin, -.2); ctx.lineWidth = S * .55; ctx.beginPath(); ctx.moveTo(x, cyN); ctx.lineTo(mx, my); ctx.stroke();
+          ctx.fillStyle = '#1a0406'; ctx.beginPath(); ctx.ellipse(mx, my, S * .3 * (1 + strike * .5), S * .3 * (1 + strike * .5), 0, 0, TAU); ctx.fill();
+          ctx.fillStyle = pal.acc; for (let i = 0; i < 6; i++) { const b = i * TAU / 6; ctx.fillRect(mx + Math.cos(b) * S * .3 - .6, my + Math.sin(b) * S * .3 - .6, 1.2, 1.2); }
+          srpEyes(x - S * .1, cyN - S * .35, 1 + st, S * .5, pal.eye, u.seed);
+        } else { // rooter
+          for (let i = 0; i < 5 + st; i++) { const a = -Math.PI / 2 + (i - (2.5 + st / 2)) * .45; const tip = srpTendril(x, cyN, S * (1.3 + st * .35), a, S * .22, shade(pal.skinD, .05), T * .5, i); blob(tip.x, tip.y, S * .22, S * .2, '#c83040'); }
+          blob(x, cyN, S * .65 * pulse, S * .55, skin);
+          srpEyes(x, cyN, st, S * .45, pal.eye, u.seed);
+        }
+        // Stage 表示
+        ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(x - 9, gy + 3, 18, 8);
+        ctx.fillStyle = '#f0d060'; ctx.font = 'bold 7px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(SRP_ROMAN[st - 1], x, gy + 9.5);
+        break;
+      }
+      const puls = 1 + Math.sin(T * 3) * .06, cy = gy - S * .6;
+      ctx.fillStyle = 'rgba(0,0,0,.2)'; ctx.beginPath(); ctx.ellipse(x, gy, S * 1.1, S * .35, 0, 0, TAU); ctx.fill();
+      for (let i = 0; i < (sp.limbs || 0); i++) {
+        const side = i % 2 ? 1 : -1, a = (side > 0 ? 0 : Math.PI) + (mv ? Math.sin(ph + i) * .4 : 0) + (strike && i === 0 ? -1.2 * dir : 0);
+        const tip = srpTendril(x + side * S * .4, cy, S * (.9 + (i >> 1) * .3) * (1 + strike * .5), a + .6 * side, S * .28, shade(skin, -.12), T, i);
+        ctx.fillStyle = pal.acc; ctx.beginPath(); ctx.arc(tip.x, tip.y, S * .1, 0, TAU); ctx.fill();
+      }
+      blob(x, cy + (mv ? Math.sin(ph * 2) * S * .06 : 0), S * .95 * puls, S * .75 / puls, skin, 'rgba(255,220,220,.18)');
+      srpLumps(x, cy - S * .1, S * .8, sp.lumps || 5, pal, u.seed, T, .1);
+      if (sp.cross) { ctx.strokeStyle = pal.acc; ctx.lineWidth = S * .2; ctx.beginPath(); ctx.moveTo(x, cy + S * .4); ctx.lineTo(x, cy - S * 1.4); ctx.moveTo(x - S * .6, cy - S * .9); ctx.lineTo(x + S * .6, cy - S * .9); ctx.stroke(); }
+      if (sp.ears) for (const sd of [-1, 1]) blob(x + sd * S * .6, cy - S * .6, S * .25, S * .45, shade(skin, .15));
+      if (sp.pores) { ctx.fillStyle = '#2a0408'; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.arc(x + (i - 2) * S * .3, cy - S * .2 + (i % 2) * S * .3, S * .08, 0, TAU); ctx.fill(); } }
+      srpEyes(x + dir * S * .3, cy - S * .25, Math.max(2, (sp.lumps || 5) >> 1), S * .55, pal.eye, u.seed, Math.sin(T * 1.7) > .95);
+      if (strike) { ctx.fillStyle = '#2a0408'; ctx.beginPath(); ctx.ellipse(x + dir * S * .5, cy + S * .1, S * .3, S * .25 * strike, 0, 0, TAU); ctx.fill(); ctx.fillStyle = pal.acc; for (let i = 0; i < 4; i++) ctx.fillRect(x + dir * S * (.35 + i * .08), cy + S * .1 - S * .25 * strike, 1, 2); }
+      break;
+    }
+    case 'spider': case 'maw': case 'ball': case 'titan': {
+      const big = sp.plan === 'titan';
+      const L = sp.legs || (sp.plan === 'spider' ? 8 : 4);
+      const bob = mv ? Math.abs(Math.sin(ph)) * S * .06 : Math.sin(T * 1.6) * S * .03;
+      const cy = gy - S * (sp.plan === 'ball' ? .9 : big ? 1.5 : 1.15) - bob;
+      ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(x, gy, S * 1.3, S * .4, 0, 0, TAU); ctx.fill();
+      if (sp.plan === 'ball') {
+        const rot = (u.state === 'attack' && u.atk && u.atk.def.type === 'dash') ? T * 18 * dir : (u.gait || 0) * .6 * dir;
+        blob(x, cy, S * .95, S * .9, pal.skin, 'rgba(255,255,230,.25)');
+        ctx.strokeStyle = shade(pal.skin, -.35); ctx.lineWidth = S * .08;
+        for (let i = 0; i < 5; i++) { const a = rot + i * TAU / 5; ctx.beginPath(); ctx.moveTo(x + Math.cos(a) * S * .9, cy + Math.sin(a) * S * .85); ctx.lineTo(x + Math.cos(a + 1.2) * S * .3, cy + Math.sin(a + 1.2) * S * .3); ctx.stroke(); }
+        ctx.fillStyle = pal.acc; for (let i = 0; i < 8; i++) { const a = rot + i * TAU / 8; ctx.beginPath(); ctx.moveTo(x + Math.cos(a - .12) * S * .9, cy + Math.sin(a - .12) * S * .85); ctx.lineTo(x + Math.cos(a) * S * 1.3, cy + Math.sin(a) * S * 1.2); ctx.lineTo(x + Math.cos(a + .12) * S * .9, cy + Math.sin(a + .12) * S * .85); ctx.fill(); }
+        blob(x + dir * S * .2, cy, S * .35, S * .3, '#5a0a18'); srpEyes(x + dir * S * .25, cy - S * .05, 2, S * .3, pal.eye, u.seed);
+        break;
+      }
+      // 脚
+      ctx.lineCap = 'round';
+      for (let pass = 0; pass < 2; pass++) for (let i = 0; i < L; i++) {
+        if ((i % 2) !== pass) continue;
+        const side = i % 2 ? 1 : -1, k = Math.floor(i / 2), n = L / 2;
+        const hx = x + dir * (k - (n - 1) / 2) * S * (sp.plan === 'spider' ? .45 : .7), hy = cy + S * .15;
+        const sw = mv ? Math.sin(ph + i * 1.7) * S * .35 : 0;
+        const kx = hx + dir * (sw + (k - (n - 1) / 2) * S * .35) , ky = cy - S * (sp.plan === 'spider' ? .8 : .1) + side * S * .1;
+        const fx2 = kx + dir * sw * .5 + dir * (k - (n - 1) / 2) * S * .3, fy = gy + (side > 0 ? S * .12 : -S * .08);
+        ctx.strokeStyle = pass ? shade(pal.skinD, .05) : shade(pal.skinD, -.25);
+        ctx.lineWidth = S * (sp.plan === 'spider' ? .13 : big ? .32 : .26); ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(kx, ky); ctx.stroke();
+        ctx.lineWidth *= .7; ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(fx2, fy); ctx.stroke();
+        if (big || sp.spikes) { ctx.fillStyle = pal.acc; ctx.beginPath(); ctx.moveTo(kx - S * .06, ky); ctx.lineTo(kx, ky - S * .35); ctx.lineTo(kx + S * .06, ky); ctx.fill(); }
+      }
+      // 胴
+      const bw = S * (sp.plan === 'spider' ? .8 : big ? 1.35 : 1.05), bh = S * (sp.plan === 'spider' ? .6 : big ? .95 : .75);
+      if (sp.plan === 'spider') blob(x - dir * S * .75, cy - S * .15, S * .75, S * .6, shade(pal.skin, -.1), 'rgba(255,220,220,.15)');
+      blob(x, cy, bw, bh, pal.skin, 'rgba(255,220,220,.18)');
+      srpLumps(x - dir * S * .2, cy - bh * .4, bw * .6, big ? 9 : 5, pal, u.seed, T);
+      if (big || sp.spikes) { ctx.fillStyle = pal.acc; ctx.strokeStyle = shade(pal.acc, -.4); ctx.lineWidth = 1; for (let i = 0; i < (big ? 9 : 5); i++) { const sx = x - dir * (i - 3) * S * .25; ctx.beginPath(); ctx.moveTo(sx - S * .1, cy - bh * .8); ctx.lineTo(sx - dir * S * .15, cy - bh * .8 - S * (.5 + (i % 3) * .2)); ctx.lineTo(sx + S * .1, cy - bh * .8); ctx.fill(); ctx.stroke(); } }
+      if (big) for (let i = 0; i < 6; i++) srpTendril(x - dir * S * .6, cy - bh * .5, S * (1.2 + (i % 3) * .5), -Math.PI / 2 - dir * (.6 + i * .25), S * .2, shade(pal.skin, -.1), T, i);
+      // 頭と顎
+      const jawO = (sp.plan === 'maw' || big ? .35 : .2) + strike * (sp.plan === 'maw' || big ? 1 : .6);
+      const hx = x + dir * bw * .9, hy = cy - S * .05 - strike * S * .1;
+      const hr = S * (sp.plan === 'maw' ? .75 : big ? .8 : .45);
+      ctx.fillStyle = shade(pal.skin, .08);
+      ctx.beginPath(); ctx.moveTo(hx - dir * hr * .6, hy); ctx.lineTo(hx + dir * hr * 1.1, hy - hr * jawO); ctx.lineTo(hx + dir * hr * .9, hy - hr * .8); ctx.lineTo(hx - dir * hr * .4, hy - hr * .7); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(hx - dir * hr * .6, hy); ctx.lineTo(hx + dir * hr * 1.1, hy + hr * jawO * .8); ctx.lineTo(hx + dir * hr * .9, hy + hr * .55); ctx.lineTo(hx - dir * hr * .4, hy + hr * .5); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#2a0408'; ctx.beginPath(); ctx.moveTo(hx - dir * hr * .4, hy); ctx.lineTo(hx + dir * hr * 1.05, hy - hr * jawO * .9); ctx.lineTo(hx + dir * hr * 1.05, hy + hr * jawO * .7); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = pal.acc; for (let i = 0; i < 6; i++) { const f = .1 + i * .15; ctx.beginPath(); ctx.moveTo(hx + dir * hr * f, hy - hr * jawO * f * .85); ctx.lineTo(hx + dir * hr * (f + .05), hy - hr * jawO * f * .85 + hr * .22); ctx.lineTo(hx + dir * hr * (f + .1), hy - hr * jawO * f * .85); ctx.fill(); ctx.beginPath(); ctx.moveTo(hx + dir * hr * f, hy + hr * jawO * f * .7); ctx.lineTo(hx + dir * hr * (f + .05), hy + hr * jawO * f * .7 - hr * .2); ctx.lineTo(hx + dir * hr * (f + .1), hy + hr * jawO * f * .7); ctx.fill(); }
+      srpEyes(hx - dir * hr * .1, hy - hr * .55, big ? 6 : sp.plan === 'spider' ? 6 : 3, hr * .9, pal.eye, u.seed);
+      break;
+    }
+    case 'worm': {
+      const N = sp.segs || 5, bob = Math.sin(T * 3);
+      const rise = u.state === 'attack' ? strike : 0;
+      let px = x - dir * N * S * .45, py = gy - S * .4;
+      for (let i = 0; i < N; i++) {
+        const f = i / (N - 1), sx = x - dir * (N - 1 - i) * S * .42 + (mv ? 0 : 0), sy = gy - S * .45 - Math.sin(ph + i * .9) * S * .15 - (i === N - 1 ? rise * S * 1.4 : i === N - 2 ? rise * S * .6 : 0);
+        const rr = S * (.35 + f * .3);
+        blob(sx, sy, rr, rr * .85, i % 2 ? pal.skin : shade(pal.skin, -.1), 'rgba(255,255,220,.15)');
+        ctx.fillStyle = pal.acc; ctx.beginPath(); ctx.moveTo(sx - rr * .2, sy - rr * .7); ctx.lineTo(sx, sy - rr * 1.2); ctx.lineTo(sx + rr * .2, sy - rr * .7); ctx.fill();
+        px = sx; py = sy;
+      }
+      const o = .5 + strike;
+      ctx.fillStyle = '#2a0408'; ctx.beginPath(); ctx.arc(px + dir * S * .35, py, S * .32 * o, 0, TAU); ctx.fill();
+      ctx.fillStyle = pal.acc; for (let i = 0; i < 8; i++) { const a = i * TAU / 8; ctx.fillRect(px + dir * S * .35 + Math.cos(a) * S * .3 * o - .7, py + Math.sin(a) * S * .3 * o - .7, 1.4, 1.4); }
+      if (sp.burrow && u.state !== 'attack') { ctx.fillStyle = 'rgba(90,70,40,.5)'; ctx.beginPath(); ctx.ellipse(x - dir * N * S * .45, gy, S * .5, S * .2, 0, 0, TAU); ctx.fill(); }
+      break;
+    }
+    case 'blaze': {
+      const cy = gy - S * 1.6 + Math.sin(T * 2) * S * .15;
+      for (let i = 0; i < 8; i++) { const a = T * 2 + i * TAU / 8, rr = i % 2 ? S * .9 : S * .6; const rx = x + Math.cos(a) * rr, ry = cy + S * .5 + Math.sin(a) * rr * .35; ctx.fillStyle = i % 3 ? '#e8a020' : '#8a2a2e'; ctx.fillRect(rx - S * .1, ry - S * .45, S * .2, S * .9); }
+      blob(x, cy - S * .2, S * .5, S * .5, '#e8b030');
+      srpLumps(x, cy - S * .1, S * .5, 4, pal, u.seed, T);
+      srpEyes(x + dir * S * .15, cy - S * .25, 3, S * .35, '#ffe060', u.seed);
+      if (rchance(.2) && !dead) addPart({ k: 'fire', x: x + rnd(-6, 6), y: u.y, z: S * 1.4, vx: rnd(-5, 5), vy: 0, vz: rnd(10, 20), life: .5, t: 0, s: rnd(1.5, 3), col: '#f08020' });
+      break;
+    }
+    case 'overlord': {
+      const hov = S * 2.2 + Math.sin(T * 1.2) * S * .2, cy = gy - hov;
+      ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(x, gy, S * 1.6, S * .5, 0, 0, TAU); ctx.fill();
+      for (let i = 0; i < (sp.tend || 8); i++) { const a = Math.PI / 2 + (i - (sp.tend - 1) / 2) * .28; const tip = srpTendril(x + Math.cos(a) * S * .5, cy + S * .5, S * (2 + (i % 3) * .6) * (1 + strike * .4), a, S * .22, shade(pal.skin, -.1), T, i); blob(tip.x, tip.y, S * .12, S * .12, pal.acc); }
+      ctx.globalAlpha *= .45; const g = ctx.createRadialGradient(x, cy, 0, x, cy, S * 2.4); g.addColorStop(0, 'rgba(220,80,255,.5)'); g.addColorStop(1, 'rgba(220,80,255,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, cy, S * 2.4, 0, TAU); ctx.fill(); ctx.globalAlpha /= .45;
+      blob(x, cy, S * 1.3, S * .95, pal.skin, 'rgba(255,220,255,.2)');
+      srpLumps(x, cy - S * .4, S * 1, 10, pal, u.seed, T, .08);
+      ctx.fillStyle = pal.acc; for (let i = 0; i < 7; i++) { const sx = x + (i - 3) * S * .35; ctx.beginPath(); ctx.moveTo(sx - S * .1, cy - S * .8); ctx.lineTo(sx, cy - S * (1.4 + (3 - Math.abs(i - 3)) * .2)); ctx.lineTo(sx + S * .1, cy - S * .8); ctx.fill(); }
+      const er = S * .5; ctx.fillStyle = '#1a0406'; ctx.beginPath(); ctx.arc(x + dir * S * .3, cy, er * 1.2, 0, TAU); ctx.fill();
+      const g2 = ctx.createRadialGradient(x + dir * S * .3, cy, 0, x + dir * S * .3, cy, er); g2.addColorStop(0, '#fff'); g2.addColorStop(.4, pal.eye); g2.addColorStop(1, '#400'); ctx.fillStyle = g2; ctx.beginPath(); ctx.arc(x + dir * S * .3, cy, er, 0, TAU); ctx.fill();
+      ctx.fillStyle = '#000'; ctx.beginPath(); ctx.ellipse(x + dir * S * .42, cy, er * .15, er * .7, 0, 0, TAU); ctx.fill();
+      srpEyes(x - dir * S * .5, cy - S * .3, 6, S * .8, '#f0d040', u.seed);
+      break;
+    }
+  }
+  if (u.adaptFx > 0) { ctx.globalAlpha = Math.min(1, u.adaptFx * 1.6); ctx.strokeStyle = '#f0d060'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(x, gy - S * .8, S * 1.1, S * .9, 0, 0, TAU); ctx.stroke(); }
+  ctx.restore();
+}
+
+/* ══════════════════════════════════════════════════════════
    Part 12: UI — 入力 / カメラ / パネル / ミニマップ / 詳細 / ループ
    ══════════════════════════════════════════════════════════ */
 /* ── 原作準拠の外見補正 (髪・顔・装飾) ── */
@@ -13883,8 +14619,8 @@ function ensureFacDock() {
 }
 function layoutPanels() {
   const dock = ensureFacDock();
-  const ids = ['panelT','panelX','panelD','panelH','panelG','panelC','panelW','panelA','panelS','panelJ','panelF','panelK','panelM','panelY','panelQ','panelB','panelP','panelR','panelI','panel3','panel4','panelU','panelL','panelO','panelV','panelE','panel5','panel6','panel8','panel0','panelJk','panelHg','panelPg','panelBk','panelNt','panelMp','panelMz','panelGd','panelSp','panelPv','preyPanel'];
-  const borders = { panelT:'#d43a3a', panelX:'#3fd6b0', panelD:'#a98fd0', panelH:'#c07830', panelG:'#6fa83a', panelC:'#c8963a', panelW:'#e8e8f2', panelA:'#c8a24a', panelS:'#c45a5a', panelJ:'#e8e8e8', panelF:'#888', panelK:'#e8c040', panelM:'#4ad0e8', panelY:'#e8c040', panelQ:'#c83028', panelB:'#40c0e8', panelP:'#e8c040', panelR:'#8a3030', panelI:'#e8e4dc', panelU:'#888', panelL:'#444', panelO:'#5cb85c', preyPanel:'#c8b070' };
+  const ids = ['panelT','panelX','panelD','panelH','panelG','panelC','panelW','panelA','panelS','panelJ','panelF','panelK','panelM','panelY','panelQ','panelB','panelP','panelR','panelI','panel3','panel4','panelU','panelL','panelO','panelV','panelE','panel5','panel6','panel8','panel0','panelJk','panelHg','panelPg','panelBk','panelNt','panelMp','panelMz','panelGd','panelSp','panelPv','panelSrp','preyPanel'];
+  const borders = { panelT:'#d43a3a', panelSrp:'#d04050', panelX:'#3fd6b0', panelD:'#a98fd0', panelH:'#c07830', panelG:'#6fa83a', panelC:'#c8963a', panelW:'#e8e8f2', panelA:'#c8a24a', panelS:'#c45a5a', panelJ:'#e8e8e8', panelF:'#888', panelK:'#e8c040', panelM:'#4ad0e8', panelY:'#e8c040', panelQ:'#c83028', panelB:'#40c0e8', panelP:'#e8c040', panelR:'#8a3030', panelI:'#e8e4dc', panelU:'#888', panelL:'#444', panelO:'#5cb85c', preyPanel:'#c8b070' };
   for (const id of ids) {
     const el = $(id); if (!el) continue;
     if (el.parentElement !== dock) dock.appendChild(el);
@@ -14048,6 +14784,7 @@ function updatePanels() {
     ['mz', 'panelMz', '🧟 MCゾンビ', '#6a8a58', ['mzombie','husk','drowned','mutZombie','mutHusk']],
     ['gd', 'panelGd', '🐡 ガーディアン', '#5a8a88', ['guardian','elderG']],
     ['sp', 'panelSp', '🕷️ スパイダー', '#8a4040', ['spider','spWar','spCave','spSpit','spNurse','spHang','spQueen','spDepth']],
+    ['srp', 'panelSrp', '☣️ SRP寄生体', '#d04050', SRP_ORDER],
     ['pv', 'panelPv', '🧟‍♂️ ゾンボス', '#6aaa50', ['pvZomboss','pvZombie','pvCone','pvBucket','pvPole','pvPaper','pvScreen','pvFoot','pvCatapult','pvJack','pvZomboni','pvGarg','pvBungee']],
   ];
   for (const [fac, id, title, col, order] of extraFac) {
@@ -14056,7 +14793,7 @@ function updatePanels() {
     if (!el) { el = document.createElement('div'); el.id = id; el.className = 'fpanel clickable'; document.getElementById('ui').appendChild(el); }
     const st = G.stats[fac] || { kills: 0 };
     el.innerHTML = `<h3>${title} <span class="tot" style="color:${col};font-size:14px">${n2}</span></h3>
-      <div class="substat"><span>撃破 ${st.kills}</span></div>
+      <div class="substat"><span>撃破 ${st.kills}</span>${fac === 'srp' ? `<span>フェーズ ${G.srpPhase || 0}</span>` : ''}</div>${fac === 'srp' ? srpPanelInfo() : ''}
       <div>${order.map(k => { const sp = SP[k]; if (!sp) return ''; const n = counts[k] || 0; return `<div class="urow${n ? '' : ' deadrow'}"><span class="ic">${sp.ic}</span><span class="nm">${sp.name}</span><span class="ct">${n ? '×' + n : '—'}</span></div>`; }).join('')}</div>`;
   }
   layoutPanels();
@@ -14122,6 +14859,14 @@ function updateInspector() {
   if (u.biled > 0) tags.push(`<span class="tag hot" style="background:#3a4a1a;color:#b8e86a">💚 胆汁 (群れが殺到)</span>`);
   if (u.key === 'witch') tags.push(`<span class="tag${u.witchRage ? ' hot' : ''}">${u.witchRage ? '😈 激怒中' : '😭 泣いている (未刺激)'}</span>`);
   if (u.gest >= 0) tags.push(`<span class="tag evo">懐胎 ${Math.round(u.gest * 100)}%</span>`);
+  if (u.coth > 0) tags.push(`<span class="tag hot" style="background:#4a1020;color:#ff8090">☣️ COTH 感染 ${Math.round(u.coth * 100)}%</span>`);
+  if (u.fac === 'srp') {
+    const tr = SRP_TIER[u.sp.srp]; if (tr) tags.push(`<span class="tag evo">${tr.jp}</span>`);
+    if (u.sp.nexus) tags.push(`<span class="tag evo">Stage ${SRP_ROMAN[srpStage(u) - 1]}</span>`);
+    if (u.sp.evo && u.srpEvoT != null) tags.push(`<span class="tag evo">進化まで ${Math.max(0, Math.round(u.srpEvoT))}s</span>`);
+    const ads = Object.keys(Object.assign({}, G.srpAdapt || {}, u.adapt || {})).map(k => [k, srpAdaptOf(u, k)]).filter(a => a[1] >= .05).sort((a, b) => b[1] - a[1]).slice(0, 3);
+    for (const [k, v] of ads) tags.push(`<span class="tag" style="background:#4a3a10;color:#f0d060">🧬 ${k} -${Math.round(v * 100)}%</span>`);
+  }
   if (u.kills > 0) tags.push(`<span class="tag">撃破 ${u.kills}</span>`);
   if (u.inv && (u.inv.food || u.inv.drink)) tags.push(`<span class="tag">🎒 ${u.inv.food ? '🥫×' + u.inv.food : ''}${u.inv.drink ? ' 💧×' + u.inv.drink : ''}${(u.invT && (u.invT.food || u.invT.drink)) ? ' ⚠' : ''}</span>`);
   if (u.key === 'daqueen') tags.push(`<span class="tag">基質 ${u.bio || 0}/3</span>`);
@@ -14172,7 +14917,7 @@ function drawMini() {
     for (const u of G.units) {
       if (u.gone) continue;
       let col = '#c8b070';
-      if (u.fac === 'T') col = '#e05555'; else if (u.fac === 'X') col = '#3fd6b0'; else if (u.fac === 'D') col = '#c9a7ff'; else if (u.fac === 'H') col = '#ff9e2a'; else if (u.fac === 'G') col = '#7ec84a'; else if (u.fac === 'C') col = '#d8a04a'; else if (u.fac === 'W') col = '#f0ecf8'; else if (u.fac === 'A') col = '#e0c05a'; else if (u.fac === 'S') col = '#c45a5a'; else if (u.fac === 'J') col = '#eee'; else if (u.fac === 'F') col = '#888'; else if (u.fac === 'K') col = '#e8c040'; else if (u.fac === 'M') col = '#4ad0e8';
+      if (u.fac === 'srp') col = '#ff4060'; else if (u.fac === 'T') col = '#e05555'; else if (u.fac === 'X') col = '#3fd6b0'; else if (u.fac === 'D') col = '#c9a7ff'; else if (u.fac === 'H') col = '#ff9e2a'; else if (u.fac === 'G') col = '#7ec84a'; else if (u.fac === 'C') col = '#d8a04a'; else if (u.fac === 'W') col = '#f0ecf8'; else if (u.fac === 'A') col = '#e0c05a'; else if (u.fac === 'S') col = '#c45a5a'; else if (u.fac === 'J') col = '#eee'; else if (u.fac === 'F') col = '#888'; else if (u.fac === 'K') col = '#e8c040'; else if (u.fac === 'M') col = '#4ad0e8';
       dot(u.x, u.y, col, u.mhp >= 200 ? 4 : 2.4);
     }
     // ビューポート
