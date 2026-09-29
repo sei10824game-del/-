@@ -174,6 +174,47 @@ kbd{background:#222;border:1px solid #444;border-radius:4px;padding:0 5px;font-s
   .bigbtn{margin-top:10px;padding:10px}
   .statgrid{font-size:10.5px;gap:3px 8px}
 }
+
+/* ─── 開始画面: 陣営の選択 ─── */
+#startOv .card{width:min(780px,94vw)}
+.card p.lead{text-align:center;max-width:60ch;margin:0 auto 14px}
+.fhead{display:flex;justify-content:space-between;align-items:baseline;margin:10px 0 6px}
+.fhead .lbl{color:#e8c98a;font-weight:800;font-size:13px;letter-spacing:.08em}
+.fcount{color:var(--dim);font-size:12px;font-variant-numeric:tabular-nums}
+.fpresets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.fpresets button{pointer-events:auto;cursor:pointer;background:rgba(255,255,255,.04);border:1px solid var(--panelB);color:#cfc7b8;border-radius:999px;padding:4px 12px;font-size:11.5px;font-weight:700;font-family:inherit}
+.fpresets button:hover{background:rgba(255,255,255,.1)}
+#facPick,#facPick *,.fpresets button,#endStats .rank{pointer-events:auto!important}
+#facPick{max-height:36vh;overflow-y:auto;padding:10px;border:1px solid var(--panelB);border-radius:10px;background:rgba(0,0,0,.25);display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px 14px;align-items:start;scrollbar-width:thin}
+.fgrp{min-width:0}
+.fgn{color:var(--dim);font-size:10.5px;letter-spacing:.08em;margin-bottom:5px}
+.fchips{display:flex;flex-wrap:wrap;gap:5px;min-width:0}
+.fchip{pointer-events:auto;cursor:pointer;display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);color:#8a8478;border-radius:7px;padding:4px 9px 4px 7px;font-size:12px;font-family:inherit;transition:.12s}
+.fchip .fi{filter:grayscale(1) opacity(.55)}
+.fchip:hover{border-color:rgba(255,255,255,.2)}
+.fchip.on{color:#f0e8da;border-color:var(--fc);background:linear-gradient(90deg,color-mix(in srgb,var(--fc) 22%,transparent),rgba(255,255,255,.02));box-shadow:inset 3px 0 0 var(--fc)}
+.fchip.on .fi{filter:none}
+.fchip:focus-visible,.fpresets button:focus-visible,.bigbtn:focus-visible{outline:2px solid #e8c98a;outline-offset:2px}
+.fwarn{min-height:16px;margin-top:10px;text-align:center;font-size:11.5px;color:#e0a060}
+.bigbtn:disabled{filter:grayscale(1) brightness(.6);cursor:not-allowed;transform:none}
+@media(max-width:560px){#facPick{grid-template-columns:1fr}}
+/* ─── 結果画面: ランキング ─── */
+#endOv .card{width:min(640px,94vw)}
+#endStats.ranked{display:block}
+.endbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}.endbtns .bigbtn{margin-top:14px;font-size:14px;letter-spacing:.12em}.bigbtn.alt{background:rgba(255,255,255,.06);border-color:var(--panelB)}
+@media(max-width:560px){.endbtns{grid-template-columns:1fr}}
+.endmeta{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;color:var(--dim);font-size:12px;margin:6px 0 12px}
+.endmeta b{color:#e8dfcc;font-variant-numeric:tabular-nums}
+.rank{display:grid;grid-template-columns:28px minmax(0,1fr) 56px 56px 96px;gap:4px 10px;font-size:12.5px;max-height:48vh;overflow-y:auto;padding-right:4px}
+.rank .rh{color:var(--dim);font-size:10.5px;letter-spacing:.08em;border-bottom:1px solid var(--panelB);padding-bottom:4px}
+.rank .r{text-align:right;font-variant-numeric:tabular-nums}
+.rank .rn{color:var(--dim);font-variant-numeric:tabular-nums}
+.rank .rf{display:flex;align-items:center;gap:6px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank .dot{width:8px;height:8px;border-radius:50%;flex:none}
+.rank .alive{color:#9ad870;font-weight:800}.rank .dead{color:#8a7a70}
+/* ─── HUD: 全滅した陣営 ─── */
+#facDock .fpanel.elim{opacity:.42}
+#facDock .fpanel.elim h3{text-decoration:line-through;text-decoration-color:rgba(255,255,255,.35)}
 </style>
 </head>
 <body>
@@ -233,20 +274,20 @@ kbd{background:#222;border:1px solid #444;border-radius:4px;padding:0 5px;font-s
   <div class="ov" id="startOv">
     <div class="card">
       <h1>洋 館 の 黙 示 録</h1>
-      <div class="subtitle">XENOMORPH × T-VIRUS — 交叉実験記録 —</div>
-      <p>旧洋館に<b>8つの血統</b>を同時投入する。<br>
-      <b style="color:#e07a7a">t-ウイルス陣営</b>は獲物を<b>感染</b>させ、
-      <b style="color:#7adfc4">ゼノモーフ陣営</b>は<b>捕獲・寄生</b>で巣を拡大する。<br>
-      僻室では<b style="color:#ff9e2a">リバイブド</b>が頭蓋を苗床に変え、<b style="color:#c9a7ff">盲目の狩人</b>が音を聞き、
-      <b style="color:#9ad84a">グリーン・フルー</b>が感染者の群れを膨らませる。<br>
-      館の奥では<b style="color:#d8a04a">冬虫夏草</b>が死者を菌糸の庭に変え、時間をかけて<b>進化</b>していく。<br>
-      白い巣では<b style="color:#f0ecf8">ホワイトスパイク</b>の女王が卵を孵し、床は<b style="color:#e0c05a">アントライオン</b>の巣穴に食い破られていく。<br>館の中央に放たれた<b>人間と動物</b>は、逃げることしかできない。最後に生き残るのはどの血統か——。</p>
+      <div class="subtitle">HORROR FACTION WAR — 交叉実験記録</div>
+      <p class="lead">旧洋館に、選んだ血統を同時に放つ。感染・寄生・捕食で数を増やし、<b>最後に残った陣営</b>が館を支配する。あなたは観測者として、その一部始終を見届ける。</p>
+      <div class="fhead"><span class="lbl">参戦する陣営</span><span id="facCount" class="fcount"></span></div>
+      <div class="fpresets" id="facPresets"><button type="button" data-p="classic">定番8</button><button type="button" data-p="parasite">寄生・感染</button><button type="button" data-p="all">全陣営</button><button type="button" data-p="random">ランダム8</button><button type="button" data-p="none">解除</button></div>
+      <div id="facPick"></div>
       <div class="optrow"><span class="lbl">🏚 屋敷の規模</span>
         <div class="seg" id="segSize"><div data-v="s">小</div><div data-v="m" class="on">中</div><div data-v="l">大</div><div data-v="xl">特大</div><div data-v="xxl">超広大</div></div></div>
       <div class="optrow"><span class="lbl">🧍 放たれる獲物</span>
         <div class="seg" id="segPrey"><div data-v="l">少なめ</div><div data-v="m" class="on">標準</div><div data-v="h">多い</div></div></div>
+      <div class="optrow"><span class="lbl">✨ 画質</span>
+        <div class="seg" id="segQuality"><div data-v="high">高</div><div data-v="mid">標準</div><div data-v="low">軽量</div></div></div>
       <div class="optrow"><span class="lbl">🔊 効果音</span>
         <div class="seg" id="segSnd"><div data-v="1" class="on">ON</div><div data-v="0">OFF</div></div></div>
+      <div id="facWarn" class="fwarn"></div>
       <button class="bigbtn" id="btnStart">実　験　開　始</button>
     </div>
   </div>
@@ -256,7 +297,7 @@ kbd{background:#222;border:1px solid #444;border-radius:4px;padding:0 5px;font-s
       <div id="endTitle">—</div>
       <div class="subtitle" id="endSub">EXPERIMENT REPORT</div>
       <div class="statgrid" id="endStats"></div>
-      <button class="bigbtn" id="btnAgain">再 実 験</button>
+      <div class="endbtns"><button class="bigbtn" id="btnAgain">同じ陣営で再実験</button><button class="bigbtn alt" id="btnReselect">陣営を選び直す</button></div>
     </div>
   </div>
 
@@ -1211,6 +1252,7 @@ function explodeRocket(x, y, src) {
   }
 }
 function explodeNade(x, y, src) { // ゾンバイン死亡時のグレネード自爆
+  addFlash(x, y, 220, '255,190,110', 1, .45);
   addShake(9); Sfx.play('boom', x, y);
   addFire(x, y, 6, 10); addSmoke(x, y, 8, 8); addDust(x, y, 10, '#555');
   addDecal('scorch', x, y, 22); addShock(x, y, 8, 70, 'rgba(255,200,120,.6)');
@@ -1578,6 +1620,7 @@ function updateNoises(dt) {
 
 /* ── 卵 ── */
 function addEgg(x, y, fac) {
+  if (G.facOff && G.facOff[fac || 'X']) return null;
   if (fac === 'W') { // ホワイトスパイクの卵: 宿主不要で時間経過で孵化する
     if (G.eggs.filter(e => e.fac === 'W' && e.st !== 'open').length >= 10) return null;
   } else {
@@ -1681,6 +1724,7 @@ function addQuicksand(x, y, r, t) {
   (G.quicks = G.quicks || []).push({ x, y, r: r || 46, t: t || 6 });
 }
 function addLog(msg, cls) {
+  { const f = logFac(cls); if (f && G.facOff && G.facOff[f]) return; }
   const box = typeof document !== 'undefined' ? document.getElementById('logBox') : null;
   if (box) {
     const d = document.createElement('div');
@@ -4518,8 +4562,9 @@ function bakeFloors() {
   for (let cy = 0; cy < m.hpx; cy += CH) {
     for (let cx = 0; cx < m.wpx; cx += CH) {
       const c = document.createElement('canvas');
-      c.width = Math.min(CH, m.wpx - cx); c.height = Math.min(CH, m.hpx - cy) * SQ + 4;
-      const g = c.getContext('2d');
+      const FS = G.floorScale || 1, cw = Math.min(CH, m.wpx - cx), chh = Math.min(CH, m.hpx - cy) * SQ + 4;
+      c.width = Math.ceil(cw * FS); c.height = Math.ceil(chh * FS);
+      const g = c.getContext('2d'); g.scale(FS, FS);
       const tx0 = Math.floor(cx / TILE), tx1 = Math.min(m.w - 1, Math.floor((cx + CH) / TILE));
       const ty0 = Math.floor(cy / TILE), ty1 = Math.min(m.h - 1, Math.floor((cy + CH) / TILE));
       for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) {
@@ -4543,6 +4588,7 @@ function bakeFloors() {
           g.strokeStyle = 'rgba(0,0,0,.18)'; g.lineWidth = 1;
           g.strokeRect(px + .5, py + .5, TILE, TILE * SQ);
         }
+        floorDetail(g, px, py, tx, ty, room ? room.type : 'corridor', hv);
         if (tt === 3) { g.fillStyle = 'rgba(90,70,40,.5)'; g.fillRect(px, py, TILE + 1, TILE * SQ + 1); }
         // 部屋ごとの絨毯（大広間の中央）
         if (room && room.type === 'hall' && Math.abs(tx - room.cx) < Math.min(4, (room.x1 - room.x0) / 3) && Math.abs(ty - room.cy) < Math.min(3, (room.y1 - room.y0) / 3)) {
@@ -4561,9 +4607,36 @@ function bakeFloors() {
           g.fillStyle = gr; g.fillRect(px, py, TILE * .4, TILE * SQ + 1);
         }
       }
-      floorChunks.push({ cv: c, wx: cx, wy: cy });
+      floorChunks.push({ cv: c, wx: cx, wy: cy, w: cw, h: chh });
     }
   }
+}
+
+
+/* 床の材質 (焼き込み時に一度だけ描く): 木目の床板 / 大理石 / タイル / 石 */
+function floorDetail(g, px, py, tx, ty, type, hv) {
+  const w = TILE + 1, h = TILE * SQ + 1, rd = srand(tx * 131 + ty * 977 + 7);
+  if (type === 'library' || type === 'study' || type === 'bedroom' || type === 'dining') { // 床板
+    for (let k = 0; k < 2; k++) {
+      const y0 = py + k * h / 2;
+      g.strokeStyle = 'rgba(0,0,0,.12)'; g.lineWidth = .5;
+      for (let j = 0; j < 3; j++) { const yy = y0 + 1.5 + j * 2.6 + rd() * 1.2; g.beginPath(); g.moveTo(px, yy); g.bezierCurveTo(px + w * .3, yy + (rd() - .5) * 1.6, px + w * .7, yy + (rd() - .5) * 1.6, px + w, yy); g.stroke(); }
+      if (rd() < .12) { g.fillStyle = 'rgba(30,15,5,.3)'; g.beginPath(); g.ellipse(px + rd() * w, y0 + h / 4, 1.6, .9, 0, 0, TAU); g.fill(); }
+      g.fillStyle = 'rgba(255,230,190,.035)'; g.fillRect(px, y0, w, 1);
+    }
+  } else if (type === 'hall' || type === 'gallery') { // 大理石の筋
+    g.strokeStyle = (tx + ty) % 2 ? 'rgba(255,245,230,.1)' : 'rgba(0,0,0,.12)'; g.lineWidth = .5;
+    let x = px + rd() * w, y = py; g.beginPath(); g.moveTo(x, y); for (let k = 0; k < 4; k++) { x += (rd() - .3) * 8; y += h / 4; g.lineTo(x, y); } g.stroke();
+    const gl = g.createLinearGradient(px, py, px + w, py + h); gl.addColorStop(0, 'rgba(255,255,255,.05)'); gl.addColorStop(.5, 'rgba(255,255,255,0)'); g.fillStyle = gl; g.fillRect(px, py, w, h);
+  } else if (type === 'lab' || type === 'bath' || type === 'kitchen') { // タイル
+    g.fillStyle = `rgba(${rd() < .5 ? '255,255,255' : '0,0,0'},${.02 + rd() * .05})`; g.fillRect(px + 1, py + 1, w - 2, h - 2);
+    g.fillStyle = 'rgba(255,255,255,.07)'; g.fillRect(px + 1.5, py + 1.5, w * .5, 1);
+    if (rd() < .08) { g.strokeStyle = 'rgba(0,0,0,.3)'; g.lineWidth = .5; g.beginPath(); g.moveTo(px + rd() * w, py); g.lineTo(px + rd() * w, py + h); g.stroke(); }
+  } else { // 石・コンクリート
+    for (let k = 0; k < 6; k++) { g.fillStyle = `rgba(${rd() < .5 ? '0,0,0' : '255,240,220'},${.04 + rd() * .06})`; g.fillRect(px + rd() * w, py + rd() * h, 1 + rd() * 2, 1 + rd()); }
+    if (hv > .9) { g.strokeStyle = 'rgba(0,0,0,.25)'; g.lineWidth = .6; g.beginPath(); g.moveTo(px + rd() * w, py + rd() * h); g.lineTo(px + rd() * w, py + rd() * h); g.stroke(); }
+  }
+  if (rd() < .05) { const r = 3 + rd() * 6, x = px + rd() * w, y = py + rd() * h; const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(20,10,0,.2)'); gr.addColorStop(1, 'rgba(20,10,0,0)'); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); }
 }
 
 /* ── メインレンダリング ── */
@@ -4581,22 +4654,33 @@ function render() {
   const vx0 = (0 - ox) / z - 60, vx1 = (W - ox) / z + 60;
   const vy0 = (0 - oy) / z - 80, vy1 = (H - oy) / z + 80;
 
+  G.frameLights = [];
   // 床チャンク
   for (const ch of floorChunks) {
-    if (ch.wx > vx1 || ch.wx + ch.cv.width < vx0 || ch.wy * SQ > vy1 || (ch.wy + 460) * SQ < vy0) continue;
-    ctx.drawImage(ch.cv, ch.wx, ch.wy * SQ);
+    if (ch.wx > vx1 || ch.wx + ch.w < vx0 || ch.wy * SQ > vy1 || (ch.wy + 460) * SQ < vy0) continue;
+    ctx.drawImage(ch.cv, ch.wx, ch.wy * SQ, ch.w, ch.h);
   }
   // デカール
-  if (decalCv) ctx.drawImage(decalCv, 0, 0, decalCv.width, decalCv.height, 0, 0, G.map.wpx, G.map.hpx * SQ);
+  if (decalCv) { // 画面内の範囲だけ転送する
+    const sx0 = clamp(vx0, 0, G.map.wpx), sy0 = clamp(vy0, 0, G.map.hpx * SQ), sx1 = clamp(vx1, 0, G.map.wpx), sy1 = clamp(vy1, 0, G.map.hpx * SQ);
+    if (sx1 > sx0 && sy1 > sy0) ctx.drawImage(decalCv, sx0 * DS, sy0 * DS, (sx1 - sx0) * DS, (sy1 - sy0) * DS, sx0, sy0, sx1 - sx0, sy1 - sy0);
+  }
   drawWaterTiles();
   drawBlights(); // フラッド/ネクロモーフに呑まれた部屋
 
   // 影
+  G.lod = z < (G.quality === 'low' ? .95 : .55); // ズームアウト時は人型を簡略描画
+  ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); // 地上の影は1パスにまとめて塗る
   for (const u of G.units) {
     if (u.gone || u.x < vx0 || u.x > vx1 || u.y * SQ < vy0 - 40 || u.y * SQ > vy1 + 40) continue;
-    drawShadow(u.x, u.y * SQ, u.r * 1.35, u.z);
+    if ((u.z || 0) > 2) continue;
+    const r = u.r * 1.35; ctx.moveTo(u.x + r, u.y * SQ); ctx.ellipse(u.x, u.y * SQ, r, r * .55, 0, 0, TAU);
   }
-  for (const c of G.corpses) { if (c.x > vx0 && c.x < vx1 && c.y * SQ > vy0 && c.y * SQ < vy1) drawShadow(c.x, c.y * SQ, 12 * (c.sizeMul || 1), 0, .32); }
+  ctx.fill();
+  for (const u of G.units) if (!u.gone && (u.z || 0) > 2 && u.x > vx0 && u.x < vx1) drawShadow(u.x, u.y * SQ, u.r * 1.35, u.z);
+  ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath();
+  for (const c of G.corpses) { if (c.x > vx0 && c.x < vx1 && c.y * SQ > vy0 && c.y * SQ < vy1) { const r = 12 * (c.sizeMul || 1); ctx.moveTo(c.x + r, c.y * SQ); ctx.ellipse(c.x, c.y * SQ, r, r * .55, 0, 0, TAU); } }
+  ctx.fill();
 
   /* ── 深度ソート描画リスト ── */
   const list = [];
@@ -4604,10 +4688,11 @@ function render() {
   const tx0 = Math.max(0, Math.floor(vx0 / TILE) - 1), tx1 = Math.min(m.w - 1, Math.floor(vx1 / TILE) + 1);
   const ty0 = Math.max(0, Math.floor((vy0 - 0) / (TILE * SQ)) - 2), ty1 = Math.min(m.h - 1, Math.floor(vy1 / (TILE * SQ)) + 2);
   for (let ty = ty0; ty <= ty1; ty++) {
+    const row = G.wallRows && G.wallRows[ty];
+    if (row && (row.runs.length || row.faces.length)) list.push({ d: (ty + 1) * TILE, f: drawWallRow, a: { ty, tx0, tx1 } }); // 壁は行単位でまとめて描く
     for (let tx = tx0; tx <= tx1; tx++) {
       const i = ty * m.w + tx, tt = m.t[i];
-      if (tt === 0) list.push({ d: (ty + 1) * TILE, f: drawWallTile, a: { tx, ty } });
-      else if (isDoorCell(tx, ty)) list.push({ d: (ty + 1) * TILE - 2, f: drawDoorTop, a: { tx, ty } });
+      if (tt !== 0 && isDoorCell(tx, ty)) list.push({ d: (ty + 1) * TILE - 2, f: drawDoorTop, a: { tx, ty } });
     }
   }
   for (const p of m.props) {
@@ -4620,7 +4705,7 @@ function render() {
   for (const it of G.items) list.push({ d: it.y, f: drawItem, a: it });
   for (const f of G.farms) list.push({ d: f.y - 30, f: drawFarm, a: f }); // 基質は床、ポッドは低い背丈
   for (const e of G.eggs) list.push({ d: e.y, f: drawEgg, a: e });
-  for (const c of G.corpses) list.push({ d: c.y, f: drawCorpse, a: c });
+  for (const c of G.corpses) { if (c.x < vx0 - 60 || c.x > vx1 + 60 || c.y * SQ < vy0 - 60 || c.y * SQ > vy1 + 60) continue; list.push({ d: c.y, f: drawCorpseCached, a: c }); }
   for (const u of G.units) {
     if (u.gone || u.carriedBy) continue;
     if (u.x < vx0 - 40 || u.x > vx1 + 40 || u.y * SQ < vy0 - 90 || u.y * SQ > vy1 + 60) continue;
@@ -4646,6 +4731,9 @@ function render() {
 
   list.sort((a, b) => a.d - b.d);
   for (const it of list) it.f(it.a);
+  collectLights();
+  renderLighting(W, H, z, ox, oy); // 光と闇 (乗算)
+  ctx.setTransform(dpr * z, 0, 0, dpr * z, dpr * ox, dpr * oy);
 
   // ユニット上部UI(HPバー等)
   for (const u of G.units) {
@@ -4655,7 +4743,7 @@ function render() {
   }
   // 画面空間オーバーレイ
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  drawLamps(vx0, vx1, vy0, vy1);
+  if (G.quality === 'low') drawLamps(vx0, vx1, vy0, vy1);
   const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .35, W / 2, H / 2, Math.max(W, H) * .75);
   vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.5)');
   ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
@@ -4842,20 +4930,23 @@ function clawsAt(x, y, ang, n, len, col) {
    ══════════════════════════════════════════════════════════ */
 function drawUnit(u) {
   if (u.inTv) return;
+  ctx.save(); // 描画途中で例外が出ても変換・透明度が漏れないように
   try {
     const pose = poseFor(u);
-    if (u.fxT > 0) { ctx.globalAlpha = 1; }
     if (u.state === 'resin') drawResin(u); // 巣の樹脂で固定されている
-    if (u.crawl) { ctx.save(); ctx.translate(0, (BP.legU + BP.legL) * u.sp.scale * u.sizeMul * .8); } // 両脚を失い這う
-    if (u.sp.kind === 'biped') drawBiped(u, pose);
+    if (u.crawl) ctx.translate(0, (BP.legU + BP.legL) * u.sp.scale * u.sizeMul * .8); // 両脚を失い這う
+    const lite = G.lod && u.sp.kind === 'biped' && !u.sp.unique && !u.sp.superArmor && G.sel !== u;
+    if (u.sp.kind === 'biped') { if (lite) drawBipedLite(u, pose); else drawBiped(u, pose); }
     else if (u.sp.kind === 'quad') { if (u.sp.fac === 'sp') drawDSSpider(u, pose); else drawQuad(u, pose); }
     else if (u.sp.kind === 'bird') drawBird(u, pose);
     else if (u.sp.kind === 'hugger') drawHugger(u, pose);
     else if (u.sp.kind === 'burster') drawBurster(u, pose);
-    if (u.crawl) ctx.restore();
-    if (u.fac === 'pg' && u.sp.kind === 'biped') drawPgExtras(u, pose);
-    if (u.sp.ov && (u.fac === 'srp' || u.fac === 'fl' || u.fac === 'nm' || u.fac === 'pg')) { drawSRPOverlay(u); if (u.sp.kind === 'biped') drawXOverlayParts(u, pose); }
-  } catch (e) { }
+    if (!lite) {
+      if (u.fac === 'pg' && u.sp.kind === 'biped') drawPgExtras(u, pose);
+      if (u.sp.ov && (u.fac === 'srp' || u.fac === 'fl' || u.fac === 'nm' || u.fac === 'pg')) { drawSRPOverlay(u); if (u.sp.kind === 'biped') drawXOverlayParts(u, pose); }
+    }
+  } catch (e) { if (!DRAW_ERRS[u.key]) DRAW_ERRS[u.key] = e.message; }
+  ctx.restore();
 }
 
 /* 巣の樹脂: 獲物を岩のように固めた琥珀色の固定具 */
@@ -7111,7 +7202,7 @@ function drawEgg(e) {
 }
 
 /* ── 死体 ── */
-function drawCorpse(c) {
+function drawCorpseRaw(c) {
   try {
     if (c.farmT > 0) { // 農園で養分に還元されつつある
       ctx.globalAlpha = Math.max(.1, 1 - c.farmT / 11 * .9);
@@ -7651,6 +7742,7 @@ function countKey(k) { let n = 0; for (const u of G.units) if (!u.gone && u.key 
 function spawnUnit(key, x, y, o = {}) {
   const sp = SP[key];
   if (!sp) return null;
+  if (G.facOff && G.facOff[sp.fac]) return null; // 選択されていない陣営
   if (!o.force) {
     if (sp.fac === 'T' && countFac('T') >= G.capT) return null;
     if (sp.fac === 'X' && countFac('X') >= G.capX) return null;
@@ -8875,6 +8967,7 @@ function fireAttack(u, d, a) {
       if (d.projKind === 'laser') { fireLaser(u, tx, ty, d.dmg); break; }
       if (d.projKind === 'crack') { fireCrack(u, tx, ty, d.dmg); break; }
       addProj(d.projKind, u.x + Math.cos(u.faceA) * 16, u.y + Math.sin(u.faceA) * 16, 0, tx, ty, u.fac, u, d.dmg);
+      if (d.projKind === 'bullet' || d.projKind === 'rocket') addFlash(u.x + Math.cos(u.faceA) * 16, u.y + Math.sin(u.faceA) * 16, d.projKind === 'rocket' ? 110 : 64, '255,215,150', .85, .09); // 銃口炎
       if (d.projKind === 'rocket') addLog('🚀 ネメシスがロケットを発射した！', 't');
       if (d.sun) { (G.suns=G.suns||[]).push({ x: tx, y: ty, t: 6, src: u }); }
       break;
@@ -12683,6 +12776,7 @@ function stepSim(dt) {
   updateNests(dt);
   updateSRP(dt);
   updateAliceFx(dt);
+  updateFlashes(dt);
   updateFloodNecro(dt);
   updatePlagaExtra(dt);
   if (G.quicks) {
@@ -12841,6 +12935,7 @@ function stepSim(dt) {
   if (G.queenDeadT > 0) { G.queenDeadT -= dt; if (G.queenDeadT <= 0) queenSuccession(); }
   if (G.focusT > 0) G.focusT -= dt;
   G.cam.shake *= Math.exp(-4.5 * dt); if (G.cam.shake < .25) G.cam.shake = 0;
+  updateFactionTrack(dt);
   G.vicT = (G.vicT || 0) - dt;
   if (G.vicT <= 0) { G.vicT = 1.5; checkVictory(); }
   const raidAlive = G.units.some(u => !u.gone && !u.dead && u.fac === 'R');
@@ -12848,7 +12943,7 @@ function stepSim(dt) {
     if (!G.raidFocus || G.raidFocus.gone || G.raidFocus.dead) G.raidFocus = pickRaidFocus(G.raidFocus);
   } else {
     G.raidT = (G.raidT || 18) - dt;
-    if (G.raidT <= 0) {
+    if (G.raidT <= 0 && (G.raidWave || 0) < 10 && facOn('R')) { // 襲撃は10波まで
       const WAVES = [
         { P: 4, times: 3 },
         { V: 2, P: 3, times: 3 },
@@ -13119,43 +13214,27 @@ function factionPotential(f) {
   return n;
 }
 
-function checkVictory() {
-  const pT = factionPotential('T'), pX = factionPotential('X'), pD = factionPotential('D'), pH = factionPotential('H'), pG = factionPotential('G'), pC = factionPotential('C'), pW = factionPotential('W'), pA = factionPotential('A');
-  const pS = factionPotential('S'), pJ = factionPotential('J'), pF = factionPotential('F'), pK = factionPotential('K'), pM = factionPotential('M');
-  const alive = [pT > 0 && 'T', pX > 0 && 'X', pD > 0 && 'D', pH > 0 && 'H', pG > 0 && 'G', pC > 0 && 'C', pW > 0 && 'W', pA > 0 && 'A', pS > 0 && 'S', pJ > 0 && 'J', pF > 0 && 'F', pK > 0 && 'K', pM > 0 && 'M'].filter(Boolean);
-  if (alive.length >= 2) return;
-  G.winner = alive.length === 1 ? alive[0] : 'draw';
-  G.over = true;
-  const msg = G.winner === 'T' ? '🧟 t-ウイルス陣営の勝利 —— 洋館は完全なる墓場と化した' :
-    G.winner === 'X' ? '🦂 ゼノモーフ陣営の勝利 —— 巣が洋館全体を呑み込んだ' :
-    G.winner === 'D' ? '☠️ デスエンジェルの勝利 —— 館は音なき死の巣と化した' :
-    G.winner === 'H' ? '🦀 リバイブドの勝利 —— 館は頭蓋の苗床と化した' :
-    G.winner === 'G' ? '🧟‍🦠 グリーン・フルーの勝利 —— 館は感染者の海と化した' :
-    G.winner === 'C' ? '🍄 冬虫夏草の勝利 —— 館は菌糸の庭園と化した' :
-    G.winner === 'W' ? '🦴 ホワイトスパイクの勝利 —— 白い群れが館を狩場に変えた' :
-    G.winner === 'A' ? '🐜 アントライオンの勝利 —— 館は無数の巣穴に食い破られた' :
-    '☠ 相打ち —— 巣も屍も等しく静寂に沈む';
-  addLog(msg, G.winner === 'T' ? 't' : G.winner === 'X' ? 'x' : G.winner === 'H' ? 'h' : G.winner === 'G' ? 'g' : 'n', true);
-  Sfx.play('sting');
-  if (typeof showEnd === 'function') setTimeout(showEnd, 1200);
-}
 
 /* ── ゲーム開始 ── */
 function startGame(cfg) {
   G.cfg = Object.assign(G.cfg, cfg);
   G.units = []; G.corpses = []; G.eggs = []; G.projs = []; G.parts = []; G.arcs = []; G.shocks = [];
-  G.blights = []; G.aliceFx = [];
+  G.blights = []; G.aliceFx = []; G.flashes = [];
   G.time = 0; G.over = false; G.winner = null; G.sel = null; G.focus = null; G.follow = false; G.mzRaidDone = 0; G.mzRaid = 0;
   G.stats = { srp: { kills: 0, inf: 0, born: 0, lost: 0, conv: 0 }, fl: { kills: 0, born: 0, lost: 0, conv: 0 }, nm: { kills: 0, born: 0, lost: 0, conv: 0 }, T: { kills: 0, inf: 0, born: 0, lost: 0 }, X: { kills: 0, imp: 0, born: 0, lost: 0 }, D: { kills: 0, born: 0, lost: 0 }, H: { kills: 0, imp: 0, born: 0, lost: 0, hug: 0 }, G: { kills: 0, inf: 0, born: 0, lost: 0 }, C: { kills: 0, inf: 0, born: 0, lost: 0 }, W: { kills: 0, born: 0, lost: 0 }, A: { kills: 0, born: 0, lost: 0 }, S: { kills: 0, born: 0, lost: 0 }, J: { kills: 0, born: 0, lost: 0 }, F: { kills: 0, born: 0, lost: 0 }, K: { kills: 0, born: 0, lost: 0 }, M: { kills: 0, born: 0, lost: 0 }, Y: { kills: 0, born: 0, lost: 0 }, Q: { kills: 0, born: 0, lost: 0 }, B: { kills: 0, born: 0, lost: 0 }, P: { kills: 0, born: 0, lost: 0 }, R: { kills: 0, born: 0, lost: 0 }, I: { kills: 0, born: 0, lost: 0 }, U: { kills: 0, born: 0, lost: 0 }, L: { kills: 0, born: 0, lost: 0 }, O: { kills: 0, born: 0, lost: 0 }, "3": { kills: 0, born: 0, lost: 0 }, "4": { kills: 0, born: 0, lost: 0 }, V: { kills: 0, born: 0, lost: 0 }, E: { kills: 0, born: 0, lost: 0 }, "5": { kills: 0, born: 0, lost: 0 }, "6": { kills: 0, born: 0, lost: 0 }, "8": { kills: 0, born: 0, lost: 0 }, "0": { kills: 0, born: 0, lost: 0 }, jk: { kills: 0, born: 0, lost: 0 }, hg: { kills: 0, born: 0, lost: 0 }, pg: { kills: 0, born: 0, lost: 0 }, bk: { kills: 0, born: 0, lost: 0 }, nt: { kills: 0, born: 0, lost: 0 }, mp: { kills: 0, born: 0, lost: 0 }, mz: { kills: 0, born: 0, lost: 0 }, pv: { kills: 0, born: 0, lost: 0 }, gd: { kills: 0, born: 0, lost: 0 }, sp: { kills: 0, born: 0, lost: 0 } };
   G.items = []; G.noises = []; G.farms = []; G.pools = []; G.daRainT = 34; G.daRally = null; G.contT = .5; G.breedT = 3; G.tankAt = 170; G.spawnG = null; G.hordeRainT = 40; G.sporeBloomT = 50; G.spawnC = null; G.hiveIntel = []; G.hiveOrder = null; G.wsRally = null; G.spawnW = null; G.spawnA = null; G.aKingAt = 200 + rnd(0, 60);
+  initFactionsForGame(); // 選択されていない陣営は生成・ログ・卵を止める
   G.nextId = 1; G.queenDeadT = 0; G.vicT = 3; G.t002At = 55; G.eggDecayLogged = false;
   for (const k in nameCounter) delete nameCounter[k];
   const dims = { s: [108, 76], m: [132, 92], l: [156, 108], xl: [186, 128], xxl: [220, 150] }[G.cfg.size] || [132, 92];
   G.map = genMansion(dims[0], dims[1], (Math.random() * 1e9) | 0);
   PF.init();
   initDecals();
+  G.floorScale = G.quality === 'high' ? ((G.cfg.size === 'xl' || G.cfg.size === 'xxl') ? 1.3 : 1.7) : G.quality === 'mid' ? 1.25 : 1;
   bakeFloors();
+  buildWallRows();
   const T = G.map.spawnT, X = G.map.spawnX;
+  G.claimed = [T.room, X.room].filter(Boolean);
   // t-ウイルス陣営: 西の翼
   for (let i = 0; i < 6; i++) {
     const p = randWalkIn(T.room);
@@ -13187,6 +13266,7 @@ function startGame(cfg) {
     const score = Math.min(dist(rx, ry, T.x, T.y), dist(rx, ry, X.x, X.y));
     if (score > dScore) { dScore = score; dRoom = r; }
   }
+  claimRoom(dRoom);
   const dpx = randWalkIn(dRoom);
   spawnUnit('daqueen', dpx.x, dpx.y, { silent: true, force: true });
   for (let i = 0; i < 2; i++) {
@@ -13201,6 +13281,7 @@ function startGame(cfg) {
     const score = Math.min(dist(rx, ry, T.x, T.y), dist(rx, ry, X.x, X.y), dist(rx, ry, dRoom.cx * TILE, dRoom.cy * TILE));
     if (score > hScore) { hScore = score; hRoom = r; }
   }
+  claimRoom(hRoom);
   const hpx = randWalkIn(hRoom);
   spawnUnit('gonarch', hpx.x, hpx.y, { silent: true, force: true });
   for (let i = 0; i < 4; i++) {
@@ -13225,6 +13306,7 @@ function startGame(cfg) {
     const score = Math.min(dist(rx, ry, T.x, T.y), dist(rx, ry, X.x, X.y), dist(rx, ry, dpx.x, dpx.y), dist(rx, ry, hpx.x, hpx.y));
     if (score > gScore) { gScore = score; gRoom = r; }
   }
+  claimRoom(gRoom);
   G.spawnG = { x: (gRoom.cx + .5) * TILE, y: (gRoom.cy + .5) * TILE, room: gRoom };
   const spawnG = (key, n) => { for (let i = 0; i < n; i++) { const p = randWalkIn(gRoom); spawnUnit(key, p.x, p.y, { silent: true, force: true }); } };
   spawnG('gcommon', 5);
@@ -13237,6 +13319,7 @@ function startGame(cfg) {
     const score = Math.min(dist(rx, ry, T.x, T.y), dist(rx, ry, X.x, X.y), dist(rx, ry, dpx.x, dpx.y), dist(rx, ry, hpx.x, hpx.y), dist(rx, ry, G.spawnG.x, G.spawnG.y));
     if (score > cScore) { cScore = score; cRoom = r; }
   }
+  claimRoom(cRoom);
   G.spawnC = { x: (cRoom.cx + .5) * TILE, y: (cRoom.cy + .5) * TILE, room: cRoom };
   const spawnC2 = (key, n) => { for (let i = 0; i < n; i++) { const p = randWalkIn(cRoom); spawnUnit(key, p.x, p.y, { silent: true, force: true }); } };
   spawnC2('crunner', 5); spawnC2('cstalker', 2); spawnC2('cclicker', 1); spawnC2('cshambler', 1);
@@ -13248,6 +13331,7 @@ function startGame(cfg) {
     const score = Math.min(dist(rx, ry, T.x, T.y), dist(rx, ry, X.x, X.y), dist(rx, ry, dpx.x, dpx.y), dist(rx, ry, hpx.x, hpx.y), dist(rx, ry, G.spawnG.x, G.spawnG.y), dist(rx, ry, G.spawnC.x, G.spawnC.y));
     if (score > wScore) { wScore = score; wRoom = r; }
   }
+  claimRoom(wRoom);
   G.spawnW = { x: (wRoom.cx + .5) * TILE, y: (wRoom.cy + .5) * TILE, room: wRoom };
   const wq = spawnUnit('wsqueen', G.spawnW.x, G.spawnW.y, { silent: true, force: true });
   for (let i = 0; i < 3; i++) { const p = randWalkIn(wRoom); spawnUnit('wspike', p.x, p.y, { silent: true, force: true }); }
@@ -13260,19 +13344,22 @@ function startGame(cfg) {
     const score = Math.min(dist(rx, ry, T.x, T.y), dist(rx, ry, X.x, X.y), dist(rx, ry, dpx.x, dpx.y), dist(rx, ry, hpx.x, hpx.y), dist(rx, ry, G.spawnG.x, G.spawnG.y), dist(rx, ry, G.spawnC.x, G.spawnC.y), dist(rx, ry, G.spawnW.x, G.spawnW.y));
     if (score > aScore) { aScore = score; aRoom = r; }
   }
+  claimRoom(aRoom);
   G.spawnA = { x: (aRoom.cx + .5) * TILE, y: (aRoom.cy + .5) * TILE, room: aRoom };
   const spawnA2 = (key, n) => { for (let i = 0; i < n; i++) { const p = randWalkIn(aRoom); spawnUnit(key, p.x, p.y, { silent: true, force: true }); } };
   spawnA2('aqueen', 1); spawnA2('aguardian', 1); spawnA2('aguard', 1);
   spawnA2('antlion', 2); spawnA2('aworker', 1); spawnA2('agrub', 3);
   addLog('🐜 館の床が無数の巣穴に食い破られた —— アントライオンの群れが発生', 'a', true);
-  const farFrom = pts => {
+  const farFrom = pts => { // 指定地点と既に使われた部屋の両方から遠い部屋
     let br = null, bs = -1;
     for (const r of G.map.rooms) {
+      if (G.claimed.indexOf(r) >= 0 && G.claimed.length < G.map.rooms.length) continue;
       const rx = (r.cx + .5) * TILE, ry = (r.cy + .5) * TILE;
       let mn = 1e9; for (const p of pts) mn = Math.min(mn, dist(rx, ry, p.x, p.y));
+      for (const c of G.claimed) mn = Math.min(mn, dist(rx, ry, (c.cx + .5) * TILE, (c.cy + .5) * TILE));
       if (mn > bs) { bs = mn; br = r; }
     }
-    return br;
+    return claimRoom(br || rpick(G.map.rooms));
   };
   const sRoom = farFrom([{ x: T.x, y: T.y }, { x: X.x, y: X.y }, G.spawnA]);
   for (let i = 0; i < 3; i++) { const p = randWalkIn(sRoom); spawnUnit('scp939', p.x, p.y, { silent: true, force: true }); }
@@ -13314,20 +13401,14 @@ function startGame(cfg) {
   const fenR = farFrom([G.spawnA, G.spawnW]);
   spawnUnit('fen', randWalkIn(fenR).x, randWalkIn(fenR).y, { silent: true, force: true });
   addLog('🖐️ 金髪の巨大な「フェン」が館を歩き始めた', '5', true);
-  spawnMike(); spawnLocust(); spawnVerity(); spawnSlender(); spawnJoker(); spawnHorga(); dropMoreWeapons();
-  spawnPlaga(); spawnBarakoa();
-  spawnNita(); spawnMrP();
-  spawnMcZombies();
-  spawnGuardians(); spawnSpiders();
-  spawnZomboss();
-  spawnSRP();
-  spawnFlood();
-  spawnNecro();
+  spawnMike(); dropMoreWeapons();
+  const gated = [['6', spawnLocust], ['8', spawnVerity], ['0', spawnSlender], ['jk', spawnJoker], ['hg', spawnHorga], ['pg', spawnPlaga], ['bk', spawnBarakoa], ['nt', spawnNita], ['mp', spawnMrP], ['mz', spawnMcZombies], ['gd', spawnGuardians], ['sp', spawnSpiders], ['pv', spawnZomboss], ['srp', spawnSRP], ['fl', spawnFlood], ['nm', spawnNecro]];
+  for (const [f, fn] of gated) if (facOn(f)) fn();
   const fRoom = rpick(G.map.preyRooms);
   spawnUnit('ghostface', randWalkIn(fRoom).x, randWalkIn(fRoom).y, { silent: true, force: true });
   spawnUnit('ghostface', randWalkIn(fRoom).x, randWalkIn(fRoom).y, { silent: true, force: true });
   addLog('👻 避難民に紛れてゴーストフェイスが2人入り込んだ', 'f', true);
-  const kRoom = rpick(G.map.rooms);
+  const kRoom = spawnRoom();
   spawnUnit('chara', randWalkIn(kRoom).x, randWalkIn(kRoom).y, { silent: true, force: true });
   addLog('❤️ セーブポイントを探す「キャラ」が現れた', 'k', true);
   const mRoom = farFrom([G.spawnA, G.spawnW, { x: X.x, y: X.y }]);
@@ -13337,13 +13418,13 @@ function startGame(cfg) {
   spawnUnit('marcus', randWalkIn(mRoom).x, randWalkIn(mRoom).y, { silent: true, force: true });
   spawnUnit('t5000', randWalkIn(mRoom).x, randWalkIn(mRoom).y, { silent: true, force: true });
   addLog('🤖 館の一室にスカイネット・コアが転送された —— ターミネーター生産開始', 'm', true);
-  const yRoom = rpick(G.map.rooms);
+  const yRoom = spawnRoom();
   spawnUnit('smile', randWalkIn(yRoom).x, randWalkIn(yRoom).y, { silent: true, force: true });
   addLog('😀 館の廊下にスマイルが現れた', 'y', true);
-  const qRoom2 = rpick(G.map.rooms);
+  const qRoom2 = spawnRoom();
   spawnUnit('chucky', randWalkIn(qRoom2).x, randWalkIn(qRoom2).y, { silent: true, force: true });
   addLog('🧸 チャッキーが箱から這い出した', 'q', true);
-  const bRoom = rpick(G.map.rooms);
+  const bRoom = spawnRoom();
   spawnUnit('megan', randWalkIn(bRoom).x, randWalkIn(bRoom).y, { silent: true, force: true });
   addLog('🤖 ミーガンが保護プロトコルを起動した', 'b', true);
   const pRoom = farFrom([G.spawnA, { x: T.x, y: T.y }]);
@@ -13369,7 +13450,7 @@ function startGame(cfg) {
   spawnUnit('kayako', randWalkIn(uRoom).x, randWalkIn(uRoom).y, { silent: true, force: true });
   spawnUnit('toshio', randWalkIn(uRoom).x, randWalkIn(uRoom).y, { silent: true, force: true });
   addLog('👻 呪いの家に伽倻子と俊雄が棲みついた', 'u', true);
-  const lRoom = rpick(G.map.rooms);
+  const lRoom = spawnRoom();
   G.ringTv = { x: (lRoom.cx + .5) * TILE, y: (lRoom.cy + .5) * TILE, room: lRoom };
   const sd = spawnUnit('sadako', G.ringTv.x, G.ringTv.y, { silent: true, force: true });
   if (sd) { sd.inTv = 1; }
@@ -13381,6 +13462,7 @@ function startGame(cfg) {
     if (used.has(r)) continue;
     used.add(r); G.slimeRooms.push(G.map.rooms.indexOf(r));
   }
+  if (!facOn('O')) G.slimeRooms = [];
   G.slimeRainT = 8; G.slimeKills = 0; G.slimeKing = false; G.slimeKingDead = false;
   addLog('🟢 3つの部屋でスライムの雨が始まった', 'o', true);
   // 食料と水: ランダムな場所に配置
@@ -13430,9 +13512,7 @@ function startGame(cfg) {
   G.cam.z = clamp(fitZ, .3, .9);
   G.cam.shake = 0;
   G.started = true; G.paused = false;
-  addLog('🏚 交叉実験を開始 —— 旧洋館に6つの血統を投入した', 'n', true);
-  addLog('🧟 t-ウイルス陣営: 西翼に展開 / 🦂 ゼノモーフ陣営: 東翼に巣を構築', 'n');
-  addLog('☠️ デスエンジェル / 🦀 リバイブド / 🧟‍🦠 グリーン・フルー / 🍄 冬虫夏草 が僻室で目覚めた', 'n');
+  addLog(`🏚 交叉実験を開始 —— 旧洋館に${FACTION_DEFS.filter(d => facOn(d.f)).length}の血統を投入した`, 'n', true);
   addLog('🧍 中央区画に獲物を放った', 'n');
   if (typeof updatePanels === 'function') updatePanels();
   if (typeof showUI === 'function') showUI();
@@ -13447,7 +13527,7 @@ function spawnMike() {
 function spawnLocust() {
   G.tvs = [];
   for (let i = 0; i < 6; i++) {
-    const r = rpick(G.map.rooms);
+    const r = spawnRoom();
     const p = randWalkIn(r);
     G.tvs.push({ x: p.x, y: p.y, r: r.id });
   }
@@ -13456,18 +13536,18 @@ function spawnLocust() {
   if (u) { u.inTv = 1; u.tv = tv; }
 }
 function spawnVerity() {
-  const r = rpick(G.map.rooms);
+  const r = spawnRoom();
   const p = randWalkIn(r);
   spawnUnit('verity', p.x, p.y, r.id);
 }
 function spawnSlender() {
-  const r = rpick(G.map.rooms);
+  const r = spawnRoom();
   const p = randWalkIn(r);
   spawnUnit('slender', p.x, p.y, r.id);
 }
 function spawnJoker() {
   G.capJk = 24;
-  const r = rpick(G.map.rooms);
+  const r = spawnRoom();
   const p = randWalkIn(r);
   spawnUnit('joker', p.x, p.y, r.id);
   for (let i = 0; i < 4; i++) {
@@ -13521,17 +13601,30 @@ function dropMoreWeapons() {
   }
 }
 
-function pickLinkedRooms(n) {
-  const rooms = G.map.rooms;
-  let best = null;
-  for (const a of rooms) {
-    const adj = (G.map.adj && G.map.adj[a.id]) || [];
-    const ids = [a.id];
-    for (const i of adj) { if (ids.length < n && ids.indexOf(i) < 0) ids.push(i); }
-    if (ids.length >= n) { best = ids.slice(0, n); break; }
+/* 初期配置: 既に使われた部屋から最も遠い部屋を選ぶ (陣営同士が重ならない公平な開始) */
+function claimRoom(r) { if (r && G.claimed && G.claimed.indexOf(r) < 0) G.claimed.push(r); return r; }
+function spawnRoom() {
+  const rooms = G.map.rooms, cl = G.claimed || (G.claimed = []);
+  const scored = rooms.filter(r => cl.indexOf(r) < 0 || cl.length >= rooms.length).map(r => {
+    let mn = 1e9; for (const c of cl) mn = Math.min(mn, Math.hypot(r.cx - c.cx, r.cy - c.cy));
+    return { r, s: mn + Math.random() * 6 };
+  }).sort((a, b) => b.s - a.s);
+  return claimRoom((scored[0] || { r: rpick(rooms) }).r);
+}
+function pickLinkedRooms(n) { // 隣接する n 部屋 (未使用の部屋を優先)
+  if (!G.map.adj) { // 扉でつながった部屋の隣接表
+    const m = G.map, adj = {};
+    for (const d of (m.doors || [])) {
+      const rA = d.vert ? m.roomOf[(d.y - 1) * m.w + d.x] : m.roomOf[d.y * m.w + (d.x - 1)], rB = d.vert ? m.roomOf[(d.y + 1) * m.w + d.x] : m.roomOf[d.y * m.w + (d.x + 1)];
+      if (rA < 0 || rB < 0 || rA === rB) continue;
+      (adj[rA] = adj[rA] || []).push(rB); (adj[rB] = adj[rB] || []).push(rA);
+    }
+    m.adj = adj;
   }
-  if (!best) best = rooms.slice(0, n).map(x => x.id);
-  return best;
+  const start = spawnRoom(), ids = [start.id], adj = G.map.adj;
+  for (let k = 0; k < ids.length && ids.length < n; k++) for (const i of (adj[ids[k]] || [])) { if (ids.length >= n) break; const r = G.map.rooms[i]; if (ids.indexOf(i) < 0 && G.claimed.indexOf(r) < 0) { ids.push(i); claimRoom(r); } }
+  while (ids.length < n) { const r = spawnRoom(); ids.push(r.id); }
+  return ids;
 }
 function spawnPlaga() {
   G.capPg = 36;
@@ -13566,7 +13659,7 @@ function spawnPlaga() {
 }
 function spawnBarakoa() {
   G.capBk = 28;
-  const r = rpick(G.map.rooms);
+  const r = spawnRoom();
   const p = randWalkIn(r);
   spawnUnit('barako', p.x, p.y, { silent: true, force: true });
   const cap = spawnUnit('barakoana', p.x + 30, p.y, { silent: true, force: true });
@@ -13575,20 +13668,20 @@ function spawnBarakoa() {
 
 function spawnNita() {
   G.capNt = 40;
-  const r = rpick(G.map.rooms); const p = randWalkIn(r);
+  const r = spawnRoom(); const p = randWalkIn(r);
   spawnUnit('nita', p.x, p.y, { silent: true, force: true });
   addLog('🐻 ニタが館に現れた', 'nt', true);
 }
 function spawnMrP() {
   G.capMp = 48;
-  const r = rpick(G.map.rooms); const p = randWalkIn(r);
+  const r = spawnRoom(); const p = randWalkIn(r);
   spawnUnit('mrP', p.x, p.y, { silent: true, force: true });
   addLog('🐧 ミスターPがキャリーケースを提げて現れた', 'mp', true);
 }
 
 function spawnMcZombies() {
   G.capMz = 80;
-  const r = rpick(G.map.rooms);
+  const r = spawnRoom();
   const kinds = ['mzombie','mzombie','husk','drowned'];
   for (let i = 0; i < 10; i++) {
     const p = randWalkIn(r);
@@ -13600,7 +13693,7 @@ function spawnMcZombies() {
 
 function spawnGuardians() {
   G.capGd = 28;
-  const r = rpick(G.map.rooms);
+  const r = spawnRoom();
   G.monument = { rid: r.id, hp: 220, spT: 2 };
   for (let i = 0; i < 3; i++) {
     const p = randWalkIn(r);
@@ -13620,7 +13713,7 @@ function addNest(x, y, lv) {
 function nestCap(lv) { return lv === 1 ? 3 : lv === 2 ? 6 : 9; }
 function spawnSpiders() {
   G.capSp = 40;
-  const r = rpick(G.map.rooms);
+  const r = spawnRoom();
   for (let i = 0; i < 3; i++) {
     const p = randWalkIn(r);
     addNest(p.x, p.y, 1);
@@ -13675,7 +13768,7 @@ function updateNests(dt) {
 
 function spawnZomboss() {
   G.capPv = 48;
-  const r = rpick(G.map.rooms);
+  const r = spawnRoom();
   const p = randWalkIn(r);
   spawnUnit('pvZomboss', p.x, p.y, { silent: true, force: true });
   const ks = ['pvZombie','pvCone','pvBucket','pvPole','pvPaper','pvScreen','pvFoot'];
@@ -14563,6 +14656,7 @@ function flBurst(u) {
   for (let i = 0; i < u.sp.burstInf; i++) { if (!xCanSpawn('fl')) break; const n = spawnUnit('flInfect', u.x + rnd(-16, 16), u.y + rnd(-12, 12), { force: true, silent: true }); if (n) { n.z = 12; } }
 }
 function nmBoom(u, dmg) {
+  addFlash(u.x, u.y, 200, '255,190,110', 1, .4);
   addShake(8); Sfx.play('boom', u.x, u.y); addFire(u.x, u.y, 6, 8); addDecal('scorch', u.x, u.y, 24); addShock(u.x, u.y, 8, 80, 'rgba(255,200,80,.7)');
   Spatial.query(u.x, u.y, 90, _q);
   for (const o of _q.slice()) if (!o.gone && !o.dead && o !== u && hostileTo(u, o) && dist(u.x, u.y, o.x, o.y) < 78) dealDamage(u, o, Math.round(dmg * (1 - dist(u.x, u.y, o.x, o.y) / 120)), { kdir: angTo(u.x, u.y, o.x, o.y), kpow: 260, down: true });
@@ -14732,7 +14826,7 @@ function updateFloodNecro(dt) {
 }
 function spawnFlood() {
   G.capFl = 50; G.flPts = 0; G.flProtoDone = 0;
-  const r = rpick(G.map.rooms), c = { x: (r.cx + .5) * TILE, y: (r.cy + .5) * TILE };
+  const r = spawnRoom(), c = { x: (r.cx + .5) * TILE, y: (r.cy + .5) * TILE };
   spawnUnit('flBiomass', c.x, c.y, { silent: true, force: true });
   const p2 = randWalkIn(r); spawnUnit('flBiomass', p2.x, p2.y, { silent: true, force: true });
   const ks = ['flInfect', 'flInfect', 'flInfect', 'flInfect', 'flInfect', 'flInfect', 'flHuman', 'flHuman', 'flElite', 'flCarrier'];
@@ -14742,7 +14836,7 @@ function spawnFlood() {
 }
 function spawnNecro() {
   G.capNm = 50; G.nmPts = 0; G.nmHunterDone = 0; G.nmLevDone = 0; G.nmMoonDone = 0; G.nmMoonOn = 0;
-  const r = rpick(G.map.rooms), c = { x: (r.cx + .5) * TILE, y: (r.cy + .5) * TILE };
+  const r = spawnRoom(), c = { x: (r.cx + .5) * TILE, y: (r.cy + .5) * TILE };
   spawnUnit('nmMarker', c.x, c.y, { silent: true, force: true });
   const ks = ['nmCorruption', 'nmInfector', 'nmInfector', 'nmSlasher', 'nmSlasher', 'nmSlasher', 'nmSpitter', 'nmLurker', 'nmExploder', 'nmSwarm', 'nmSwarm', 'nmSwarm'];
   for (const k of ks) { const q = randWalkIn(r); spawnUnit(k, q.x, q.y, { silent: true, force: true }); }
@@ -14780,7 +14874,7 @@ function drawXOverlayParts(u, pose) { // 骨格が必要な装飾 (骨刃・爆�
     ctx.lineCap = 'butt';
   }
   if (ov.eSword && !cut.armR) { const a = sk.armR, ang = Math.atan2(a.ha.y - a.el.y, a.ha.x - a.el.x) - .5 * d, L = P.armL * 2.6; ctx.save(); ctx.lineCap = 'round'; for (const [w, c] of [[5, 'rgba(80,160,255,.35)'], [2.6, '#8ac8ff'], [1, '#ffffff']]) { ctx.strokeStyle = c; ctx.lineWidth = w; for (const off of [-.18, .18]) { ctx.beginPath(); ctx.moveTo(a.ha.x, a.ha.y); ctx.quadraticCurveTo(a.ha.x + Math.cos(ang + off) * L * .6, a.ha.y + Math.sin(ang + off) * L * .6, a.ha.x + Math.cos(ang) * L, a.ha.y + Math.sin(ang) * L); ctx.stroke(); } } ctx.restore(); }
-  if (u.shield > 0 && u.sp.shieldMax) { ctx.save(); ctx.globalAlpha = .18 + (u.shieldFx || 0) * 2; ctx.strokeStyle = '#8ac8ff'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.ellipse((sk.s1.x + sk.s2.x) / 2, (sk.head.y + sk.ftR.y) / 2, P.torsoW * 2.2, (sk.ftR.y - sk.head.y) * .62, 0, 0, TAU); ctx.stroke(); ctx.restore(); }
+  if (u.shield > 0 && u.sp.shieldMax) { ctx.save(); ctx.globalAlpha = .18 + (u.shieldFx || 0) * 2; ctx.strokeStyle = '#8ac8ff'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.ellipse((sk.s1.x + sk.s2.x) / 2, (sk.head.y + sk.legR.an.y) / 2, P.torsoW * 2.2, (sk.legR.an.y - sk.head.y) * .62, 0, 0, TAU); ctx.stroke(); ctx.restore(); }
   if (ov.stasis) { ctx.save(); ctx.globalAlpha = .35; ctx.fillStyle = '#60c0ff'; ctx.beginPath(); ctx.arc(sk.s2.x, sk.s2.y + P.torsoW * .5, P.torsoW * .5 * (1 + Math.sin(T * 20) * .3), 0, TAU); ctx.fill(); if ((u.moveSpd || 0) > 20) { ctx.globalAlpha = .18; ctx.fillStyle = u.pal.skin; ctx.beginPath(); ctx.ellipse(sk.s2.x - d * 10, sk.s2.y + 10, P.torsoW, P.torsoW * 3, 0, 0, TAU); ctx.fill(); } ctx.restore(); }
   if (ov.regen) { ctx.save(); ctx.globalAlpha = .25 + Math.sin(T * 5) * .1; ctx.strokeStyle = '#ff8040'; ctx.lineWidth = 1; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc(sk.s2.x, sk.s2.y + i * 6, P.torsoW * (1 + i * .2), T + i, T + i + 1.5); ctx.stroke(); } ctx.restore(); }
   for (const k of Object.keys(cut)) { // 切断面
@@ -15342,6 +15436,435 @@ function drawPgPlan(u, pose, S, x, gy, T, strike, mv, ph, pal, dir) {
   return false;
 }
 
+
+/* ══════════════════════════════════════════════════════════
+   描画の高速化と壁面の質感
+   ・壁: 行ごとに連続タイルを結合し、部屋タイプ別の壁面テクスチャ(事前描画)で塗る
+   ・死体: 一度だけオフスクリーンに描いて使い回す
+   ・遠景(ズームアウト時): 人型を簡略描画 (LOD)
+   ══════════════════════════════════════════════════════════ */
+const DRAW_ERRS = {};
+const WALL_STRIP_SC = 2, WALL_STRIP_W = TILE * 24;
+const wallStrips = {};
+function makeWallStrip(type) {
+  const c = document.createElement('canvas');
+  const W = WALL_STRIP_W, H = WALLH, sc = WALL_STRIP_SC;
+  c.width = W * sc; c.height = H * sc;
+  const g = c.getContext('2d'); g.scale(sc, sc);
+  const rd = srand(type.length * 977 + 13);
+  const paper = { hall: '#5a1c1e', library: '#3e2a1c', dining: '#2e4232', kitchen: '#b8b09a', bedroom: '#6a5a4a', lab: '#7a8a84', storage: '#5a3e2e', gallery: '#6a5e4c', study: '#34404e', bath: '#6a9090', corridor: '#5e5244' }[type] || '#5e5244';
+  const wood = { hall: '#2e1e14', library: '#2a1a10', dining: '#2e1e12', bedroom: '#3a2818', gallery: '#2e2216', study: '#2a2018', corridor: '#33261a' }[type];
+  g.fillStyle = paper; g.fillRect(0, 0, W, H);
+  if (type === 'kitchen' || type === 'bath' || type === 'lab') { // タイル壁
+    const tw = type === 'lab' ? 9 : 7;
+    g.strokeStyle = type === 'kitchen' ? 'rgba(80,70,50,.35)' : 'rgba(20,40,40,.35)'; g.lineWidth = .6;
+    for (let y = 2; y < H; y += tw * .7) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
+    for (let x = 0; x < W; x += tw) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
+    for (let i = 0; i < 40; i++) { g.fillStyle = `rgba(${type === 'kitchen' ? '90,70,40' : '40,60,50'},${.08 + rd() * .12})`; g.fillRect(rd() * W, rd() * H, tw, tw * .7); }
+    if (type === 'lab') { g.fillStyle = '#4a5450'; g.fillRect(0, H * .3, W, 2.2); g.fillStyle = 'rgba(255,255,255,.15)'; g.fillRect(0, H * .3, W, .6); }
+  } else if (type === 'storage') { // 煉瓦
+    for (let y = 0, r = 0; y < H; y += 5, r++) for (let x = (r % 2) * 6; x < W; x += 12) { g.fillStyle = `hsl(${14 + rd() * 8},${30 + rd() * 15}%,${22 + rd() * 8}%)`; g.fillRect(x + .5, y + .5, 11, 4); }
+  } else if (type === 'library') { // 木の羽目板
+    for (let x = 0; x < W; x += 9) { g.fillStyle = `hsl(24,${35 + rd() * 10}%,${15 + rd() * 6}%)`; g.fillRect(x, 0, 8.4, H); g.fillStyle = 'rgba(0,0,0,.25)'; g.fillRect(x + 8.4, 0, .6, H); }
+  } else { // 壁紙の柄
+    const light = shade(paper, .18), dark = shade(paper, -.2);
+    for (let x = 0; x < W; x += 6) { g.fillStyle = (x / 6) % 2 ? light : paper; g.globalAlpha = .45; g.fillRect(x, 0, 3, H); }
+    g.globalAlpha = 1;
+    if (type === 'hall' || type === 'dining' || type === 'study') { // ダマスク柄
+      g.fillStyle = type === 'hall' ? 'rgba(220,170,90,.18)' : 'rgba(230,220,180,.14)';
+      for (let x = 3; x < W; x += 12) for (let y = 3; y < H * .62; y += 9) { g.beginPath(); g.moveTo(x, y - 3); g.lineTo(x + 2.4, y); g.lineTo(x, y + 3); g.lineTo(x - 2.4, y); g.closePath(); g.fill(); }
+    } else if (type === 'bedroom') { // 小花柄
+      for (let i = 0; i < 160; i++) { g.fillStyle = rd() < .5 ? 'rgba(200,120,120,.35)' : 'rgba(150,170,120,.3)'; g.beginPath(); g.arc(rd() * W, rd() * H * .62, .9, 0, TAU); g.fill(); }
+    }
+    g.fillStyle = dark; g.globalAlpha = .5; g.fillRect(0, 0, W, 2); g.globalAlpha = 1;
+  }
+  if (wood && type !== 'library') { // 腰板
+    const wy = H * .62;
+    g.fillStyle = wood; g.fillRect(0, wy, W, H - wy);
+    g.fillStyle = 'rgba(255,220,170,.12)'; g.fillRect(0, wy, W, 1.2);
+    for (let x = 2; x < W; x += TILE) { g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = .7; g.strokeRect(x + 1.5, wy + 2.5, TILE - 5, H - wy - 5.5); g.strokeStyle = 'rgba(255,220,170,.08)'; g.strokeRect(x + 2.2, wy + 3.2, TILE - 5, H - wy - 5.5); }
+  }
+  if (type === 'gallery') { // 額縁の絵画
+    for (let x = 18; x < W - 30; x += TILE * 3 + rd() * TILE) {
+      const fw = 16 + rd() * 10, fh = 12 + rd() * 5, fy = 3;
+      g.fillStyle = '#8a6a2a'; g.fillRect(x - 1.6, fy - 1.6, fw + 3.2, fh + 3.2);
+      g.fillStyle = `hsl(${rd() * 360},${20 + rd() * 20}%,${18 + rd() * 14}%)`; g.fillRect(x, fy, fw, fh);
+      g.fillStyle = 'rgba(255,240,200,.12)'; g.beginPath(); g.arc(x + fw * (.3 + rd() * .4), fy + fh * .5, fh * .3, 0, TAU); g.fill();
+    }
+  }
+  if (type === 'library') { // 本棚
+    for (let x = 6; x < W - 30; x += TILE * 4) { g.fillStyle = '#1e1208'; g.fillRect(x, 2, TILE * 1.6, H - 6); for (let s = 0; s < 3; s++) for (let bx = x + 1.5; bx < x + TILE * 1.6 - 2; bx += 2.2 + rd() * 1.2) { g.fillStyle = `hsl(${rd() * 40},${40 + rd() * 30}%,${18 + rd() * 20}%)`; g.fillRect(bx, 4 + s * 9 + rd() * 1.5, 1.8, 7 - rd() * 1.5); } }
+  }
+  for (let i = 0; i < 10; i++) { // 染み・亀裂
+    const x = rd() * W, y = rd() * H * .7, r = 3 + rd() * 8;
+    const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(20,10,5,.22)'); gr.addColorStop(1, 'rgba(20,10,5,0)');
+    g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  g.strokeStyle = 'rgba(0,0,0,.3)'; g.lineWidth = .5;
+  for (let i = 0; i < 4; i++) { let x = rd() * W, y = rd() * H * .5; g.beginPath(); g.moveTo(x, y); for (let k = 0; k < 4; k++) { x += (rd() - .5) * 6; y += 2 + rd() * 3; g.lineTo(x, y); } g.stroke(); }
+  const top = g.createLinearGradient(0, 0, 0, 7); top.addColorStop(0, 'rgba(0,0,0,.55)'); top.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = top; g.fillRect(0, 0, W, 7); // 天井際の影 (コーニス)
+  g.fillStyle = '#1e160f'; g.fillRect(0, H - 2.4, W, 2.4); // 幅木
+  g.fillStyle = 'rgba(255,220,170,.1)'; g.fillRect(0, H - 2.4, W, .6);
+  return c;
+}
+function wallStrip(type) { return wallStrips[type] || (wallStrips[type] = makeWallStrip(type)); }
+function buildWallRows() {
+  const m = G.map; G.wallRows = [];
+  const wallAt = (x, y) => x < 0 || y < 0 || x >= m.w || y >= m.h || m.t[y * m.w + x] === 0;
+  for (let ty = 0; ty < m.h; ty++) {
+    const runs = [], faces = [];
+    let tx = 0;
+    while (tx < m.w) {
+      if (!wallAt(tx, ty)) { tx++; continue; }
+      const x0 = tx; while (tx < m.w && wallAt(tx, ty)) tx++;
+      runs.push({ x0, x1: tx - 1, lEdge: x0 > 0 && !wallAt(x0 - 1, ty), rEdge: tx < m.w && !wallAt(tx, ty) });
+    }
+    if (ty + 1 < m.h) {
+      tx = 0;
+      while (tx < m.w) {
+        if (!(wallAt(tx, ty) && !wallAt(tx, ty + 1))) { tx++; continue; }
+        const r = m.rooms[m.roomOf[(ty + 1) * m.w + tx]], type = r ? r.type : 'corridor';
+        const x0 = tx;
+        while (tx < m.w && wallAt(tx, ty) && !wallAt(tx, ty + 1)) { const r2 = m.rooms[m.roomOf[(ty + 1) * m.w + tx]]; if ((r2 ? r2.type : 'corridor') !== type) break; tx++; }
+        faces.push({ x0, x1: tx - 1, type, lamp: hash2(x0, ty) > .55 });
+      }
+    }
+    const tops = []; // 床に面した上辺 (壁の笠木のハイライト)
+    tx = 0;
+    while (tx < m.w) { if (!(wallAt(tx, ty) && !wallAt(tx, ty - 1))) { tx++; continue; } const x0 = tx; while (tx < m.w && wallAt(tx, ty) && !wallAt(tx, ty - 1)) tx++; tops.push({ x0, x1: tx - 1 }); }
+    G.wallRows.push({ ty, runs, faces, tops });
+  }
+}
+function drawWallRow(a) {
+  const row = G.wallRows[a.ty], ty = a.ty, tx0 = a.tx0, tx1 = a.tx1;
+  const yTop = ty * TILE * SQ - WALLH, th = TILE * SQ + 1;
+  ctx.fillStyle = '#2c251f';
+  for (const r of row.runs) {
+    if (r.x1 < tx0 || r.x0 > tx1) continue;
+    const x0 = Math.max(r.x0, tx0), x1 = Math.min(r.x1, tx1);
+    ctx.fillRect(x0 * TILE, yTop, (x1 - x0 + 1) * TILE + 1, th);
+  }
+  ctx.fillStyle = 'rgba(255,225,180,.16)';
+  for (const r of row.tops) { if (r.x1 < tx0 || r.x0 > tx1) continue; const x0 = Math.max(r.x0, tx0), x1 = Math.min(r.x1, tx1); ctx.fillRect(x0 * TILE, yTop, (x1 - x0 + 1) * TILE + 1, 2); }
+  for (const r of row.runs) {
+    if (r.x1 < tx0 || r.x0 > tx1) continue;
+    if (r.lEdge && r.x0 >= tx0) ctx.fillRect(r.x0 * TILE, yTop, 2, th);
+    if (r.rEdge && r.x1 <= tx1) { ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect((r.x1 + 1) * TILE - 2, yTop, 2, th); ctx.fillStyle = 'rgba(255,225,180,.16)'; }
+  }
+  const fy = (ty + 1) * TILE * SQ - WALLH;
+  for (const f of row.faces) {
+    if (f.x1 < tx0 || f.x0 > tx1) continue;
+    const x0 = Math.max(f.x0, tx0), x1 = Math.min(f.x1, tx1);
+    const strip = wallStrip(f.type);
+    let wx = x0 * TILE; const end = (x1 + 1) * TILE + 1;
+    while (wx < end) {
+      const sx = wx % WALL_STRIP_W, w = Math.min(end - wx, WALL_STRIP_W - sx);
+      ctx.drawImage(strip, sx * WALL_STRIP_SC, 0, w * WALL_STRIP_SC, WALLH * WALL_STRIP_SC, wx, fy, w, WALLH);
+      wx += w;
+    }
+    // 壁付けランプ (燭台)
+    if (f.lamp && f.x1 - f.x0 >= 3) {
+      const lx = (f.x0 + Math.floor((f.x1 - f.x0) / 2)) * TILE + TILE / 2;
+      if (lx >= tx0 * TILE && lx <= (tx1 + 1) * TILE) {
+        const fl = .85 + Math.sin(G.time * 7 + lx) * .08 + Math.sin(G.time * 13.7 + lx * .3) * .05;
+        ctx.fillStyle = '#6a5020'; ctx.fillRect(lx - 1.2, fy + 11, 2.4, 7);
+        ctx.fillStyle = `rgba(255,${190 + fl * 40 | 0},110,${fl})`; ctx.beginPath(); ctx.ellipse(lx, fy + 9, 1.8, 3, 0, 0, TAU); ctx.fill();
+        G.frameLights && G.frameLights.push({ x: lx, y: (ty + 1) * TILE + 4, z: WALLH - 9, r: 120, col: '255,180,100', a: .75 * fl });
+      }
+    }
+  }
+}
+/* 死体: 一度だけ描いたスプライトを使い回す */
+const CORPSE_SC = 3;
+function corpseSprite(c) {
+  if (c.spr) return c.spr;
+  const sp = SP[c.key]; if (!sp) return null;
+  const S = 34 * (sp.scale || 1) * (c.sizeMul || 1) * (sp.kind === 'biped' ? 1 : 1.1) + 14;
+  const w = Math.ceil(S * 2.4), h = Math.ceil(S * 1.5);
+  const cvs = document.createElement('canvas'); cvs.width = w * CORPSE_SC; cvs.height = h * CORPSE_SC;
+  const g = cvs.getContext('2d');
+  const ox = w / 2, oy = h * .62;
+  g.setTransform(CORPSE_SC, 0, 0, CORPSE_SC, (ox - c.x) * CORPSE_SC, (oy - c.y * SQ) * CORPSE_SC);
+  const saved = ctx, fT = c.farmT; ctx = g; c.farmT = 0;
+  try { drawCorpseRaw(c); } catch (e) { }
+  ctx = saved; c.farmT = fT;
+  return (c.spr = { cv: cvs, w, h, ox, oy });
+}
+function drawCorpseCached(c) {
+  const s = corpseSprite(c); if (!s) return;
+  if (c.farmT > 0) ctx.globalAlpha = Math.max(.1, 1 - c.farmT / 11 * .9);
+  ctx.drawImage(s.cv, c.x - s.ox, c.y * SQ - s.oy, s.w, s.h);
+  if (c.farmT > 0) ctx.globalAlpha = 1;
+}
+/* 遠景の人型: 骨格だけを線で描く (ズームアウト時) */
+function drawBipedLite(u, pose) {
+  const sk = solveBiped(u, pose), P = sk.P, pal = u.pal, hf = u.fxT > 0;
+  const skin = hf ? '#e8b0a0' : pal.skin, cloth = hf ? '#d0a8a0' : pal.cloth, cut = u.cut || {};
+  ctx.lineCap = 'round';
+  const L = (a, b, w, c) => { ctx.strokeStyle = c; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); };
+  if (!cut.armL) { L(sk.armL.sh, sk.armL.el, P.armR * 1.6, shade(skin, -.2)); L(sk.armL.el, sk.armL.ha, P.armR * 1.3, shade(skin, -.2)); }
+  if (!cut.legL) { L(sk.legL.hip, sk.legL.kn, P.legR * 1.8, pal.clothD); L(sk.legL.kn, sk.legL.an, P.legR * 1.5, pal.clothD); }
+  L(sk.pel, sk.s2, P.torsoW * 1.8, cloth);
+  if (!cut.legR) { L(sk.legR.hip, sk.legR.kn, P.legR * 1.8, shade(pal.clothD, .15)); L(sk.legR.kn, sk.legR.an, P.legR * 1.5, shade(pal.clothD, .15)); }
+  if (!cut.armR) { L(sk.armR.sh, sk.armR.el, P.armR * 1.6, skin); L(sk.armR.el, sk.armR.ha, P.armR * 1.3, skin); }
+  const fx = u.fx || u.sp.fx;
+  if (!fx.noHead) { ctx.fillStyle = skin; ctx.beginPath(); ctx.arc(sk.head.x, sk.head.y, P.headR, 0, TAU); ctx.fill(); const hc = hairOf(u); if (hc) { ctx.fillStyle = hc; ctx.beginPath(); ctx.arc(sk.head.x, sk.head.y - P.headR * .2, P.headR * .98, Math.PI * 1.05, TAU * .99); ctx.fill(); } }
+  if (fx.tentacle || fx.aliceHair) { ctx.strokeStyle = fx.aliceHair ? '#0a0a0e' : shade(pal.skin, -.1); ctx.lineWidth = P.armR; ctx.beginPath(); ctx.moveTo(sk.s2.x, sk.s2.y); ctx.lineTo(sk.s2.x - sk.dir * P.headR * 1.6, sk.s2.y + P.headR * 2); ctx.stroke(); }
+  ctx.lineCap = 'butt';
+}
+/* パネル: 内容が変わった時だけDOMを書き換える */
+function setHTML(el, html) { if (el && el._html !== html) { el.innerHTML = html; el._html = html; } }
+
+
+/* ══════════════════════════════════════════════════════════
+   ライティング: 画面空間の低解像度ライトマップを乗算で重ねる
+   部屋のシャンデリア(一部は明滅・故障)/壁の燭台/炎/爆発/銃火/発光する怪物
+   ══════════════════════════════════════════════════════════ */
+const LIGHT = { cv: null, g: null, sc: 3, sprites: {} };
+const GLOW_KEYS = { nmMarker: ['255,70,50', 180, .9], nmMoon: ['255,70,50', 320, 1], nmLeviathan: ['255,120,60', 200, .6], srpBeckon: ['255,60,60', 150, .7], srpRooter: ['255,90,70', 120, .5], srpDispatcher: ['255,80,80', 110, .5], srpOverlord: ['220,90,255', 260, .9], srpOverseer: ['220,90,255', 130, .6], flGravemind: ['220,210,120', 240, .6], flKeyMind: ['230,220,140', 320, .8], flProto: ['210,200,110', 170, .5], flBiomass: ['200,190,110', 80, .35], fpeAlice: ['255,30,60', 90, .5], srpHjBlaze: ['255,160,60', 110, .8], barako: ['255,220,120', 140, .7], elderG: ['120,220,200', 90, .5], guardian: ['120,220,200', 60, .35], gvSaddlerMon: ['255,220,90', 160, .6], gvSalazarMon: ['255,210,110', 150, .5], slender: ['255,255,255', 0, 0] };
+function lightSprite(col) {
+  if (LIGHT.sprites[col]) return LIGHT.sprites[col];
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gr.addColorStop(0, `rgba(${col},1)`); gr.addColorStop(.35, `rgba(${col},.55)`); gr.addColorStop(.7, `rgba(${col},.16)`); gr.addColorStop(1, `rgba(${col},0)`);
+  g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+  return (LIGHT.sprites[col] = c);
+}
+function roomLightState(r) { // 部屋ごとの照明: 通常 / 明滅 / 故障 (暗い)
+  if (r._ls == null) { const h = hash2(r.cx * 7 + 3, r.cy * 13 + 5); r._ls = h < .14 ? 'off' : h < .32 ? 'flicker' : 'on'; r._lc = r.type === 'lab' || r.type === 'bath' ? '200,225,255' : r.type === 'kitchen' ? '255,235,200' : '255,196,120'; }
+  return r._ls;
+}
+function collectLights() {
+  const L = G.frameLights; const T = G.time;
+  for (const r of G.map.rooms) {
+    const st = roomLightState(r); if (st === 'off') continue;
+    let a = .95;
+    if (st === 'flicker') { const f = Math.sin(T * 17 + r.cx) + Math.sin(T * 5.3 + r.cy * 2) + Math.sin(T * 31); a = f > 1.6 ? .1 : f > 1.2 ? .45 : .85; }
+    else a *= .93 + Math.sin(T * 3 + r.cx) * .04;
+    const w = r.x1 - r.x0 + 1, h = r.y1 - r.y0 + 1, nx = Math.max(1, Math.round(w / 8)), ny = Math.max(1, Math.round(h / 8));
+    for (let i = 0; i < nx; i++) for (let j = 0; j < ny; j++) { // 大部屋は複数のシャンデリア
+      const lx = (r.x0 + (i + .5) * w / nx) * TILE, ly = (r.y0 + (j + .5) * h / ny) * TILE;
+      L.push({ x: lx, y: ly, z: 40, r: Math.min(w / nx, h / ny) * TILE * .95 + 70, col: r._lc, a });
+    }
+  }
+  for (const p of G.parts) if (p.k === 'fire' && rchance(.5)) L.push({ x: p.x, y: p.y, z: p.z, r: 46, col: '255,150,60', a: .45 });
+  for (const s of G.shocks) { const f = 1 - s.t / s.life; if (f > 0) L.push({ x: s.x, y: s.y, z: 6, r: Math.max(60, s.r1 * 1.6), col: /255,2[0-9][0-9]|255,1[5-9][0-9]/.test(s.col) ? '255,200,120' : '255,235,210', a: .7 * f }); }
+  for (const p of G.projs) L.push({ x: p.x, y: p.y, z: p.z || 8, r: p.kind === 'rocket' || p.kind === 'fire' || p.kind === 'nade' ? 70 : 34, col: p.kind === 'acid' || p.kind === 'bile' ? '170,255,90' : p.kind === 'laser' ? '255,80,80' : '255,210,140', a: .6 });
+  for (const f of (G.flashes || [])) L.push(f);
+  for (const u of G.units) {
+    if (u.gone) continue;
+    const gk = GLOW_KEYS[u.key];
+    if (gk && gk[1]) L.push({ x: u.x, y: u.y, z: 30, r: gk[1] * (u.sizeMul || 1), col: gk[0], a: gk[2] * (.85 + Math.sin(T * 3 + u.id) * .15) });
+    else if (u.sp.fac === 'sp' && u.sp.kind === 'quad' && rchance(.02)) { /* 目の光は省略 */ }
+    if (u.state === 'attack' && u.atk && u.atk.def.type === 'proj' && u.atk.t < u.atk.def.windup + .08 && u.atk.t > u.atk.def.windup - .02 && /boom|slash/.test(u.atk.def.snd || '')) L.push({ x: u.x, y: u.y, z: 20, r: 70, col: '255,220,150', a: .8 }); // 銃口炎
+  }
+  if (G.nmMoonOn) L.push({ x: G.cam.x, y: G.cam.y, z: 0, r: 2400, col: '255,60,40', a: .12 });
+}
+function renderLighting(W, H, z, ox, oy) {
+  if (G.quality === 'low') return;
+  const sc = LIGHT.sc, lw = Math.ceil(W / sc), lh = Math.ceil(H / sc);
+  if (!LIGHT.cv) { LIGHT.cv = document.createElement('canvas'); LIGHT.g = LIGHT.cv.getContext('2d'); }
+  if (LIGHT.cv.width !== lw || LIGHT.cv.height !== lh) { LIGHT.cv.width = lw; LIGHT.cv.height = lh; }
+  const g = LIGHT.g, amb = G.ambient || [50, 46, 62];
+  g.globalCompositeOperation = 'source-over';
+  g.fillStyle = `rgb(${amb[0]},${amb[1]},${amb[2]})`; g.fillRect(0, 0, lw, lh);
+  g.globalCompositeOperation = 'lighter';
+  for (const l of G.frameLights) {
+    const sx = (ox + l.x * z) / sc, sy = (oy + (l.y * SQ - (l.z || 0)) * z) / sc, r = l.r * z / sc;
+    if (sx + r < 0 || sx - r > lw || sy + r < 0 || sy - r > lh || l.a <= .01) continue;
+    g.globalAlpha = Math.min(1, l.a);
+    g.drawImage(lightSprite(l.col), sx - r, sy - r * .8, r * 2, r * 1.6);
+  }
+  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+  ctx.save();
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.imageSmoothingEnabled = true;
+  ctx.globalCompositeOperation = 'multiply';
+  ctx.drawImage(LIGHT.cv, 0, 0, lw, lh, 0, 0, lw * sc, lh * sc);
+  if (G.quality !== 'mid') { // 光のにじみ (加算)
+    ctx.globalCompositeOperation = 'lighter';
+    for (const l of G.frameLights) {
+      if (l.r > 400 || l.a < .2) continue;
+      const sx = ox + l.x * z, sy = oy + (l.y * SQ - (l.z || 0)) * z, r = Math.min(l.r, 140) * z * .45;
+      if (sx + r < 0 || sx - r > W || sy + r < 0 || sy - r > H) continue;
+      ctx.globalAlpha = l.a * .09;
+      ctx.drawImage(lightSprite(l.col), sx - r, sy - r, r * 2, r * 2);
+    }
+  }
+  ctx.restore();
+}
+function addFlash(x, y, r, col, a, life) { (G.flashes = G.flashes || []).push({ x, y, z: 12, r, col, a, life: life || .15, t: 0, a0: a }); }
+function updateFlashes(dt) { if (!G.flashes) return; for (let i = G.flashes.length - 1; i >= 0; i--) { const f = G.flashes[i]; f.t += dt; f.a = f.a0 * (1 - f.t / f.life); if (f.t >= f.life) G.flashes.splice(i, 1); } }
+/* 画質設定: 高 (ライト+にじみ+高精細床) / 標準 (ライトのみ) / 低 (ライトなし・簡略描画を多用) */
+function applyQuality(q) {
+  G.quality = q;
+  try { localStorage.setItem('mw_quality', q); } catch (e) { }
+  document.querySelectorAll('#segQuality div').forEach(d => d.classList.toggle('on', d.dataset.v === q));
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   陣営レジストリ: 全陣営の名前・色・出典を一元管理し、
+   開始画面での選択 / 勝敗判定 / 全滅記録 / 結果ランキング / HUD に使う
+   ══════════════════════════════════════════════════════════ */
+const FACTION_DEFS = [
+  { f: 'T', name: 't-ウイルス', icon: '🧟', col: '#e05555', group: 'バイオハザード', panel: 'panelT', classic: 1, win: '洋館は完全なる墓場と化した' },
+  { f: 'pg', name: 'プラーガ', icon: '🪱', col: '#c8a040', group: 'バイオハザード', panel: 'panelPg', win: '村と城と孤島が館を呑み込んだ' },
+  { f: 'X', name: 'ゼノモーフ', icon: '🦂', col: '#3fd6b0', group: 'エイリアン', panel: 'panelX', classic: 1, win: '巣が洋館全体を呑み込んだ' },
+  { f: 'D', name: 'デスエンジェル', icon: '☠️', col: '#c9a7ff', group: 'クワイエット・プレイス', panel: 'panelD', classic: 1, win: '館は音なき死の巣と化した' },
+  { f: 'H', name: 'リバイブド', icon: '🦀', col: '#ff9e2a', group: 'Half-Life', panel: 'panelH', classic: 1, win: '館は頭蓋の苗床と化した' },
+  { f: 'A', name: 'アントライオン', icon: '🐜', col: '#e0c05a', group: 'Half-Life', panel: 'panelA', classic: 1, win: '館は無数の巣穴に食い破られた' },
+  { f: 'G', name: 'グリーン・フルー', icon: '🧟‍🦠', col: '#8ec83c', group: 'Left 4 Dead', panel: 'panelG', classic: 1, win: '館は感染者の海と化した' },
+  { f: 'C', name: '冬虫夏草', icon: '🍄', col: '#d8a04a', group: 'The Last of Us', panel: 'panelC', classic: 1, win: '館は菌糸の庭園と化した' },
+  { f: 'W', name: 'ホワイトスパイク', icon: '🦴', col: '#f0ecf8', group: 'オリジナル', panel: 'panelW', classic: 1, win: '白い群れが館を狩場に変えた' },
+  { f: 'fl', name: 'フラッド', icon: '🦠', col: '#e8d880', group: 'Halo', panel: 'panelFl', win: 'グレイブマインドが館の全てを記憶した' },
+  { f: 'nm', name: 'ネクロモーフ', icon: '🧬', col: '#ff7040', group: 'Dead Space', panel: 'panelNm', win: '館は収束し、一つになった' },
+  { f: 'srp', name: 'SRP寄生体', icon: '☣️', col: '#ff4060', group: 'Minecraft MOD', panel: 'panelSrp', win: '寄生体が館を完全に同化した' },
+  { f: 'mz', name: 'MCゾンビ', icon: '🧟', col: '#6a8a58', group: 'Minecraft', panel: 'panelMz' },
+  { f: 'P', name: 'ピグリン', icon: '🐷', col: '#e8c040', group: 'Minecraft', panel: 'panelP' },
+  { f: 'R', name: '襲撃者', icon: '🏹', col: '#b04040', group: 'Minecraft', panel: 'panelR' },
+  { f: 'gd', name: 'ガーディアン', icon: '🐡', col: '#5a8a88', group: 'Minecraft', panel: 'panelGd' },
+  { f: 'sp', name: 'スパイダー', icon: '🕷️', col: '#b05050', group: 'Minecraft', panel: 'panelSp' },
+  { f: 'M', name: 'スカイネット', icon: '🤖', col: '#4ad0e8', group: 'ターミネーター', panel: 'panelM' },
+  { f: 'S', name: 'SCP-939', icon: '🐺', col: '#c45a5a', group: 'SCP財団', panel: 'panelS' },
+  { f: 'I', name: 'SCP-096', icon: '😭', col: '#e8e4dc', group: 'SCP財団', panel: 'panelI' },
+  { f: '3', name: 'SCP-173', icon: '🗿', col: '#c8c4b8', group: 'SCP財団', panel: 'panel3' },
+  { f: '4', name: 'SCP-049', icon: '🩺', col: '#c8a040', group: 'SCP財団', panel: 'panel4' },
+  { f: 'U', name: '呪怨', icon: '👻', col: '#9a9aa8', group: 'Jホラー', panel: 'panelU' },
+  { f: 'L', name: 'リング', icon: '📺', col: '#8a8a9a', group: 'Jホラー', panel: 'panelL' },
+  { f: 'V', name: '後藤家', icon: '👤', col: '#c8b090', group: 'Jホラー', panel: 'panelV' },
+  { f: 'hg', name: 'ホルガ村', icon: '🌼', col: '#e8d8b0', group: 'ホラー映画', panel: 'panelHg' },
+  { f: 'F', name: 'ゴーストフェイス', icon: '👻', col: '#bbbbbb', group: 'ホラー映画', panel: 'panelF' },
+  { f: 'Q', name: 'チャッキー', icon: '🧸', col: '#d83a30', group: 'ホラー映画', panel: 'panelQ' },
+  { f: 'B', name: 'ミーガン', icon: '🤖', col: '#40c0e8', group: 'ホラー映画', panel: 'panelB' },
+  { f: 'jk', name: 'ジョーカー', icon: '🃏', col: '#c04080', group: 'ホラー映画', panel: 'panelJk' },
+  { f: 'J', name: 'ジェフ・ザ・キラー', icon: '🔪', col: '#e8e8e8', group: 'クリーピーパスタ', panel: 'panelJ' },
+  { f: '0', name: 'スレンダーマン', icon: '🕴️', col: '#dddddd', group: 'クリーピーパスタ', panel: 'panel0' },
+  { f: 'Y', name: 'スマイル', icon: '😀', col: '#e8c040', group: 'クリーピーパスタ', panel: 'panelY' },
+  { f: 'E', name: 'FPE', icon: '🎀', col: '#e07090', group: 'インディー/アニメ', panel: 'panelE' },
+  { f: 'K', name: 'キャラ', icon: '❤️', col: '#e8c040', group: 'インディー/アニメ', panel: 'panelK' },
+  { f: '5', name: 'フェン', icon: '🖐️', col: '#e8d070', group: 'インディー/アニメ', panel: 'panel5' },
+  { f: '6', name: 'ローカスト', icon: '📺', col: '#c04020', group: 'インディー/アニメ', panel: 'panel6' },
+  { f: '8', name: 'ベリティー', icon: '📦', col: '#c8a060', group: 'インディー/アニメ', panel: 'panel8' },
+  { f: 'bk', name: 'バラコア', icon: '☀️', col: '#e8c040', group: 'インディー/アニメ', panel: 'panelBk' },
+  { f: 'nt', name: 'ニタ', icon: '🐻', col: '#e07030', group: 'ブロスタ', panel: 'panelNt' },
+  { f: 'mp', name: 'ミスターP', icon: '🐧', col: '#4a6aa0', group: 'ブロスタ', panel: 'panelMp' },
+  { f: 'O', name: 'スライム', icon: '🟢', col: '#5cb85c', group: 'ドラクエ', panel: 'panelO' },
+  { f: 'pv', name: 'ゾンボス', icon: '🧟‍♂️', col: '#6aaa50', group: 'PvZ', panel: 'panelPv' },
+];
+const FAC_BY = {}; for (const d of FACTION_DEFS) FAC_BY[d.f] = d;
+const FAC_PRESETS = {
+  classic: FACTION_DEFS.filter(d => d.classic).map(d => d.f),
+  parasite: ['T', 'X', 'H', 'G', 'C', 'pg', 'fl', 'nm', 'srp'],
+  all: FACTION_DEFS.map(d => d.f),
+};
+let FAC_SEL = new Set(FAC_PRESETS.all);
+try { const s = JSON.parse(localStorage.getItem('mw_facsel') || 'null'); if (Array.isArray(s) && s.length >= 2) FAC_SEL = new Set(s.filter(f => FAC_BY[f])); } catch (e) { }
+function facOn(f) { return !G.facOff || !G.facOff[f]; }
+/* ログのクラス (例 't', 'pg') → 陣営コード */
+function logFac(cls) {
+  if (!cls || cls === 'n' || cls === 'N' || cls === 'big') return null;
+  if (FAC_BY[cls]) return cls;
+  const up = cls.toUpperCase();
+  return FAC_BY[up] ? up : null;
+}
+/* 陣営の潜在戦力 (後から湧く陣営も考慮) */
+function facPot(f) {
+  let n = ['T', 'X', 'D', 'H', 'G', 'C', 'W', 'A'].includes(f) ? factionPotential(f) : countFac(f) + xPending(f);
+  if (f === 'R' && (G.raidWave || 0) < 10) n++;          // 襲撃ウェーブがまだ残っている
+  if (f === 'O' && G.slimeRooms && G.slimeRooms.length && !G.slimeKingDead) n++; // スライムの雨
+  return n;
+}
+function facLiveCount(f) { let n = 0; for (const u of G.units) if (!u.gone && !u.dead && u.fac === f) n++; return n; }
+/* 1秒ごと: 最大勢力と全滅時刻を記録 */
+function updateFactionTrack(dt) {
+  G.facTrackT = (G.facTrackT || 0) - dt;
+  if (G.facTrackT > 0) return;
+  G.facTrackT = 1;
+  for (const d of FACTION_DEFS) {
+    if (!facOn(d.f)) continue;
+    const n = facLiveCount(d.f);
+    G.facPeak[d.f] = Math.max(G.facPeak[d.f] || 0, n);
+    if (G.facElim[d.f] == null && G.time > 6 && facPot(d.f) <= 0) {
+      G.facElim[d.f] = G.time;
+      const t = Math.floor(G.time);
+      addLog(`💀 ${d.icon} ${d.name} が全滅した (${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')})`, 'n', true);
+    }
+  }
+}
+function checkVictory() {
+  if (G.over) return;
+  const alive = FACTION_DEFS.filter(d => facOn(d.f) && G.facElim[d.f] == null).map(d => d.f);
+  if (alive.length >= 2 || G.time < 8) return;
+  G.winner = alive.length === 1 ? alive[0] : 'draw';
+  G.over = true;
+  const d = FAC_BY[G.winner];
+  addLog(d ? `${d.icon} ${d.name}の勝利 —— ${d.win || '館は彼らの支配下に落ちた'}` : '☠ 相打ち —— 巣も屍も等しく静寂に沈む', 'n', true);
+  Sfx.play('sting');
+  if (typeof showEnd === 'function') setTimeout(showEnd, 1200);
+}
+function showEnd() {
+  const w = G.winner, d = FAC_BY[w], t = Math.floor(G.time);
+  const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  $('endTitle').textContent = d ? `${d.icon} ${d.name} の勝利` : '☠ 相打ち';
+  $('endTitle').style.color = d ? d.col : '#c8b070';
+  $('endSub').textContent = d ? (d.win || '館は彼らの支配下に落ちた') : '巣も屍も等しく静寂に沈む';
+  const rows = FACTION_DEFS.filter(x => facOn(x.f)).map(x => ({ d: x, elim: G.facElim[x.f], kills: (G.stats[x.f] || {}).kills || 0, peak: G.facPeak[x.f] || 0, live: facLiveCount(x.f) }));
+  rows.sort((a, b) => (a.d.f === w ? -1 : b.d.f === w ? 1 : 0) || ((b.elim == null ? 1e9 : b.elim) - (a.elim == null ? 1e9 : a.elim)) || b.kills - a.kills);
+  const prey = G.units.filter(u => !u.gone && u.fac === 'N').length;
+  $('endStats').classList.add('ranked');
+  $('endStats').innerHTML = `<div class="endmeta"><span>実験時間 <b>${fmt(t)}</b></span><span>参戦 <b>${rows.length}</b> 陣営</span><span>生存した獲物 <b>${prey}</b></span></div>
+    <div class="rank"><div class="rh">#</div><div class="rh">陣営</div><div class="rh r">撃破</div><div class="rh r">最大</div><div class="rh r">結果</div>
+    ${rows.map((r, i) => `<div class="rn">${i + 1}</div><div class="rf"><span class="dot" style="background:${r.d.col}"></span>${r.d.icon} ${r.d.name}</div><div class="r">${r.kills}</div><div class="r">${r.peak}</div><div class="r ${r.elim == null ? 'alive' : 'dead'}">${r.elim == null ? (r.d.f === w ? '勝利' : '生存') : '全滅 ' + fmt(r.elim)}</div>`).join('')}</div>`;
+  $('endOv').classList.remove('hide');
+}
+/* HUD: 未選択陣営のパネルを隠し、勢力順に並べ、全滅した陣営は下へ */
+function arrangeFactionDock() {
+  const dock = $('facDock'); if (!dock) return;
+  const items = [];
+  for (const d of FACTION_DEFS) {
+    const el = $(d.panel); if (!el) continue;
+    if (!facOn(d.f)) { el.style.display = 'none'; continue; }
+    el.style.display = '';
+    const dead = G.facElim[d.f] != null;
+    el.classList.toggle('elim', dead);
+    items.push({ el, k: dead ? -1 - (G.facElim[d.f] || 0) / 1e6 : facLiveCount(d.f) });
+  }
+  items.sort((a, b) => b.k - a.k);
+  const key = items.map(i => i.el.id).join(',');
+  if (key !== G._dockKey) { G._dockKey = key; for (const i of items) dock.appendChild(i.el); const prey = $('preyPanel'); if (prey && prey.parentElement === dock) dock.appendChild(prey); }
+}
+/* 開始画面: 陣営の選択 */
+function buildFactionPicker() {
+  const box = $('facPick'); if (!box) return;
+  const groups = [];
+  for (const d of FACTION_DEFS) { let g = groups.find(x => x.n === d.group); if (!g) groups.push(g = { n: d.group, list: [] }); g.list.push(d); }
+  box.innerHTML = groups.map(g => `<div class="fgrp"><div class="fgn">${g.n}</div><div class="fchips">${g.list.map(d => `<button type="button" class="fchip${FAC_SEL.has(d.f) ? ' on' : ''}" data-f="${d.f}" style="--fc:${d.col}"><span class="fi">${d.icon}</span>${d.name}</button>`).join('')}</div></div>`).join('');
+  const refresh = () => {
+    box.querySelectorAll('.fchip').forEach(b => b.classList.toggle('on', FAC_SEL.has(b.dataset.f)));
+    $('facCount').textContent = `${FAC_SEL.size} / ${FACTION_DEFS.length} 陣営`;
+    $('btnStart').disabled = FAC_SEL.size < 2;
+    $('facWarn').textContent = FAC_SEL.size < 2 ? '2陣営以上を選んでください' : FAC_SEL.size > 24 ? '陣営が多いほど負荷が上がります' : '';
+    try { localStorage.setItem('mw_facsel', JSON.stringify([...FAC_SEL])); } catch (e) { }
+  };
+  box.addEventListener('click', e => { const b = e.target.closest('.fchip'); if (!b) return; const f = b.dataset.f; if (FAC_SEL.has(f)) FAC_SEL.delete(f); else FAC_SEL.add(f); refresh(); });
+  document.querySelectorAll('#facPresets [data-p]').forEach(b => b.addEventListener('click', () => {
+    const p = b.dataset.p;
+    if (p === 'random') { const all = FAC_PRESETS.all.slice().sort(() => Math.random() - .5); FAC_SEL = new Set(all.slice(0, 8)); }
+    else if (p === 'none') FAC_SEL = new Set();
+    else FAC_SEL = new Set(FAC_PRESETS[p]);
+    refresh();
+  }));
+  refresh();
+}
+function initFactionsForGame() {
+  G.facOff = {};
+  for (const d of FACTION_DEFS) if (!FAC_SEL.has(d.f)) G.facOff[d.f] = 1;
+  G.facPeak = {}; G.facElim = {}; G.facTrackT = 2; G._dockKey = '';
+  for (const d of FACTION_DEFS) if (!G.stats[d.f]) G.stats[d.f] = { kills: 0, born: 0, lost: 0 };
+}
+
 /* ── 原作にある(ありそうな)攻撃の追加 ── */
 (function () {
   const add = (k, ...a) => { if (SP[k] && SP[k].atks) for (const x of a) SP[k].atks.push(AT(x)); };
@@ -15383,7 +15906,7 @@ function thinkSrpNexus(u) {
 function spawnSRP() {
   G.capSrp = 70; G.srpPts = 0; G.srpPhase = 0; G.srpAdapt = {}; G.srpDread = 0; G.srpOver = 0;
   const rooms = G.map.rooms;
-  const r = rpick(rooms);
+  const r = spawnRoom();
   const c = { x: (r.cx + .5) * TILE, y: (r.cy + .5) * TILE };
   spawnUnit('srpRooter', c.x, c.y, { silent: true, force: true });
   const p2 = randWalkIn(r); spawnUnit('srpBeckon', p2.x, p2.y, { silent: true, force: true });
@@ -15779,6 +16302,9 @@ function initUI() {
   segBind('segSize', v => G.cfg.size = v);
   segBind('segPrey', v => G.cfg.prey = v);
   segBind('segSnd', v => { G.cfg.sound = v === '1'; Sfx.on = G.cfg.sound; if (G.cfg.sound) Sfx.ensure(); });
+  { let q = null; try { q = localStorage.getItem('mw_quality'); } catch (e) { } applyQuality(q === 'high' || q === 'mid' || q === 'low' ? q : (innerWidth >= 900 && (navigator.hardwareConcurrency || 4) >= 4 ? 'high' : 'mid')); }
+  segBind('segQuality', v => applyQuality(v));
+  buildFactionPicker();
   $('btnStart').addEventListener('click', () => {
     Sfx.on = G.cfg.sound; Sfx.ensure();
     $('startOv').classList.add('hide');
@@ -15789,6 +16315,7 @@ function initUI() {
     $('endOv').classList.add('hide');
     startGame({});
   });
+  $('btnReselect').addEventListener('click', () => { $('endOv').classList.add('hide'); G.started = false; $('startOv').classList.remove('hide'); });
   $('btnCloseHelp').addEventListener('click', () => $('helpOv').classList.add('hide'));
   $('btnHelp').addEventListener('click', () => $('helpOv').classList.remove('hide'));
   $('btnPause').addEventListener('click', () => togglePause());
@@ -16034,8 +16561,8 @@ function updatePanels() {
     const selCls = G.sel && G.sel.key === k ? ' selrow' : '';
     return `<div class="urow${n ? '' : ' deadrow'}${selCls}" data-k="${k}"><span class="ic">${sp.ic}</span><span class="nm">${sp.name}</span><span class="ct">${n ? '×' + n : '—'}</span></div>`;
   }).join('');
-  $('tList').innerHTML = mkRows(T_ORDER);
-  $('xList').innerHTML = mkRows(X_ORDER);
+  setHTML($('tList'), mkRows(T_ORDER));
+  setHTML($('xList'), mkRows(X_ORDER));
   let tN = 0, xN = 0, nN = 0;
   for (const u of G.units) { if (u.gone) continue; if (u.fac === 'T') tN++; else if (u.fac === 'X') xN++; else nN++; }
   $('tTot').textContent = tN;
@@ -16055,10 +16582,10 @@ function updatePanels() {
     dEl.style.cssText = 'right:10px;top:52px;left:auto;width:196px;border-top-color:#a98fd0';
     document.getElementById('ui').appendChild(dEl);
   }
-  dEl.innerHTML = `<h3>☠️ デスエンジェル <span class="tot" style="color:#c9a7ff;font-size:14px">${dN}</span></h3>
+  setHTML(dEl, `<h3>☠️ デスエンジェル <span class="tot" style="color:#c9a7ff;font-size:14px">${dN}</span></h3>
     <div class="substat"><span>撃破 ${G.stats.D.kills}</span><span>戦力 ${factionPotential('D')}</span></div>
     <div class="substat"><span>🍄 農園 ${G.farms.length}</span><span>胞子捕食 ${(G.stats.D.fed || 0)}</span></div>
-    <div>${D_ORDER.map(k => { const sp = SP[k]; const n = counts[k] || 0; return `<div class="urow${n ? '' : ' deadrow'}"><span class="ic">${sp.ic}</span><span class="nm">${sp.name}</span><span class="ct">${n ? '×' + n : '—'}</span></div>`; }).join('')}</div>`;
+    <div>${D_ORDER.map(k => { const sp = SP[k]; const n = counts[k] || 0; return `<div class="urow${n ? '' : ' deadrow'}"><span class="ic">${sp.ic}</span><span class="nm">${sp.name}</span><span class="ct">${n ? '×' + n : '—'}</span></div>`; }).join('')}</div>`);
   // リバイブド・ゾンビパネル
   let hN2 = 0;
   for (const u of G.units) { if (!u.gone && u.fac === 'H') hN2++; }
@@ -16070,9 +16597,9 @@ function updatePanels() {
     hEl.style.cssText = 'right:10px;top:auto;bottom:12px;left:auto;width:196px;border-top-color:#c07830';
     document.getElementById('ui').appendChild(hEl);
   }
-  hEl.innerHTML = `<h3>🦀 リバイブド <span class="tot" style="color:#ff9e2a;font-size:14px">${hN2}</span></h3>
+  setHTML(hEl, `<h3>🦀 リバイブド <span class="tot" style="color:#ff9e2a;font-size:14px">${hN2}</span></h3>
     <div class="substat"><span>撃破 ${G.stats.H.kills}</span><span>寄生 ${G.stats.H.imp}</span></div>
-    <div>${H_ORDER.map(k => { const sp = SP[k]; const n = counts[k] || 0; return `<div class="urow${n ? '' : ' deadrow'}"><span class="ic">${sp.ic}</span><span class="nm">${sp.name}</span><span class="ct">${n ? '×' + n : '—'}</span></div>`; }).join('')}</div>`;
+    <div>${H_ORDER.map(k => { const sp = SP[k]; const n = counts[k] || 0; return `<div class="urow${n ? '' : ' deadrow'}"><span class="ic">${sp.ic}</span><span class="nm">${sp.name}</span><span class="ct">${n ? '×' + n : '—'}</span></div>`; }).join('')}</div>`);
   // グリーン・フルーパネル
   let gN2 = 0;
   for (const u of G.units) { if (!u.gone && u.fac === 'G') gN2++; }
@@ -16084,9 +16611,9 @@ function updatePanels() {
     gEl.style.cssText = 'right:10px;top:auto;bottom:225px;left:auto;width:196px;border-top-color:#6fa83a';
     document.getElementById('ui').appendChild(gEl);
   }
-  gEl.innerHTML = `<h3>🧟‍🦠 グリーン・フルー <span class="tot" style="color:#8ec83c;font-size:14px">${gN2}</span></h3>
+  setHTML(gEl, `<h3>🧟‍🦠 グリーン・フルー <span class="tot" style="color:#8ec83c;font-size:14px">${gN2}</span></h3>
     <div class="substat"><span>撃破 ${G.stats.G.kills}</span><span>感染 ${G.stats.G.inf}</span></div>
-    <div>${G_ORDER.map(k => { const sp = SP[k]; const n = counts[k] || 0; return `<div class="urow${n ? '' : ' deadrow'}"><span class="ic">${sp.ic}</span><span class="nm">${sp.name}</span><span class="ct">${n ? '×' + n : '—'}</span></div>`; }).join('')}</div>`;
+    <div>${G_ORDER.map(k => { const sp = SP[k]; const n = counts[k] || 0; return `<div class="urow${n ? '' : ' deadrow'}"><span class="ic">${sp.ic}</span><span class="nm">${sp.name}</span><span class="ct">${n ? '×' + n : '—'}</span></div>`; }).join('')}</div>`);
   // 冬虫夏草パネル
   let cN2 = 0;
   for (const u of G.units) { if (!u.gone && u.fac === 'C') cN2++; }
@@ -16098,9 +16625,9 @@ function updatePanels() {
     cEl.style.cssText = 'right:10px;top:auto;bottom:338px;left:auto;width:196px;border-top-color:#c8963a';
     document.getElementById('ui').appendChild(cEl);
   }
-  cEl.innerHTML = `<h3>🍄 冬虫夏草 <span class="tot" style="color:#d8a04a;font-size:14px">${cN2}</span></h3>
+  setHTML(cEl, `<h3>🍄 冬虫夏草 <span class="tot" style="color:#d8a04a;font-size:14px">${cN2}</span></h3>
     <div class="substat"><span>撃破 ${G.stats.C.kills}</span><span>感染 ${G.stats.C.inf}</span><span>胞子屍 ${G.corpses.filter(c => c.cSpore).length}</span></div>
-    <div>${C_ORDER.map(k => { const sp = SP[k]; const n = counts[k] || 0; return `<div class="urow${n ? '' : ' deadrow'}"><span class="ic">${sp.ic}</span><span class="nm">${sp.name}</span><span class="ct">${n ? '×' + n : '—'}</span></div>`; }).join('')}</div>`;
+    <div>${C_ORDER.map(k => { const sp = SP[k]; const n = counts[k] || 0; return `<div class="urow${n ? '' : ' deadrow'}"><span class="ic">${sp.ic}</span><span class="nm">${sp.name}</span><span class="ct">${n ? '×' + n : '—'}</span></div>`; }).join('')}</div>`);
   // ホワイトスパイクパネル
   let wN2 = 0;
   for (const u of G.units) { if (!u.gone && u.fac === 'W') wN2++; }
@@ -16112,9 +16639,9 @@ function updatePanels() {
     wEl.style.cssText = 'right:10px;top:52px;left:auto;width:196px;border-top-color:#e8e8f2';
     document.getElementById('ui').appendChild(wEl);
   }
-  wEl.innerHTML = `<h3>🦴 ホワイトスパイク <span class="tot" style="color:#f0ecf8;font-size:14px">${wN2}</span></h3>
+  setHTML(wEl, `<h3>🦴 ホワイトスパイク <span class="tot" style="color:#f0ecf8;font-size:14px">${wN2}</span></h3>
     <div class="substat"><span>撃破 ${G.stats.W.kills}</span><span>卵 ${G.eggs.filter(e => e.fac === 'W' && e.st !== 'open').length}</span></div>
-    <div>${W_ORDER.map(k => { const sp = SP[k]; const n = counts[k] || 0; return `<div class="urow${n ? '' : ' deadrow'}"><span class="ic">${sp.ic}</span><span class="nm">${sp.name}</span><span class="ct">${n ? '×' + n : '—'}</span></div>`; }).join('')}</div>`;
+    <div>${W_ORDER.map(k => { const sp = SP[k]; const n = counts[k] || 0; return `<div class="urow${n ? '' : ' deadrow'}"><span class="ic">${sp.ic}</span><span class="nm">${sp.name}</span><span class="ct">${n ? '×' + n : '—'}</span></div>`; }).join('')}</div>`);
   // アントライオンパネル
   let aN2 = 0;
   for (const u of G.units) { if (!u.gone && u.fac === 'A') aN2++; }
@@ -16126,9 +16653,9 @@ function updatePanels() {
     aEl.style.cssText = 'right:10px;top:52px;left:auto;width:196px;border-top-color:#c8a24a';
     document.getElementById('ui').appendChild(aEl);
   }
-  aEl.innerHTML = `<h3>🐜 アントライオン <span class="tot" style="color:#e0c05a;font-size:14px">${aN2}</span></h3>
+  setHTML(aEl, `<h3>🐜 アントライオン <span class="tot" style="color:#e0c05a;font-size:14px">${aN2}</span></h3>
     <div class="substat"><span>撃破 ${G.stats.A.kills}</span><span>産卵 ${G.stats.A.born}</span></div>
-    <div>${A_ORDER.map(k => { const sp = SP[k]; const n = counts[k] || 0; return `<div class="urow${n ? '' : ' deadrow'}"><span class="ic">${sp.ic}</span><span class="nm">${sp.name}</span><span class="ct">${n ? '×' + n : '—'}</span></div>`; }).join('')}</div>`;
+    <div>${A_ORDER.map(k => { const sp = SP[k]; const n = counts[k] || 0; return `<div class="urow${n ? '' : ' deadrow'}"><span class="ic">${sp.ic}</span><span class="nm">${sp.name}</span><span class="ct">${n ? '×' + n : '—'}</span></div>`; }).join('')}</div>`);
   const extraFac = [
     ['S', 'panelS', '🐺 SCP-939', '#c45a5a', S_ORDER],
     ['J', 'panelJ', '🔪 ジェフ', '#e8e8e8', J_ORDER],
@@ -16171,11 +16698,12 @@ function updatePanels() {
     let el = $(id);
     if (!el) { el = document.createElement('div'); el.id = id; el.className = 'fpanel clickable'; document.getElementById('ui').appendChild(el); }
     const st = G.stats[fac] || { kills: 0 };
-    el.innerHTML = `<h3>${title} <span class="tot" style="color:${col};font-size:14px">${n2}</span></h3>
+    setHTML(el, `<h3>${title} <span class="tot" style="color:${col};font-size:14px">${n2}</span></h3>
       <div class="substat"><span>撃破 ${st.kills}</span>${fac === 'srp' ? `<span>フェーズ ${G.srpPhase || 0}</span>` : ''}</div>${fac === 'srp' ? srpPanelInfo() : ''}${fac === 'fl' || fac === 'nm' ? xPanelInfo(fac) : ''}
-      <div>${order.map(k => { const sp = SP[k]; if (!sp) return ''; const n = counts[k] || 0; return `<div class="urow${n ? '' : ' deadrow'}"><span class="ic">${sp.ic}</span><span class="nm">${sp.name}</span><span class="ct">${n ? '×' + n : '—'}</span></div>`; }).join('')}</div>`;
+      <div>${order.map(k => { const sp = SP[k]; if (!sp) return ''; const n = counts[k] || 0; return `<div class="urow${n ? '' : ' deadrow'}"><span class="ic">${sp.ic}</span><span class="nm">${sp.name}</span><span class="ct">${n ? '×' + n : '—'}</span></div>`; }).join('')}</div>`);
   }
-  layoutPanels();
+  if (document.querySelectorAll('.fpanel').length !== (G._panelN || 0)) { G._panelN = document.querySelectorAll('.fpanel').length; layoutPanels(); G._dockKey = ''; }
+  arrangeFactionDock();
   if (G.openPanel) { const o = $(G.openPanel); if (o) o.classList.add('open'); }
   // 獲物パネル
   let preyEl = $('preyPanel');
@@ -16188,7 +16716,7 @@ function updatePanels() {
   }
   const preyRows = N_ORDER.map(k => `<div class="urow"><span class="ic">${SP[k].ic}</span><span class="nm">${SP[k].name}</span><span class="ct">${counts[k] || 0}</span></div>`).join('');
   const rlS = (typeof rlSummary === 'function' && rlSummary('human')) ? `\n    <div class="substat" style="font-size:10px;color:#9a9284"><span>🧠 学習: ${rlSummary('human')}</span></div>\n    <div class="substat" style="font-size:10px;color:#9a9284"><span>世代 ${RL.gen} / 死 ${RL.deaths}</span></div>` : '';
-  preyEl.innerHTML = `<h3 style="font-size:11px">🧍 獲物 <span class="tot" style="color:#c8b070;font-size:14px">${nN}</span></h3>${preyRows}${rlS}`;
+  setHTML(preyEl, `<h3 style="font-size:11px">🧍 獲物 <span class="tot" style="color:#c8b070;font-size:14px">${nN}</span></h3>${preyRows}${rlS}`);
   // クロック
   const clockEl = $('clock');
   if (clockEl) {
@@ -16313,39 +16841,6 @@ function drawMini() {
 }
 
 /* ── 結果表示 ── */
-function showEnd() {
-  const w = G.winner;
-  $('endTitle').textContent = w === 'T' ? '🧟 t-ウイルス 陣営の勝利' : w === 'X' ? '🦂 ゼノモーフ 陣営の勝利' : w === 'D' ? '☠️ デスエンジェルの勝利' : w === 'H' ? '🦀 リバイブドの勝利' : w === 'G' ? '🧟‍🦠 グリーン・フルーの勝利' : w === 'C' ? '🍄 冬虫夏草の勝利' : w === 'W' ? '🦴 ホワイトスパイクの勝利' : w === 'A' ? '🐜 アントライオンの勝利' : '☠ 相打ち';
-  $('endTitle').style.color = w === 'T' ? '#e05555' : w === 'X' ? '#3fd6b0' : w === 'D' ? '#c9a7ff' : w === 'H' ? '#ff9e2a' : w === 'G' ? '#8ec83c' : w === 'C' ? '#d8a04a' : w === 'W' ? '#f0ecf8' : w === 'A' ? '#e0c05a' : '#c8b070';
-  const t = Math.floor(G.time);
-  const rows = [
-    ['実験時間', `${Math.floor(t / 60)}分${t % 60}秒`, ''],
-    ['t-ウイルス 撃破数', G.stats.T.kills, 't'],
-    ['t-ウイルス 感染数', G.stats.T.inf, 't'],
-    ['t-ウイルス 戦力(残存+蘇生予定)', factionPotential('T'), 't'],
-    ['ゼノモーフ 撃破数', G.stats.X.kills, 'x'],
-    ['ゼノモーフ 寄生数', G.stats.X.imp, 'x'],
-    ['ゼノモーフ 戦力(残存+卵+懐胎)', factionPotential('X'), 'x'],
-    ['デスエンジェル 撃破数', G.stats.D.kills, ''],
-    ['リバイブド 撃破数', G.stats.H.kills, 'h'],
-    ['リバイブド 寄生数', G.stats.H.imp, 'h'],
-    ['リバイブド 戦力(残存+支配中)', factionPotential('H'), 'h'],
-    ['デスエンジェル 戦力', factionPotential('D'), ''],
-    ['グリーン・フルー 撃破数', G.stats.G.kills, ''],
-    ['グリーン・フルー 感染数', G.stats.G.inf, ''],
-    ['グリーン・フルー 戦力(残存+感染中)', factionPotential('G'), ''],
-    ['冬虫夏草 撃破数', G.stats.C.kills, ''],
-    ['冬虫夏草 感染数', G.stats.C.inf, ''],
-    ['冬虫夏草 戦力(残存+感染中)', factionPotential('C'), ''],
-    ['ホワイトスパイク 撃破数', G.stats.W.kills, ''],
-    ['ホワイトスパイク 戦力(残存+卵)', factionPotential('W'), ''],
-    ['アントライオン 撃破数', G.stats.A.kills, ''],
-    ['アントライオン 戦力(残存)', factionPotential('A'), ''],
-    ['残存獲物', G.units.filter(u => !u.gone && u.fac === 'N').length, ''],
-  ];
-  $('endStats').innerHTML = rows.map(r => `<div class="k">${r[0]}</div><div class="v ${r[2]}">${r[1]}</div>`).join('');
-  $('endOv').classList.remove('hide');
-}
 
 /* ── メインループ ── */
 let lastT = 0, panelT = 0;
