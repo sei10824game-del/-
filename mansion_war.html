@@ -1006,6 +1006,7 @@ function hasMemoryOf(u, o) {
 function canPerceive(u, o) {
   if (canSee(u, o)) { rememberSeen(u, o); return true; }
   if (hasMemoryOf(u, o)) return true;
+  if (o.sp.loud && dist(u.x, u.y, o.x, o.y) < o.sp.loud) return true; // 騒がしい拠点は音で気付かれる
   if (!unitHasSight(u) && unitHasHearing(u)) {
     const n = typeof unitNoise === 'function' ? unitNoise(o) : (o.moveSpd > 3 ? 1 : 0);
     if (n >= .9 && dist(u.x, u.y, o.x, o.y) < 280 + n * 80) return true;
@@ -3388,6 +3389,8 @@ SP.fpeAlice = {
       AT({ n: '黒棘の床', dmg: 12, reach: 0, windup: .4, active: .12, rec: .5, cd: 3.4, type: 'aoe', aoeR: 70, anim: 'stomp', snd: 'squelch' }),
       AT({ n: '髪の刃', dmg: 14, reach: 44, arc: 2.2, windup: .22, active: .3, rec: .3, cd: 1.6, multi: 3, anim: 'hairWhip', snd: 'slash' }),
       AT({ n: 'インク潜り', dmg: 34, reach: 22, arc: 2, windup: .3, active: .12, rec: .3, cd: 3.2, anim: 'ambush', aliceBlink: 1, knock: 220, snd: 'whoosh' }),
+      AT({ n: '紙の手裏剣', dmg: 12, reach: 0, windup: .26, active: .08, rec: .3, cd: 1.6, type: 'proj', projKind: 'bullet', minR: 40, maxR: 400, volley: 3, spread: .2, anim: 'brickThrow', snd: 'whoosh', projStyle: 'paper' }),
+      AT({ n: 'インクの鞭', dmg: 18, reach: 110, arc: 1.2, windup: .3, active: .14, rec: .36, cd: 2.2, anim: 'hairWhip', pull: 150, snd: 'slash' }),
       AT({ n: '狂気の微笑', dmg: 6, reach: 0, windup: .5, active: .2, rec: .5, cd: 9, type: 'roar', anim: 'grinScream', flash: 1, snd: 'screech' })
     ],
     [
@@ -3398,6 +3401,9 @@ SP.fpeAlice = {
       AT({ n: '地面叩き', dmg: 36, reach: 0, windup: .45, active: .16, rec: .55, cd: 2.2, type: 'aoe', aoeR: 90, anim: 'palmWave', down: 1, snd: 'thud' }),
       AT({ n: '悪魔突進', dmg: 38, reach: 28, windup: .32, active: .36, rec: .5, cd: 2.0, type: 'dash', dash: 280, anim: 'charge', knock: 300, snd: 'thud' }),
       AT({ n: '黒い咆哮', dmg: 14, reach: 0, windup: .5, active: .22, rec: .55, cd: 5, type: 'roar', anim: 'roar', snd: 'screech' }),
+      AT({ n: '黒い涙の雨', dmg: 14, reach: 0, windup: .36, active: .1, rec: .4, cd: 2.4, type: 'proj', projKind: 'bullet', minR: 40, maxR: 460, volley: 7, spread: .14, anim: 'abyssCall', snd: 'screech', projStyle: 'ink' }),
+      AT({ n: '奈落の視線', dmg: 44, reach: 0, windup: .7, active: .2, rec: .5, cd: 4.5, type: 'proj', projKind: 'laser', minR: 60, maxR: 560, anim: 'curseStare', snd: 'screech' }),
+      AT({ n: '触手髪の槍', dmg: 34, reach: 150, arc: .8, windup: .34, active: .14, rec: .4, cd: 2.2, anim: 'tentacleStorm', pull: 120, snd: 'rip' }),
       AT({ n: '奈落の手', dmg: 30, reach: 160, windup: .5, active: .16, rec: .6, cd: 3.6, type: 'aoe', aoeR: 110, hands: 1, anim: 'abyssCall', down: 1, snd: 'screech' }),
       AT({ n: '悪魔の抱擁', dmg: 30, reach: 24, windup: .4, active: .14, rec: .5, cd: 5, type: 'grab', hold: 'maul', anim: 'demonHug', cond: (u, t) => t.sp.mass < 4, snd: 'rip' }),
       AT({ n: '触手髪の嵐', dmg: 12, reach: 70, arc: 3, windup: .3, active: .5, rec: .4, cd: 2.2, multi: 6, anim: 'tentacleStorm', snd: 'slash' }),
@@ -4073,6 +4079,13 @@ const AANIM = {
   flailSpin: [{ t: 0, armR: [.5, .3] }, { t: .3, armR: [-1.6, .1], twist: 1.2 }, { t: .45, armR: [1.6, .02], twist: -1.6, lean: .2 }, { t: .6, armR: [-1.6, .1], twist: 1.8 }, { t: .75, armR: [1.6, .02], twist: -1.8, lean: .25 }, { t: 1, armR: [.5, .3], twist: 0 }],
   spineWhip: [{ t: 0, lean: .2, headP: .2 }, { t: .42, lean: -.5, headP: -.4, twist: 1, armR: [-2, .6], armL: [-2, .6] }, { t: .58, lean: .8, headP: .6, twist: -1.2, crouch: .3, armR: [1.6, .1], armL: [1.4, .2] }, { t: 1, lean: .3, twist: 0 }],
   qteLunge: [{ t: 0, crouch: .2, armR: [.5, .4] }, { t: .45, crouch: .5, lean: .5, armR: [-1, 1.4], headP: .3 }, { t: .56, crouch: .1, lean: .8, armR: [1.7, .02], twist: -.8, rootZ: -3 }, { t: .8, lean: .7, armR: [1.6, .05], twist: -1 }, { t: 1, armR: [.5, .3], lean: .2, twist: 0 }],
+  fingerBang: [{ t: 0, armR: [.3, .2] }, { t: .45, armR: [1.45, .02], lean: -.05, headP: -.05 }, { t: .6, armR: [1.3, .1], lean: -.15 }, { t: 1, armR: [.3, .2] }],
+  csFrenzy: [{ t: 0, armR: [.5, .6], armL: [.5, .6], lean: .3 }, { t: .45, armR: [-1.8, .9], armL: [1.5, .1], twist: .6, lean: .45 }, { t: .5, armR: [1.6, .1], armL: [-1.8, .9], twist: -.6 }, { t: .55, armR: [-1.8, .9], armL: [1.6, .1], twist: .6 }, { t: .6, armR: [1.6, .1], armL: [-1.6, .9], twist: -.6, lean: .5 }, { t: .65, armR: [-1.6, .9], armL: [1.6, .1], twist: .5 }, { t: 1, armR: [.6, .4], armL: [.6, .4], twist: 0, lean: .2 }],
+  runPunch: [{ t: 0, armR: [.9, 1.5], lean: .35 }, { t: .42, armR: [.4, 1.9], twist: .6, lean: .4 }, { t: .56, armR: [1.7, .02], twist: -.8, lean: .6 }, { t: 1, armR: [.6, .4], lean: .3 }],
+  runSlash: [{ t: 0, armR: [.8, .6], lean: .35 }, { t: .42, armR: [-2.4, 1], twist: .7, lean: .4 }, { t: .56, armR: [1.8, .05], twist: -.9, lean: .65 }, { t: 1, armR: [.7, .3], lean: .3 }],
+  runTackle: [{ t: 0, lean: .4 }, { t: .42, armR: [.9, 1.8], armL: [.9, 1.8], twist: -.9, lean: .55, crouch: .2 }, { t: .56, armR: [.6, 1.6], armL: [.7, 1.6], twist: .4, lean: .85, crouch: .3, headP: .3 }, { t: 1, lean: .35 }],
+  runGrab: [{ t: 0, armR: [.8, .6], armL: [.8, .6], lean: .35 }, { t: .42, armR: [1.2, .4], armL: [1.2, .4], lean: .55 }, { t: .56, armR: [1.6, .05], armL: [1.6, .05], lean: .7, jaw: .6 }, { t: 1, armR: [1.3, .3], armL: [1.3, .3], lean: .4 }],
+  slideTackle: [{ t: 0, lean: .3 }, { t: .42, crouch: .6, lean: -.4, legR: [1.5, .1, 0], legL: [-.2, 1.4, 0], armR: [-.6, .3] }, { t: .6, crouch: .7, lean: -.5, legR: [1.6, .05, 0], legL: [-.2, 1.4, 0], armR: [1.6, .05] }, { t: 1, crouch: .1, lean: .1 }],
   /* アリス */
   hairWhip: [{ t: 0, headP: .1 }, { t: .4, headP: -.5, twist: .6, lean: -.2, armR: [.3, .6], armL: [.3, .6] }, { t: .55, headP: .5, twist: -.8, lean: .35 }, { t: .7, headP: .3, twist: .6, lean: .2 }, { t: 1, headP: .1, twist: 0 }],
   ambush: [{ t: 0, crouch: .7, lean: .5, armR: [.4, 1.4] }, { t: .42, crouch: .75, lean: .55, armR: [1.4, 1.6], headP: .3 }, { t: .56, crouch: 0, lean: -.25, armR: [-2.6, .2], rootZ: -5, headP: -.3 }, { t: 1, armR: [.5, .3], crouch: .1 }],
@@ -4757,6 +4770,7 @@ function render() {
 
   list.sort((a, b) => a.d - b.d);
   for (const it of list) it.f(it.a);
+  drawMkLinks();
   collectLights();
   renderLighting(W, H, z, ox, oy); // 光と闇 (乗算)
   ctx.setTransform(dpr * z, 0, 0, dpr * z, dpr * ox, dpr * oy);
@@ -4959,6 +4973,7 @@ function drawUnit(u) {
   ctx.save(); // 描画途中で例外が出ても変換・透明度が漏れないように
   try {
     const pose = poseFor(u);
+    if (u.mkCtrl) drawMkMark(u);
     if (u.state === 'resin') drawResin(u); // 巣の樹脂で固定されている
     if (u.crawl) ctx.translate(0, (BP.legU + BP.legL) * u.sp.scale * u.sizeMul * .8); // 両脚を失い這う
     const lite = G.lod && u.sp.kind === 'biped' && !u.sp.unique && !u.sp.superArmor && G.sel !== u;
@@ -4968,6 +4983,7 @@ function drawUnit(u) {
     else if (u.sp.kind === 'hugger') drawHugger(u, pose);
     else if (u.sp.kind === 'burster') drawBurster(u, pose);
     if (!lite) {
+      if (u.sp.kind === 'biped' && (u.key === 'makima' || u.key === 'denji')) drawCsExtras(u, pose);
       if (u.fac === 'pg' && u.sp.kind === 'biped') drawPgExtras(u, pose);
       if (u.sp.ov && (u.fac === 'srp' || u.fac === 'fl' || u.fac === 'nm' || u.fac === 'pg')) { drawSRPOverlay(u); if (u.sp.kind === 'biped') drawXOverlayParts(u, pose); }
     }
@@ -7280,6 +7296,7 @@ function drawCorpseRaw(c) {
 /* ── 弾・パーティクル・軌跡 ── */
 function drawProj(p) {
   const y = p.y * SQ - p.z;
+  if (p.style && drawProjStyle(p, y)) return; // 原作に合わせた見た目
   if (p.kind === 'rocket') {
     const a = Math.atan2(p.vy * SQ, p.vx);
     ctx.save(); ctx.translate(p.x, y); ctx.rotate(a);
@@ -7953,8 +7970,8 @@ function brawlerOnHit(att, tgt, dmg) {
   const n = nitaOwner(att);
   if (n && !n.gone) {
     let gain;
-    if (att.key === 'nBearH' || att.key === 'nBearB') gain = .04; // クマの攻撃はウルト溜まり控えめ
-    else { gain = Math.min(.20, n._ultHit || .10) * .5; n._ultHit = 0; }
+    if (att.key === 'nBearH' || att.key === 'nBearB') gain = .022; // クマの攻撃はウルト溜まり控えめ
+    else { gain = Math.min(.20, n._ultHit || .10) * .3; n._ultHit = 0; }
     n.ult = Math.min(1, (n.ult || 0) + gain);
     n.hyper = Math.min(1, (n.hyper || 0) + .055);
     n.idleT = 0;
@@ -8029,7 +8046,8 @@ function dealDamage(att, tgt, dmg, o = {}) {
   if (tgt.fac === 'srp' && att && att.fac !== 'srp' && dmg > 0) dmg = srpOnHit(tgt, att, dmg, o); // 寄生体: 攻撃毎の適応
   if ((tgt.fac === 'fl' || tgt.fac === 'nm') && dmg > 0) dmg = xOnHit(tgt, att, dmg, o); // シールド/骨殻/切断
   if (tgt.fac === 'pg' && dmg > 0) dmg = pgOnHit(tgt, att, dmg); // 鎧/背中の弱点/盾/サドラーの眼
-  if (att && att.cutMul && dmg > 0) dmg *= att.cutMul; // 腕を切断されたネクロモーフは弱る
+  if (att && att.cutMul && dmg > 0) dmg *= att.cutMul;
+  if (att && att.dmgMul && dmg > 0) dmg *= att.dmgMul; // 黒チェンソーマンの成長など // 腕を切断されたネクロモーフは弱る
   if (dmg > 0) { if (tgt.lastHitT == null || G.time - tgt.lastHitT > .6) tgt.dmgGhost = Math.min(1, tgt.hp / tgt.mhp); tgt.lastHitT = G.time; }
   tgt.hp -= dmg;
   if (att && att.fac === 'srp' && dmg > 0 && tgt.fac !== 'srp') srpInfect(tgt, att); // COTH 感染
@@ -8161,6 +8179,7 @@ function applyFormLook(u, f) {
 }
 function isInfectHost(u) {
   if (!u || !u.sp) return false;
+  if (u.fac === 'pg') return false; // プラーガ宿主は他のウイルスに感染しない (ジョーカー化・t-ウイルス等も無効)
   if (u.sp.kind === 'bird') return false;
   if (u.fac === 'N' && u.sp.mortal) return true;
   if (u.sp.infectable) return true;
@@ -8200,7 +8219,8 @@ function spawnMz(key, x, y, o = {}) {
 }
 function killUnit(att, u, o = {}) {
   if (nmSurvive(att, u, o)) return; // ネクロモーフ: 四肢を切断しなければ倒れない
-  if (pgSurvive(att, u, o)) return; // リヘナラドール: 体内の寄生体を全て潰すまで倒れない
+  if (pgSurvive(att, u, o)) return;
+  if (mkSurvive(att, u, o)) return; // マキマ: 身代わり復活 / 視界内で倒された者は寝返る // リヘナラドール: 体内の寄生体を全て潰すまで倒れない
   if ((u.key === 'mutZombie' || u.key === 'mutHusk') && (u.mutLives == null ? u.sp.mutLives : u.mutLives) > 0) {
     u.mutLives = (u.mutLives == null ? u.sp.mutLives : u.mutLives) - 1;
     u.hp = u.mhp / 3;
@@ -8285,6 +8305,7 @@ function killUnit(att, u, o = {}) {
   if (att && !att.gone && att.fac !== u.fac && att.fac !== 'N') {
     G.stats[att.fac].kills++;
     att.kills++;
+    csOnKill(att, u);
     if (att.fac === 'X') checkEvolve(att);
     if (att.fac === 'T') checkEvolve(att);
   }
@@ -8701,6 +8722,10 @@ function hostileTo(u, o) {
   if (u.fac === 'pv') return o.fac !== 'pv';
   if (u.fac === 'srp') return o.fac !== 'srp';
   if (o.fac === 'srp') return true;
+  if (u.fac === 'mk') return o.fac !== 'mk';
+  if (o.fac === 'mk') return true;
+  if (u.fac === 'cs') return o.fac !== 'cs';
+  if (o.fac === 'cs') return true;
   if (u.fac === 'fl') return o.fac !== 'fl';
   if (o.fac === 'fl') return true;
   if (u.fac === 'nm') return o.fac !== 'nm';
@@ -8797,6 +8822,7 @@ function canUse(u, d, tgt) {
   if (tgt && u.sp.kind !== 'bird' && d.type !== 'proj' && d.type !== 'aoe' && !walkAtPx(tgt.x, tgt.y)) return false;
   const dd = tgt ? dist(u.x, u.y, tgt.x, tgt.y) - u.r - tgt.r : 999;
   if (d.aliceBlink) { if (!tgt || dd > 380) return false; }
+  else if (d.type === 'run') { if (!tgt || (u.moveSpd || 0) < Math.max(36, (u.runSpd || 60) * .5) || dd > d.reach + 130) return false; } // 走っている時だけ
   else if (d.type === 'proj' || d.type === 'summon') {
     if (!tgt || dd < d.minR || dd > d.maxR) return false;
   } else if (d.type === 'leap') {
@@ -8872,6 +8898,7 @@ function updateAttack(u, dt) {
   }
   if (!a.fired && a.t >= d.windup) { a.fired = true; fireAttack(u, d, a); }
   if (!u.atk) return; // 寄生などで攻撃が中断された
+  if (d.type === 'run') { runAttackStep(u, d, a, dt); if (!u.atk) return; }
   // マルチヒット
   if (d.multi && a.fired && a.t < d.windup + d.active && a.t >= a.nextHit && a.hitCount < d.multi) {
     a.nextHit = a.t + d.active / d.multi;
@@ -9002,7 +9029,12 @@ function fireAttack(u, d, a) {
       if (tgt && tgt.sp.kind === 'bird') { tx = tgt.x; ty = tgt.y; }
       if (d.projKind === 'laser') { fireLaser(u, tx, ty, d.dmg); break; }
       if (d.projKind === 'crack') { fireCrack(u, tx, ty, d.dmg); break; }
-      addProj(d.projKind, u.x + Math.cos(u.faceA) * 16, u.y + Math.sin(u.faceA) * 16, 0, tx, ty, u.fac, u, d.dmg);
+      { const n = d.volley || 1, st = projStyleOf(u, d), base = angTo(u.x, u.y, tx, ty), R0 = dist(u.x, u.y, tx, ty);
+        for (let i = 0; i < n; i++) { // 連射・扇状の投擲
+          const a2 = base + (i - (n - 1) / 2) * (d.spread || .16);
+          addProj(d.projKind, u.x + Math.cos(u.faceA) * 16, u.y + Math.sin(u.faceA) * 16, 0, u.x + Math.cos(a2) * R0, u.y + Math.sin(a2) * R0, u.fac, u, d.dmg);
+          const pp = G.projs[G.projs.length - 1]; if (pp && pp.src === u && st) pp.style = st;
+        } }
       if (d.projKind === 'bullet' || d.projKind === 'rocket') addFlash(u.x + Math.cos(u.faceA) * 16, u.y + Math.sin(u.faceA) * 16, d.projKind === 'rocket' ? 110 : 64, '255,215,150', .85, .09); // 銃口炎
       if (d.projKind === 'rocket') addLog('🚀 ネメシスがロケットを発射した！', 't');
       if (d.sun) { (G.suns=G.suns||[]).push({ x: tx, y: ty, t: 6, src: u }); }
@@ -9017,6 +9049,7 @@ function fireAttack(u, d, a) {
       break;
     }
     case 'dash': break; // updateAttack側で処理
+    case 'run': break; // 走り攻撃: runAttackStep で接触時に命中
     case 'roar': {
       Sfx.play('screech', u.x, u.y);
       addShock(u.x, u.y, 12, 240, 'rgba(150,230,200,.4)');
@@ -9404,6 +9437,7 @@ function aiThink(u) {
     if (u.aggro && !u.inTv) u.tgt = u.aggro;
     // ハイブ情報共有: ゼノ個体が捉えた敵位置を全個体で共有する
     if (u.fac === 'X' && u.tgt && !u.tgt.gone) hiveRecordIntel(u);
+    if (u.mkCtrl && u.key !== 'makima') { thinkMkPawn(u); return; } // マキマの支配下
     switch (u.sp.ai) {
       case 'prey': thinkPrey(u); break;
       case 'preyBird': thinkPreyBird(u); break;
@@ -9487,6 +9521,7 @@ function aiThink(u) {
       case 'garrador': thinkGarrador(u); break;
       case 'armadura': thinkArmadura(u); break;
       case 'drill': thinkDrill(u); break;
+      case 'makima': thinkMakima(u); break;
       case 'zomboss': thinkZomboss(u); break;
       case 'spider': thinkSpider(u); break;
       case 'spNurse': thinkSpNurse(u); break;
@@ -12596,7 +12631,8 @@ function thinkMrP(u) {
   if (u.ult >= 1) {
     u.ult = 0;
     if (u.hyper >= 1) { u.hyper = 0; u.hyperT = 8; addLog('🐧 ミスターPがハイパー状態に入った', 'mp', true); }
-    (G.hubs = G.hubs || []).push({ x: u.x + rnd(-20, 20), y: u.y + rnd(-16, 16), t: 0, spawn: 0, hp: 80, hyper: u.hyperT > 0 ? 1 : 0, owner: u.id });
+    const hub = spawnUnit('porterHub', u.x + rnd(-20, 20), u.y + rnd(-16, 16), { force: true }); // 拠点はユニットとして敵に狙われる
+    if (hub) { hub.hubHyper = u.hyperT > 0 ? 1 : 0; hub.hubOwner = u.id; }
     addLog('🧳 ポーター拠点が設置された', 'mp');
   }
   if (!u.tgt || u.tgt.gone) u.tgt = acquireTarget(u, 400);
@@ -12815,6 +12851,7 @@ function stepSim(dt) {
   updateFlashes(dt);
   updateFloodNecro(dt);
   updatePlagaExtra(dt);
+  updateChainsawFacs(dt);
   if (G.quicks) {
     for (let i = G.quicks.length - 1; i >= 0; i--) {
       const q = G.quicks[i]; q.t -= dt;
@@ -13438,7 +13475,7 @@ function startGame(cfg) {
   spawnUnit('fen', randWalkIn(fenR).x, randWalkIn(fenR).y, { silent: true, force: true });
   addLog('🖐️ 金髪の巨大な「フェン」が館を歩き始めた', '5', true);
   spawnMike(); dropMoreWeapons();
-  const gated = [['6', spawnLocust], ['8', spawnVerity], ['0', spawnSlender], ['jk', spawnJoker], ['hg', spawnHorga], ['pg', spawnPlaga], ['bk', spawnBarakoa], ['nt', spawnNita], ['mp', spawnMrP], ['mz', spawnMcZombies], ['gd', spawnGuardians], ['sp', spawnSpiders], ['pv', spawnZomboss], ['srp', spawnSRP], ['fl', spawnFlood], ['nm', spawnNecro]];
+  const gated = [['6', spawnLocust], ['8', spawnVerity], ['0', spawnSlender], ['jk', spawnJoker], ['hg', spawnHorga], ['pg', spawnPlaga], ['bk', spawnBarakoa], ['nt', spawnNita], ['mp', spawnMrP], ['mz', spawnMcZombies], ['gd', spawnGuardians], ['sp', spawnSpiders], ['pv', spawnZomboss], ['srp', spawnSRP], ['fl', spawnFlood], ['nm', spawnNecro], ['mk', spawnMakima], ['cs', spawnChainsawMan]];
   for (const [f, fn] of gated) if (facOn(f)) fn();
   const fRoom = rpick(G.map.preyRooms);
   spawnUnit('ghostface', randWalkIn(fRoom).x, randWalkIn(fRoom).y, { silent: true, force: true });
@@ -15387,6 +15424,7 @@ function drawPgExtras(u, pose) { // 骨格に沿った装飾 (首の折れ/牛�
 function drawPgPlan(u, pose, S, x, gy, T, strike, mv, ph, pal, dir) {
   const sp = u.sp;
   switch (sp.plan) {
+    case 'hub': drawHubPlan(u, S, x, gy, T); return true;
     case 'lago': { // デル・ラーゴ: 巨大なオオサンショウウオ
       const cy = gy - S * .7 - (mv ? Math.abs(Math.sin(ph)) * S * .06 : 0);
       ctx.fillStyle = 'rgba(40,70,90,.35)'; ctx.beginPath(); ctx.ellipse(x, gy, S * 2.4, S * .7, 0, 0, TAU); ctx.fill();
@@ -15787,6 +15825,8 @@ const FACTION_DEFS = [
   { f: 'nt', name: 'ニタ', icon: '🐻', col: '#e07030', group: 'ブロスタ', panel: 'panelNt' },
   { f: 'mp', name: 'ミスターP', icon: '🐧', col: '#4a6aa0', group: 'ブロスタ', panel: 'panelMp' },
   { f: 'O', name: 'スライム', icon: '🟢', col: '#5cb85c', group: 'ドラクエ', panel: 'panelO' },
+  { f: 'mk', name: 'マキマ', icon: '⛓️', col: '#e0503a', group: 'チェンソーマン', panel: 'panelMk', win: '館の全てがマキマの犬になった' },
+  { f: 'cs', name: 'チェンソーマン', icon: '🪚', col: '#f08a3a', group: 'チェンソーマン', panel: 'panelCs', win: 'チェンソーの音だけが館に響く' },
   { f: 'pv', name: 'ゾンボス', icon: '🧟‍♂️', col: '#6aaa50', group: 'PvZ', panel: 'panelPv' },
 ];
 const FAC_BY = {}; for (const d of FACTION_DEFS) FAC_BY[d.f] = d;
@@ -15921,6 +15961,343 @@ function initFactionsForGame() {
   for (const d of FACTION_DEFS) if (!G.stats[d.f]) G.stats[d.f] = { kills: 0, born: 0, lost: 0 };
 }
 
+
+/* ══════════════════════════════════════════════════════════
+   チェンソーマン: マキマ陣営 (fac 'mk') / チェンソーマン陣営 (fac 'cs')
+   ・走り攻撃 (移動しながら勢いをつけて殴る/斬る/掴む)
+   ・原作に合わせた弾・投擲物の見た目
+   ・ポーター拠点のユニット化
+   ══════════════════════════════════════════════════════════ */
+/* ── 戦力の目安 (マキマの支配判定・黒チェンソーマンの成長判定) ── */
+function unitPower(u) {
+  let dps = 0;
+  for (const d of (u.atkList || u.sp.atks || [])) dps = Math.max(dps, (d.dmg || 0) * (d.multi || 1) / Math.max(.35, d.cd || 1));
+  return u.mhp * (u.sp.superArmor ? 1.3 : 1) + dps * 22 * (u.dmgMul || 1);
+}
+
+/* ── マキマ ── */
+SP.makima = {
+  name: 'マキマ', ic: '⛓️', fac: 'mk', kind: 'biped', head: 'human', ai: 'makima', unique: 1, superArmor: 1, mkImmune: 1,
+  r: 9, scale: 1.08, hp: 900, walk: 44, run: 96, mass: 2,
+  pal: { skin: '#f2dccb', skinD: '#b8a090', skinL: '#fff2e6', cloth: '#f2f0ec', clothD: '#2a2a32', clothL: '#ffffff', acc: '#1a1a22', eye: '#e8c040', blood: '#8a1518' },
+  pp: {}, fx: { makima: 1 }, hair: '#b85a3a',
+  gait: { amp: .42, freq: .8, armSwing: .3, bob: .3 }, pose0: { armS: .12, armE: .2, lean: 0, crouch: 0, headP: .02 },
+  atks: [
+    AT({ n: 'ばん', dmg: 46, reach: 0, windup: .6, active: .08, rec: .6, cd: 2.6, type: 'proj', projKind: 'bullet', minR: 40, maxR: 520, anim: 'fingerBang', snd: 'boom', projStyle: 'bang' }),
+    AT({ n: '圧殺', dmg: 38, reach: 0, windup: .7, active: .16, rec: .7, cd: 5, type: 'aoe', aoeR: 110, anim: 'fingerBang', down: 1, snd: 'thud' }),
+    AT({ n: '手刀', dmg: 22, reach: 16, windup: .24, active: .12, rec: .3, cd: .8, anim: 'jab', snd: 'hit' }),
+  ],
+  desc: 'マキマ。自分より明らかに弱い敵は目にしただけで支配下に置く。強い敵も、視界内で自陣営に倒されれば寝返る。支配した者の攻撃を全て使い、死んでも支配下の者を身代わりに復活する。'
+};
+/* ── チェンソーマン (デンジ) ── */
+SP.denji = {
+  name: 'チェンソーマン', ic: '🪚', fac: 'cs', kind: 'biped', head: 'human', ai: 'srp', unique: 1, superArmor: 1, mkImmune: 1,
+  r: 9, scale: 1.08, hp: 520, walk: 62, run: 170, mass: 2,
+  pal: { skin: '#e8c8a8', skinD: '#a88868', skinL: '#f8e0c8', cloth: '#f0eeea', clothD: '#1e1e24', clothL: '#ffffff', acc: '#e05a20', eye: '#1a1a1a', blood: '#9a1010' },
+  pp: {}, fx: { csman: 1 }, hair: '#e8c060',
+  gait: { amp: .72, freq: 1.3, armSwing: .8, bob: .5 }, pose0: { armS: .5, armE: .6, lean: .18, crouch: .08, headP: .1 },
+  forms: [{ hpm: 0, spdMul: 1.3, scale: 1.3, log: '🖤 デンジの心臓でポチタが目覚めた —— 黒いチェンソーマン！', pal: { skin: '#141418', skinD: '#060608', skinL: '#2a2a32', cloth: '#141418', clothD: '#060608', clothL: '#2a2a32', eye: '#ffffff', acc: '#d84a1a' }, fx: { csman: 2 }, walk: 70, run: 200 }],
+  formAtks: [[
+    AT({ n: 'チェンソー連撃', dmg: 11, reach: 20, arc: 2, windup: .16, active: .44, rec: .24, cd: .9, multi: 4, anim: 'csFrenzy', leech: .45, snd: 'rip' }),
+    AT({ n: '頭のチェンソー突き', dmg: 30, reach: 20, arc: 1.2, windup: .26, active: .12, rec: .34, cd: 1.6, anim: 'headbutt', leech: .4, snd: 'rip' }),
+    AT({ n: '飛びかかり両断', dmg: 34, reach: 20, windup: .24, active: .3, rec: .36, cd: 2.4, type: 'leap', leap: 230, anim: 'pounce', leech: .3, down: 1, snd: 'rip' }),
+    AT({ n: 'チェンソー回転斬り', dmg: 26, reach: 0, windup: .3, active: .18, rec: .4, cd: 3.2, type: 'aoe', aoeR: 66, anim: 'bigSpin', leech: .25, knock: 240, snd: 'rip' }),
+    AT({ n: '走りチェンソー', dmg: 30, reach: 22, arc: 1.8, windup: .14, active: .34, rec: .3, cd: 2.2, type: 'run', anim: 'runSlash', leech: .35, knock: 300, snd: 'rip' }),
+  ], [
+    AT({ n: '四腕連斬', dmg: 16, reach: 26, arc: 2.6, windup: .14, active: .5, rec: .24, cd: .8, multi: 6, anim: 'csFrenzy', leech: .4, snd: 'rip' }),
+    AT({ n: '引き裂き', dmg: 40, reach: 24, windup: .3, active: .14, rec: .4, cd: 4, type: 'grab', hold: 'maul', anim: 'grab', snd: 'rip', cond: (u, t) => t.sp.mass < 8 }),
+    AT({ n: 'チェーン鞭', dmg: 30, reach: 120, arc: 1.4, windup: .3, active: .14, rec: .4, cd: 2.6, anim: 'tongue', pull: 220, snd: 'slash' }),
+    AT({ n: '黒の突進', dmg: 44, reach: 26, arc: 2, windup: .12, active: .36, rec: .3, cd: 2, type: 'run', anim: 'runTackle', leech: .3, knock: 420, down: 1, snd: 'rip' }),
+    AT({ n: '走り掴み', dmg: 30, reach: 22, windup: .12, active: .34, rec: .3, cd: 4, type: 'run', hold: 'maul', anim: 'runGrab', snd: 'rip', cond: (u, t) => t.sp.mass < 8 }),
+    AT({ n: '叫び', dmg: 16, reach: 0, windup: .5, active: .3, rec: .5, cd: 8, type: 'roar', anim: 'roar', snd: 'screech' }),
+  ]],
+  atks: [],
+  desc: 'チェンソーマン。攻撃のたびに血を啜って回復する俊敏な悪魔。倒れるとポチタが目覚め、4本腕の黒いチェンソーマンへ変貌する。黒い姿は敵を倒すたびに強くなる。マキマの支配を受けない。'
+};
+SP.denji.atks = SP.denji.formAtks[0];
+
+/* ── マキマの支配 ── */
+function makimaUnit() { return G.units.find(u => !u.gone && !u.dead && u.key === 'makima'); }
+function mkControl(o, mk, why) {
+  if (o.grab) releaseGrab(o); if (o.grabbedBy) releaseGrab(o.grabbedBy);
+  interrupt(o); o.atk = null;
+  o.fac = 'mk'; o.team = 'mk'; o.mkCtrl = mk ? mk.id : 1; o.tgt = null; o.aggro = null; o.dest = null;
+  o.inf = 0; o.infG = 0; o.infC = 0; o.coth = 0; o.jokerRate = 0;
+  G.stats.mk.conv = (G.stats.mk.conv || 0) + 1;
+  addShock(o.x, o.y, 6, 40, 'rgba(230,70,50,.6)');
+  if (mk) G.mkLinks = (G.mkLinks || []).concat([{ a: mk.id, b: o.id, t: 0 }]);
+  if (why || rchance(.35)) addLog(`⛓️ ${o.sp.name}がマキマの支配下に置かれた${why ? ' — ' + why : ''}`, 'mk', !!why);
+  mkRefreshAtks();
+}
+function mkRefreshAtks() {
+  for (const mk of G.units) if (!mk.gone && !mk.dead && mk.key === 'makima') mkRefreshAtksOf(mk);
+}
+function mkRefreshAtksOf(mk) {
+  const seen = new Set(SP.makima.atks.map(a => a.n)), list = SP.makima.atks.slice();
+  for (const o of G.units) {
+    if (o.gone || !o.mkCtrl || o === mk) continue;
+    for (const d of (o.atkList || o.sp.atks || [])) {
+      if (seen.has(d.n) || d.selfBoom || d.hold === 'implant' || d.aliceBlink || d.hands || d.tentSlam || d.type === 'summon') continue;
+      seen.add(d.n); list.push(d);
+      if (list.length >= 18) break;
+    }
+    if (list.length >= 18) break;
+  }
+  mk.atkList = list;
+}
+/* killUnit から: マキマの身代わり復活 / 視界内での寝返り */
+function mkSurvive(att, u, o) {
+  if (u.key === 'makima') {
+    const pawns = G.units.filter(v => !v.gone && !v.dead && v.mkCtrl && v !== u).sort((a, b) => b.mhp - a.mhp);
+    if (pawns.length) {
+      const p = pawns[0];
+      p.hp = 0; p.gone = true; p.dead = true; addBlood(p.x, p.y, 10, 14, p.pal && p.pal.blood); addGore(p.x, p.y, 8, 8);
+      u.hp = u.mhp; u.dead = false; interrupt(u); u.atk = null;
+      addLog(`⛓️ マキマへの致命傷は ${p.sp.name} が肩代わりした —— マキマは何事もなく立ち上がる`, 'mk', true);
+      addShock(u.x, u.y, 10, 120, 'rgba(230,70,50,.6)'); Sfx.play('sting', u.x, u.y);
+      mkRefreshAtks();
+      return true;
+    }
+    return false;
+  }
+  if (att && att.fac === 'mk' && u.fac !== 'mk' && u.fac !== 'N' && !u.sp.mkImmune && !(o && o.gib)) {
+    const mk = makimaUnit();
+    if (mk && dist(mk.x, mk.y, u.x, u.y) < 380 && countFac('mk') < (G.capMk || 45)) {
+      u.hp = Math.round(u.mhp * .5); u.dead = false;
+      mkControl(u, mk, '倒されて寝返った');
+      return true;
+    }
+  }
+  return false;
+}
+function thinkMakima(u) {
+  u.mkT = (u.mkT || 0) - .1;
+  if (u.mkT <= 0) { // 目視した「明らかに弱い」敵を支配する
+    u.mkT = .6;
+    if (!u.atkList || u.atkList === SP.makima.atks) mkRefreshAtks();
+    const myP = unitPower(u);
+    let best = null, bp = 0;
+    Spatial.query(u.x, u.y, 330, _q);
+    for (const o of _q) {
+      if (o.gone || o.dead || o === u || o.fac === 'mk' || o.fac === 'N' || o.sp.mkImmune || !hostileTo(u, o)) continue;
+      if (!canSee(u, o)) continue;
+      const p = unitPower(o);
+      if (p < myP * .45 && p > bp) { bp = p; best = o; }
+    }
+    if (best && countFac('mk') < (G.capMk || 45)) mkControl(best, u);
+  }
+  thinkMonster(u);
+  // 支配下が戦っている間は、マキマ自身は後方に控える
+  if (u.tgt && !u.tgt.gone && G.units.some(v => !v.gone && v.mkCtrl && v.tgt === u.tgt) && dist(u.x, u.y, u.tgt.x, u.tgt.y) < 120 && u.state !== 'attack') {
+    const a = angTo(u.tgt.x, u.tgt.y, u.x, u.y); setDest(u, u.x + Math.cos(a) * 80, u.y + Math.sin(a) * 80, true);
+  }
+}
+function thinkMkPawn(u) { // 支配下: マキマを守り、マキマの敵を狙う
+  const mk = makimaUnit();
+  if (mk && (!u.tgt || u.tgt.gone || u.tgt.dead)) { if (mk.tgt && !mk.tgt.gone && !mk.tgt.dead) u.tgt = mk.tgt; }
+  if (mk && !u.tgt && dist(u.x, u.y, mk.x, mk.y) > 140) { if (!u.dest || (u.destT || 0) > 3) setDest(u, mk.x + rnd(-60, 60), mk.y + rnd(-40, 40)); return; }
+  if (u.sp.walk === 0 || u.sp.ai === 'xStatic' || u.sp.ai === 'srpNexus') { thinkSrpNexus(u); return; }
+  thinkMonster(u);
+}
+/* ── 黒いチェンソーマンの成長 ── */
+function csOnKill(att, u) {
+  if (!att || att.fac !== 'cs' || att.gone || u.fac === 'N') return;
+  if (att.key !== 'denji' || att.form < 1) { att.hp = Math.min(att.mhp, att.hp + att.mhp * .06); return; } // 第1形態は倒すと少し回復
+  let gain = 1;
+  const vp = unitPower(u);
+  Spatial.query(u.x, u.y, 240, _q);
+  for (const o of _q) if (!o.gone && !o.dead && o !== att && o !== u && o.fac !== 'cs' && hostileTo(att, o) && unitPower(o) < vp && canSee(o, att)) { gain++; o.panicT = 2; } // 自分より強い者が倒されるのを見た敵がいると更に伸びる
+  gain = Math.min(gain, 3);
+  att.csLv = (att.csLv || 0) + gain;
+  const hpF = att.hp / att.mhp;
+  att.mhp = Math.round(att.mhp * Math.pow(1.035, gain)); att.hp = Math.min(att.mhp, att.mhp * hpF + att.mhp * .08);
+  att.dmgMul = Math.min(3, (att.dmgMul || 1) * Math.pow(1.03, gain));
+  att.spdMul = Math.min(2.2, att.spdMul * Math.pow(1.012, gain));
+  att.formScale = Math.min(1.7, (att.formScale || 1) * Math.pow(1.006, gain));
+  if (att.csLv % 5 < gain) addLog(`🖤 黒いチェンソーマンがさらに強くなった (Lv ${att.csLv})`, 'cs', true);
+}
+function updateChainsawFacs(dt) {
+  if (G.mkLinks) { for (const l of G.mkLinks) l.t += dt; G.mkLinks = G.mkLinks.filter(l => l.t < 1.2); }
+  // ポーター拠点: ユニットとして存在し、敵から狙われる
+  for (const h of G.units) {
+    if (h.gone || h.key !== 'porterHub') continue;
+    h.spawnT = (h.spawnT == null ? 3 : h.spawnT) - dt;
+    if (h.spawnT <= 0) {
+      h.spawnT = 11;
+      const k = h.hubHyper ? 'porterUp' : 'porter';
+      for (let j = 0; j < (h.hubHyper ? 2 : 1); j++) { const p = spawnUnit(k, h.x + rnd(-14, 14), h.y + rnd(-10, 10), { force: true }); if (p) p.mrPId = h.hubOwner; }
+    }
+  }
+}
+function spawnMakima() {
+  G.capMk = 45;
+  const r = spawnRoom(), p = randWalkIn(r);
+  spawnUnit('makima', (r.cx + .5) * TILE, (r.cy + .5) * TILE, { silent: true, force: true });
+  addLog('⛓️ 公安のマキマが館に現れた —— 目に映る弱者は全て彼女のものになる', 'mk', true);
+}
+function spawnChainsawMan() {
+  const r = spawnRoom();
+  spawnUnit('denji', (r.cx + .5) * TILE, (r.cy + .5) * TILE, { silent: true, force: true });
+  addLog('🪚 胸のスターターを引き、デンジがチェンソーマンになった', 'cs', true);
+}
+SP.porterHub = Object.assign(SRPC('ポーター拠点', '🛎️', null, 'hub', 170, 12, 1.1, 0, 0, { skin: '#3a5a8a', skinD: '#1e3050', skinL: '#5a7aaa', cloth: '#c8a070', clothD: '#8a6a40', clothL: '#e8c890', acc: '#e8c040', eye: '#fff', blood: '#333' }, []), { fac: 'mp', srp: undefined, ai: 'xStatic', mass: 30, loud: 300, desc: 'ミスターPのポーター拠点。ポーター兵を送り出し続ける。敵に狙われ、壊されると止まる。' });
+
+/* ── 走り攻撃: 走っている勢いのまま殴る/斬る/掴む ── */
+function runAttackStep(u, d, a, dt) {
+  const tgt = a.tgt;
+  if (!tgt || tgt.gone || tgt.dead) return;
+  if (a.t < d.windup + d.active) {
+    const ang = angTo(u.x, u.y, tgt.x, tgt.y), spd = Math.max(u.runSpd || 60, 80) * (u.spdMul || 1) * 1.35;
+    u.faceA = angLerp(u.faceA, ang, .35);
+    if (dist(u.x, u.y, tgt.x, tgt.y) > u.r + tgt.r + 4) { tryMove(u, Math.cos(u.faceA) * spd * dt, Math.sin(u.faceA) * spd * dt); u.moveSpd = spd; }
+    if (Math.random() < .3) addDust(u.x - Math.cos(u.faceA) * 6, u.y - Math.sin(u.faceA) * 4, 1);
+  }
+  if (a.fired && !a.runHit && a.t < d.windup + d.active + .05 && dist(u.x, u.y, tgt.x, tgt.y) - u.r - tgt.r <= d.reach + 6) {
+    a.runHit = true;
+    if (d.hold && (!d.cond || d.cond(u, tgt))) { beginGrab(u, d, tgt); return; }
+    applyHit(u, d, tgt, angTo(u.x, u.y, tgt.x, tgt.y));
+    Sfx.play(d.snd || 'hit', u.x, u.y); addShake(d.knock >= 300 ? 4 : 2);
+  }
+}
+const BLADE_HELD = { knife: 1, axe: 1, sickle: 1, scythe: 1, goldsword: 1, chainsaw: 1, maskknife: 1, compass: 1, scissors: 1, trident: 1 };
+const RUN_SPECIAL = {
+  tyrantX: [{ n: '走りラリアット', dmg: 34, reach: 24, arc: 2.6, anim: 'lariat', knock: 400, down: 1 }, { n: '走り掴み', dmg: 22, reach: 22, anim: 'runGrab', hold: 'throw', cond: (u, t) => t.sp.mass < 4 }],
+  nemesis: [{ n: '走り掴み', dmg: 30, reach: 24, anim: 'runGrab', hold: 'crush', cond: (u, t) => t.sp.mass < 4 }, { n: '走りアッパー', dmg: 36, reach: 22, anim: 'uppercut', knock: 360, toss: 1 }],
+  gvKrauser: [{ n: 'スライディング斬り', dmg: 26, reach: 20, arc: 2, anim: 'slideTackle', down: 1 }],
+  mikeTyson: [{ n: '踏み込みストレート', dmg: 30, reach: 18, anim: 'runPunch', knock: 320 }],
+  witch: [{ n: '疾走引き裂き', dmg: 26, reach: 20, arc: 2.2, anim: 'witchFrenzy', knock: 200 }],
+  charger: [{ n: '走り掴み', dmg: 20, reach: 22, anim: 'runGrab', hold: 'slam', cond: (u, t) => t.sp.mass < 3 }],
+  fpeAlice: [{ n: '疾走斬り', dmg: 28, reach: 22, arc: 2.2, anim: 'runSlash', knock: 220 }],
+  scp096: [{ n: '絶叫タックル', dmg: 40, reach: 22, anim: 'runTackle', knock: 400, down: 1 }],
+  srpGrunt: [{ n: '走り体当たり', dmg: 38, reach: 24, anim: 'runTackle', knock: 400, down: 1 }],
+  flBrute: [{ n: '走り体当たり', dmg: 34, reach: 24, anim: 'runTackle', knock: 400, down: 1 }],
+  gvGarrador: [{ n: '疾走鉄爪', dmg: 40, reach: 24, arc: 1.4, anim: 'runSlash' }],
+};
+function addRunAttacks() {
+  for (const k in SP) {
+    const sp = SP[k];
+    if (!sp || sp.fac === 'N' || !sp.atks || sp.kind === 'hugger' || (sp.walk || 0) <= 0) continue;
+    if (k === 'makima' || (!RUN_SPECIAL[k] && (sp.run || 0) < 80)) continue; // 足の遅い者は走り攻撃なし (専用技のあるキャラは除く)
+    const lists = sp.formAtks ? sp.formAtks : [sp.atks];
+    const melee = lists[0].filter(a => (!a.type || a.type === 'melee') && a.dmg > 0);
+    if (!melee.length && !RUN_SPECIAL[k]) continue;
+    let specs = RUN_SPECIAL[k];
+    if (!specs) {
+      const base = Math.max(...melee.map(a => a.dmg));
+      if (sp.kind === 'quad') specs = [{ n: '走り噛みつき', dmg: Math.round(base * 1.2), reach: 18, anim: melee[0].anim || 'q_bite' }];
+      else if ((sp.mass || 1) >= 4 || sp.hp >= 400) specs = [{ n: '走り体当たり', dmg: Math.round(base * 1.25), reach: 22, anim: 'runTackle', knock: 380, down: 1 }];
+      else if (BLADE_HELD[sp.held]) specs = [{ n: '走り斬り', dmg: Math.round(base * 1.2), reach: 20, arc: 2, anim: 'runSlash', knock: 200 }];
+      else if (sp.fx && sp.fx.claws) specs = [{ n: '走り爪', dmg: Math.round(base * 1.2), reach: 20, arc: 2, anim: 'runSlash', knock: 180 }];
+      else specs = [{ n: '走りパンチ', dmg: Math.round(base * 1.2), reach: 18, anim: 'runPunch', knock: 240 }];
+    }
+    for (const L of lists) {
+      if (L.some(a => a.type === 'run')) continue;
+      for (const s of specs) L.push(AT(Object.assign({ windup: .14, active: .32, rec: .34, cd: 3, type: 'run', snd: s.hold ? 'thud' : 'hit', w: 6 }, s)));
+    }
+  }
+}
+
+/* ── 弾・投擲物の見た目 (原作に合わせる) ── */
+const PROJ_STYLE_RULES = [
+  [/ばん|指鉄砲/, 'bang'], [/ショットガン/, 'pellets'], [/ライフル|拳銃|アサルト|マシンガン|ガトリング|乱射|連射|バースト|機関/, 'tracer'], [/プラズマ/, 'plasma'],
+  [/ボーガン|クロスボウ|矢$/, 'bolt'], [/吹き矢/, 'dart'], [/有機スパイク|骨針/, 'spike'], [/触手針|触手弾/, 'needle'], [/ダイナマイト/, 'dynamite'],
+  [/手榴弾|グレネード|爆弾/, 'grenade'], [/レンガ/, 'brick'], [/岩|投石|石/, 'boulder'], [/火球|火の玉|火炎弾/, 'fireball'], [/氷/, 'icebolt'],
+  [/酸|溶解|消化液/, 'acidglob'], [/粘糸|糸/, 'web'], [/寄生弾|体液|爆撃嚢|肉塊|胞子嚢|嚢/, 'bioglob'], [/ナイフ/, 'knife'], [/手裏剣|紙/, 'paper'], [/インク|涙/, 'ink'], [/黒棘/, 'thorn'],
+];
+function projStyleOf(u, d) {
+  if (d.projStyle) return d.projStyle;
+  if (d.projKind === 'rocket' || d.projKind === 'laser' || d.projKind === 'trident' || d.projKind === 'case' || d.projKind === 'crack') return null;
+  for (const [re, st] of PROJ_STYLE_RULES) if (re.test(d.n)) return st;
+  if (u.fac === 'E' || u.key === 'fpeAlice') return 'ink';
+  return { bullet: 'tracer', acid: 'acidglob', gacid: 'acidglob', bile: 'bioglob', rock: 'boulder', nade: 'grenade' }[d.projKind] || null;
+}
+function drawProjStyle(p, y) {
+  const st = p.style, T = p.t || 0;
+  const va = Math.atan2(p.vy * SQ - (p.vz || 0), p.vx);
+  ctx.save(); ctx.translate(p.x, y);
+  switch (st) {
+    case 'tracer': ctx.rotate(Math.atan2(p.vy * SQ, p.vx)); { const g = ctx.createLinearGradient(-16, 0, 3, 0); g.addColorStop(0, 'rgba(255,200,90,0)'); g.addColorStop(1, 'rgba(255,240,180,1)'); ctx.fillStyle = g; ctx.fillRect(-16, -.8, 19, 1.6); ctx.fillStyle = '#fff'; ctx.fillRect(0, -.6, 3, 1.2); } break;
+    case 'pellets': for (let i = 0; i < 4; i++) { ctx.fillStyle = 'rgba(255,230,160,.9)'; ctx.beginPath(); ctx.arc(Math.sin(i * 2.1) * 3, Math.cos(i * 1.7) * 2, 1, 0, TAU); ctx.fill(); } break;
+    case 'plasma': { const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 7); g.addColorStop(0, '#fff'); g.addColorStop(.35, '#7ad0ff'); g.addColorStop(1, 'rgba(40,120,255,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 7, 0, TAU); ctx.fill(); ctx.rotate(Math.atan2(p.vy * SQ, p.vx)); ctx.fillStyle = 'rgba(90,170,255,.35)'; ctx.beginPath(); ctx.ellipse(-8, 0, 8, 2.4, 0, 0, TAU); ctx.fill(); break; }
+    case 'bolt': case 'dart': ctx.rotate(va); ctx.strokeStyle = st === 'bolt' ? '#6a4a2a' : '#c8b070'; ctx.lineWidth = st === 'bolt' ? 1.6 : .9; ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(6, 0); ctx.stroke(); ctx.fillStyle = '#b8b8c0'; ctx.beginPath(); ctx.moveTo(6, -1.6); ctx.lineTo(10, 0); ctx.lineTo(6, 1.6); ctx.fill(); ctx.fillStyle = st === 'bolt' ? '#c83030' : '#e8e0c0'; ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(-7, -2.4); ctx.lineTo(-6, 0); ctx.lineTo(-7, 2.4); ctx.fill(); break;
+    case 'spike': case 'needle': case 'thorn': ctx.rotate(va); ctx.fillStyle = st === 'spike' ? '#e8dcb8' : st === 'thorn' ? '#0a0608' : '#5a2a20'; ctx.strokeStyle = st === 'thorn' ? '#c01830' : 'rgba(0,0,0,.4)'; ctx.lineWidth = .6; ctx.beginPath(); ctx.moveTo(-8, -1.8); ctx.lineTo(8, 0); ctx.lineTo(-8, 1.8); ctx.closePath(); ctx.fill(); ctx.stroke(); break;
+    case 'dynamite': ctx.rotate(T * 14); ctx.fillStyle = '#c02020'; ctx.fillRect(-5, -1.8, 10, 3.6); ctx.fillStyle = '#e8d0a0'; ctx.fillRect(-5, -1.8, 1.4, 3.6); ctx.strokeStyle = '#3a2a1a'; ctx.lineWidth = .7; ctx.beginPath(); ctx.moveTo(5, 0); ctx.quadraticCurveTo(8, -2, 9, -4); ctx.stroke(); ctx.fillStyle = Math.sin(T * 60) > 0 ? '#ffe070' : '#ff8030'; ctx.beginPath(); ctx.arc(9, -4, 1.4, 0, TAU); ctx.fill(); break;
+    case 'grenade': ctx.rotate(T * 10); ctx.fillStyle = '#4a5a30'; ctx.beginPath(); ctx.ellipse(0, 0, 3.4, 4.2, 0, 0, TAU); ctx.fill(); ctx.strokeStyle = '#2a3018'; ctx.lineWidth = .6; ctx.beginPath(); ctx.moveTo(-3, 0); ctx.lineTo(3, 0); ctx.moveTo(0, -4); ctx.lineTo(0, 4); ctx.stroke(); ctx.fillStyle = '#9a9aa0'; ctx.fillRect(-1, -6, 2, 2); break;
+    case 'brick': ctx.rotate(T * 9); ctx.fillStyle = '#a0402a'; ctx.fillRect(-5, -2.6, 10, 5.2); ctx.strokeStyle = '#5a2010'; ctx.lineWidth = .6; ctx.strokeRect(-5, -2.6, 10, 5.2); ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(-2, -1, 1.4, 2); ctx.fillRect(1.5, -1, 1.4, 2); break;
+    case 'boulder': ctx.rotate(T * 5); ctx.fillStyle = '#7a746a'; ctx.beginPath(); for (let i = 0; i < 7; i++) { const a = i * TAU / 7, r = 5 + Math.sin(i * 3.3) * 1.4; ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); } ctx.closePath(); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,.15)'; ctx.beginPath(); ctx.arc(-1.5, -1.5, 2, 0, TAU); ctx.fill(); break;
+    case 'fireball': { ctx.rotate(Math.atan2(p.vy * SQ, p.vx)); for (let i = 4; i >= 0; i--) { ctx.fillStyle = i ? `rgba(255,${80 + i * 30},30,${.25 + (4 - i) * .12})` : '#fff4b0'; ctx.beginPath(); ctx.arc(-i * 3, Math.sin(T * 40 + i) * .8, 5 - i * .7, 0, TAU); ctx.fill(); } if (Math.random() < .5) addPart({ k: 'fire', x: p.x, y: p.y, z: p.z, vx: 0, vy: 0, vz: 20, life: .3, t: 0, s: 2.5 }); break; }
+    case 'icebolt': ctx.rotate(va); ctx.fillStyle = 'rgba(200,240,255,.9)'; ctx.strokeStyle = '#6ab0e0'; ctx.lineWidth = .7; ctx.beginPath(); ctx.moveTo(-7, 0); ctx.lineTo(0, -2.6); ctx.lineTo(7, 0); ctx.lineTo(0, 2.6); ctx.closePath(); ctx.fill(); ctx.stroke(); break;
+    case 'acidglob': case 'bioglob': { const c1 = st === 'acidglob' ? '#9ae040' : '#b83040', c2 = st === 'acidglob' ? '#e8ff90' : '#ff8080'; ctx.rotate(va); ctx.fillStyle = c1; ctx.beginPath(); ctx.ellipse(0, 0, 4.4 + Math.sin(T * 20) * .5, 3.4, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.ellipse(-5, 0, 2, 1.2, 0, 0, TAU); ctx.fill(); ctx.fillStyle = c2; ctx.beginPath(); ctx.arc(1.2, -1, 1.2, 0, TAU); ctx.fill(); if (st === 'bioglob') { ctx.strokeStyle = c1; ctx.lineWidth = .7; for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(-3, i * 2); ctx.quadraticCurveTo(-7, i * 3 + Math.sin(T * 30 + i) * 2, -10, i * 3.5); ctx.stroke(); } } break; }
+    case 'web': ctx.rotate(T * 6); ctx.strokeStyle = 'rgba(240,240,240,.85)'; ctx.lineWidth = .6; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(-5, 0); ctx.lineTo(5, 0); ctx.stroke(); ctx.rotate(Math.PI / 4); } ctx.beginPath(); ctx.arc(0, 0, 3, 0, TAU); ctx.stroke(); break;
+    case 'knife': ctx.rotate(T * 18); ctx.fillStyle = '#d8dce4'; ctx.beginPath(); ctx.moveTo(0, -1.2); ctx.lineTo(7, 0); ctx.lineTo(0, 1.2); ctx.fill(); ctx.fillStyle = '#3a2a20'; ctx.fillRect(-4, -1, 4, 2); break;
+    case 'paper': ctx.rotate(T * 16); ctx.fillStyle = '#f4f1ea'; ctx.strokeStyle = '#9a9488'; ctx.lineWidth = .5; ctx.beginPath(); for (let i = 0; i < 8; i++) { const a = i * TAU / 8, r = i % 2 ? 2 : 6; ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); } ctx.closePath(); ctx.fill(); ctx.stroke(); break;
+    case 'ink': ctx.rotate(va); ctx.fillStyle = '#0a0608'; ctx.beginPath(); ctx.moveTo(6, 0); ctx.quadraticCurveTo(0, -4, -8, 0); ctx.quadraticCurveTo(0, 4, 6, 0); ctx.fill(); ctx.strokeStyle = '#c01830'; ctx.lineWidth = .7; ctx.stroke(); if (Math.random() < .3) addPart({ k: 'spark', x: p.x, y: p.y, z: p.z, vx: 0, vy: 0, vz: -10, life: .4, t: 0, s: 1.2, col: '#0a0008' }); break;
+    case 'bang': { const r = 3 + (T * 30) % 8; ctx.strokeStyle = `rgba(255,120,90,${.8 - r / 12})`; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.stroke(); ctx.strokeStyle = 'rgba(255,230,210,.6)'; ctx.beginPath(); ctx.arc(0, 0, r * .5, 0, TAU); ctx.stroke(); break; }
+    default: ctx.restore(); return false;
+  }
+  ctx.restore();
+  return true;
+}
+
+/* ── 描画: マキマ / チェンソーマン / ポーター拠点 ── */
+function drawCsExtras(u, pose) {
+  const fx = u.fx || u.sp.fx; if (!fx.makima && !fx.csman) return;
+  const sk = solveBiped(u, pose), P = sk.P, d = sk.dir, h = sk.head, T = G.time + (u.id || 0), st = aliceStrike(u);
+  if (fx.makima) {
+    ctx.fillStyle = '#b85a3a'; // 後ろで一本に編んだ三つ編み
+    for (let i = 0; i < 6; i++) { const f = i / 5; ctx.beginPath(); ctx.ellipse(h.x - d * P.headR * (.8 + f * .3), h.y + P.headR * (.4 + f * 1.8), P.headR * (.32 - f * .1), P.headR * .24, d * .4, 0, TAU); ctx.fill(); }
+    ctx.fillStyle = '#1a1a22'; ctx.beginPath(); ctx.moveTo(sk.s2.x + d * 1, sk.s2.y); ctx.lineTo(sk.s2.x + d * 2.2, sk.s2.y + P.torsoW * 1.3); ctx.lineTo(sk.s2.x + d * .2, sk.s2.y + P.torsoW * 1.4); ctx.closePath(); ctx.fill(); // ネクタイ
+    for (const [ex, er] of [[.5, .2], [.92, .12]]) { const x = h.x + d * P.headR * ex, y = h.y - P.headR * .2; ctx.fillStyle = '#e8c040'; ctx.beginPath(); ctx.arc(x, y, P.headR * er, 0, TAU); ctx.fill(); ctx.strokeStyle = '#8a5a10'; ctx.lineWidth = .5; for (let k = 1; k <= 2; k++) { ctx.beginPath(); ctx.arc(x, y, P.headR * er * k / 2.4, 0, TAU); ctx.stroke(); } } // 同心円の瞳
+    if (u.state === 'attack' && u.atk && u.atk.def.anim === 'fingerBang') { const hx = sk.armR.ha.x, hy = sk.armR.ha.y; ctx.strokeStyle = `rgba(255,120,90,${st})`; ctx.lineWidth = 1; for (let k = 0; k < 3; k++) { ctx.beginPath(); ctx.arc(hx + d * 3, hy, 2 + k * 3 * st, 0, TAU); ctx.stroke(); } }
+    return;
+  }
+  const black = fx.csman === 2;
+  const saw = (x0, y0, ang, L, w) => { // チェンソーの刃
+    const c = Math.cos(ang), s = Math.sin(ang), nx = -s, ny = c;
+    ctx.fillStyle = black ? '#2a2a30' : '#c8c8d0'; ctx.beginPath(); ctx.moveTo(x0 + nx * w, y0 + ny * w); ctx.lineTo(x0 + c * L + nx * w * .7, y0 + s * L + ny * w * .7); ctx.arc(x0 + c * L, y0 + s * L, w * .7, ang - Math.PI / 2, ang + Math.PI / 2); ctx.lineTo(x0 - nx * w, y0 - ny * w); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = black ? '#e05a20' : '#6a6a74'; const run = (T * 40) % 3;
+    for (let k = 0; k * 3 < L; k++) { const f = k * 3 + run; if (f > L) break; for (const sd of [-1, 1]) { const bx = x0 + c * f + nx * w * sd * (1 - f / L * .3), by = y0 + s * f + ny * w * sd * (1 - f / L * .3); ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + nx * sd * 1.6 + c, by + ny * sd * 1.6 + s); ctx.lineTo(bx + c * 2, by + s * 2); ctx.fill(); } }
+    if (st > .2 && Math.random() < .4) addBlood(u.x + c * 10, u.y + s * 6, 12, 1, '#9a1010');
+  };
+  // 腕のチェンソー (前腕から突き出す)
+  const arms = [sk.armL, sk.armR];
+  if (black) { const off = P.torsoW * .9; for (const a of arms) { const ea = { sh: { x: a.sh.x, y: a.sh.y + off }, el: { x: a.el.x + d * 2, y: a.el.y + off * 1.1 }, ha: { x: a.ha.x + d * 3, y: a.ha.y + off * 1.2 } }; limb(ea.sh, ea.el, P.armR * .9, P.armR * .8, '#141418'); limb(ea.el, ea.ha, P.armR * .8, P.armR * .7, '#141418'); arms.push(ea); if (arms.length >= 4) break; } }
+  for (const a of arms) { const ang = Math.atan2(a.ha.y - a.el.y, a.ha.x - a.el.x); saw(a.ha.x - Math.cos(ang) * 2, a.ha.y - Math.sin(ang) * 2, ang, P.armL * (black ? 2.4 : 1.9), P.armR * (black ? 1 : .8)); }
+  // 頭のチェンソー
+  const hr = P.headR;
+  ctx.fillStyle = black ? '#0e0e12' : '#e05a20'; ctx.beginPath(); ctx.ellipse(h.x, h.y, hr * 1.05, hr * 1.05, 0, 0, TAU); ctx.fill();
+  saw(h.x + d * hr * .2, h.y - hr * .6, -Math.PI / 2 + d * .35, hr * (black ? 3.4 : 2.6), hr * .42);
+  if (black) { ctx.fillStyle = '#fff'; for (const ex of [.45, .9]) { ctx.beginPath(); ctx.ellipse(h.x + d * hr * ex, h.y - hr * .1, hr * .16, hr * .1, 0, 0, TAU); ctx.fill(); } ctx.fillStyle = '#e8e0d0'; for (let i = 0; i < 6; i++) { const tx = h.x + d * hr * (.1 + i * .16); ctx.beginPath(); ctx.moveTo(tx, h.y + hr * .3); ctx.lineTo(tx + d * hr * .08, h.y + hr * (.55 + st * .3)); ctx.lineTo(tx + d * hr * .16, h.y + hr * .3); ctx.fill(); } }
+  else { ctx.fillStyle = '#1a1a1a'; ctx.fillRect(h.x + d * hr * .3, h.y - hr * .05, d * hr * .6, hr * .12); ctx.fillStyle = '#fff'; for (let i = 0; i < 5; i++) ctx.fillRect(h.x + d * hr * (.3 + i * .13), h.y + hr * .25, d * hr * .08, hr * .18); }
+  // 胸のスターター
+  ctx.strokeStyle = '#2a2a2a'; ctx.lineWidth = .8; ctx.beginPath(); ctx.moveTo(sk.s2.x + d * 2, sk.s2.y + 4); ctx.quadraticCurveTo(sk.s2.x + d * 5, sk.s2.y + 8, sk.s2.x + d * 4, sk.s2.y + 11); ctx.stroke();
+  ctx.fillStyle = '#1a1a1a'; ctx.fillRect(sk.s2.x + d * 3 - 1.6, sk.s2.y + 10.5, 3.2, 1.8);
+  if (black) { ctx.strokeStyle = '#e05a20'; ctx.lineWidth = 1.2; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(sk.pel.x - d * 2, sk.pel.y); ctx.quadraticCurveTo(sk.pel.x - d * (10 + i * 4), sk.pel.y + 6 + Math.sin(T * 3 + i) * 4, sk.pel.x - d * (16 + i * 6), sk.pel.y + 14 + i * 2); ctx.stroke(); } }
+}
+function drawMkMark(u) { // 支配下の証: 足元の赤い輪と鎖
+  if (!u.mkCtrl || u.gone) return;
+  const y = u.y * SQ;
+  ctx.strokeStyle = 'rgba(220,60,50,.55)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(u.x, y, u.r * 1.3, u.r * .6, 0, 0, TAU); ctx.stroke();
+}
+function drawMkLinks() {
+  if (!G.mkLinks || !G.mkLinks.length) return;
+  for (const l of G.mkLinks) {
+    const a = G.units.find(v => v.id === l.a), b = G.units.find(v => v.id === l.b); if (!a || !b) continue;
+    const f = 1 - l.t / 1.2, ay = a.y * SQ - unitTopY(a) * .8, by = b.y * SQ - unitTopY(b) * .6;
+    ctx.strokeStyle = `rgba(220,60,50,${f})`; ctx.lineWidth = 1.2; ctx.setLineDash([3, 2]);
+    ctx.beginPath(); ctx.moveTo(a.x, ay); ctx.quadraticCurveTo((a.x + b.x) / 2, Math.min(ay, by) - 30, b.x, by); ctx.stroke(); ctx.setLineDash([]);
+  }
+}
+function drawHubPlan(u, S, x, gy, T) {
+  const y = gy;
+  ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(x, y, S * 1.4, S * .45, 0, 0, TAU); ctx.fill();
+  ctx.fillStyle = u.hubHyper ? '#c8a040' : '#3a5a8a'; ctx.fillRect(x - S, y - S * 1.3, S * 2, S * 1.2);
+  ctx.fillStyle = '#e8d8b0'; ctx.fillRect(x - S * 1.1, y - S * 1.45, S * 2.2, S * .2);
+  ctx.strokeStyle = '#c8a040'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(x - S * .9, y - S * 1.45); ctx.lineTo(x - S * .9, y - S * 2.4); ctx.moveTo(x + S * .9, y - S * 1.45); ctx.lineTo(x + S * .9, y - S * 2.4); ctx.moveTo(x - S * .9, y - S * 2.4); ctx.quadraticCurveTo(x, y - S * 2.9, x + S * .9, y - S * 2.4); ctx.stroke();
+  for (let i = 0; i < 3; i++) { ctx.fillStyle = ['#6a3a2a', '#2a4a6a', '#8a2a2a'][i]; ctx.fillRect(x - S * .8 + i * S * .55, y - S * (2 - i * .1), S * .45, S * .55); }
+  ctx.fillStyle = '#e8c040'; ctx.beginPath(); ctx.arc(x + S * 1.2, y - S * .9, S * .22, Math.PI, TAU); ctx.fill(); ctx.fillRect(x + S * 1.2 - S * .28, y - S * .9, S * .56, S * .08); // 呼び鈴
+}
+
 /* ── 原作にある(ありそうな)攻撃の追加 ── */
 (function () {
   const add = (k, ...a) => { if (SP[k] && SP[k].atks) for (const x of a) SP[k].atks.push(AT(x)); };
@@ -15948,6 +16325,7 @@ function initFactionsForGame() {
   add('ravager', { n: '咆哮', dmg: 12, reach: 0, windup: .6, active: .2, rec: .6, cd: 8, type: 'roar', anim: 'roar', snd: 'roar' },
     { n: '噛みつき', dmg: 24, reach: 18, windup: .34, active: .12, rec: .44, cd: 1, anim: 'q_bite', knock: 220, snd: 'rip' });
 })();
+addRunAttacks(); // 走り攻撃 (全キャラに原作らしい移動攻撃を付与)
 function srpPanelInfo() {
   const nx = G.units.filter(u => !u.gone && u.fac === 'srp' && u.sp.nexus).length;
   const top = Object.entries(G.srpAdapt || {}).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k, v]) => `${k} -${Math.round(v * 60)}%`).join(' / ');
@@ -16579,8 +16957,8 @@ function ensureFacDock() {
 }
 function layoutPanels() {
   const dock = ensureFacDock();
-  const ids = ['panelT','panelX','panelD','panelH','panelG','panelC','panelW','panelA','panelS','panelJ','panelF','panelK','panelM','panelY','panelQ','panelB','panelP','panelR','panelI','panel3','panel4','panelU','panelL','panelO','panelV','panelE','panel5','panel6','panel8','panel0','panelJk','panelHg','panelPg','panelBk','panelNt','panelMp','panelMz','panelGd','panelSp','panelPv','panelSrp','panelFl','panelNm','preyPanel'];
-  const borders = { panelT:'#d43a3a', panelSrp:'#d04050', panelFl:'#c8b870', panelNm:'#e05030', panelX:'#3fd6b0', panelD:'#a98fd0', panelH:'#c07830', panelG:'#6fa83a', panelC:'#c8963a', panelW:'#e8e8f2', panelA:'#c8a24a', panelS:'#c45a5a', panelJ:'#e8e8e8', panelF:'#888', panelK:'#e8c040', panelM:'#4ad0e8', panelY:'#e8c040', panelQ:'#c83028', panelB:'#40c0e8', panelP:'#e8c040', panelR:'#8a3030', panelI:'#e8e4dc', panelU:'#888', panelL:'#444', panelO:'#5cb85c', preyPanel:'#c8b070' };
+  const ids = ['panelT','panelX','panelD','panelH','panelG','panelC','panelW','panelA','panelS','panelJ','panelF','panelK','panelM','panelY','panelQ','panelB','panelP','panelR','panelI','panel3','panel4','panelU','panelL','panelO','panelV','panelE','panel5','panel6','panel8','panel0','panelJk','panelHg','panelPg','panelBk','panelNt','panelMp','panelMz','panelGd','panelSp','panelPv','panelSrp','panelFl','panelNm','panelMk','panelCs','preyPanel'];
+  const borders = { panelT:'#d43a3a', panelMk:'#e0503a', panelCs:'#f08a3a', panelSrp:'#d04050', panelFl:'#c8b870', panelNm:'#e05030', panelX:'#3fd6b0', panelD:'#a98fd0', panelH:'#c07830', panelG:'#6fa83a', panelC:'#c8963a', panelW:'#e8e8f2', panelA:'#c8a24a', panelS:'#c45a5a', panelJ:'#e8e8e8', panelF:'#888', panelK:'#e8c040', panelM:'#4ad0e8', panelY:'#e8c040', panelQ:'#c83028', panelB:'#40c0e8', panelP:'#e8c040', panelR:'#8a3030', panelI:'#e8e4dc', panelU:'#888', panelL:'#444', panelO:'#5cb85c', preyPanel:'#c8b070' };
   for (const id of ids) {
     const el = $(id); if (!el) continue;
     if (el.parentElement !== dock) dock.appendChild(el);
@@ -16746,6 +17124,8 @@ function updatePanels() {
     ['gd', 'panelGd', '🐡 ガーディアン', '#5a8a88', ['guardian','elderG']],
     ['sp', 'panelSp', '🕷️ スパイダー', '#8a4040', ['spider','spWar','spCave','spSpit','spNurse','spHang','spQueen','spDepth']],
     ['srp', 'panelSrp', '☣️ SRP寄生体', '#d04050', SRP_ORDER],
+    ['mk', 'panelMk', '⛓️ マキマ', '#e0503a', ['makima']],
+    ['cs', 'panelCs', '🪚 チェンソーマン', '#f08a3a', ['denji']],
     ['fl', 'panelFl', '🦠 フラッド', '#c8b870', FL_ORDER],
     ['nm', 'panelNm', '🧬 ネクロモーフ', '#e05030', NM_ORDER],
     ['pv', 'panelPv', '🧟‍♂️ ゾンボス', '#6aaa50', ['pvZomboss','pvZombie','pvCone','pvBucket','pvPole','pvPaper','pvScreen','pvFoot','pvCatapult','pvJack','pvZomboni','pvGarg','pvBungee']],
@@ -16756,7 +17136,7 @@ function updatePanels() {
     if (!el) { el = document.createElement('div'); el.id = id; el.className = 'fpanel clickable'; document.getElementById('ui').appendChild(el); }
     const st = G.stats[fac] || { kills: 0 };
     setHTML(el, `<h3>${title} <span class="tot" style="color:${col};font-size:14px">${n2}</span></h3>
-      <div class="substat"><span>撃破 ${st.kills}</span>${fac === 'srp' ? `<span>フェーズ ${G.srpPhase || 0}</span>` : ''}</div>${fac === 'srp' ? srpPanelInfo() : ''}${fac === 'fl' || fac === 'nm' ? xPanelInfo(fac) : ''}
+      <div class="substat"><span>撃破 ${st.kills}</span>${fac === 'srp' ? `<span>フェーズ ${G.srpPhase || 0}</span>` : ''}</div>${fac === 'srp' ? srpPanelInfo() : ''}${fac === 'fl' || fac === 'nm' ? xPanelInfo(fac) : ''}${fac === 'mk' ? `<div class="substat"><span>支配下 ${Math.max(0, countFac('mk') - (makimaUnit() ? 1 : 0))}</span><span>寝返り ${G.stats.mk.conv || 0}</span></div>` : ''}${fac === 'cs' ? (() => { const d = G.units.find(v => !v.gone && v.key === 'denji'); return d ? `<div class="substat"><span>${d.form ? '黒チェンソーマン' : '第1形態'}</span><span>Lv ${d.csLv || 0}</span></div>` : ''; })() : ''}
       <div>${order.map(k => { const sp = SP[k]; if (!sp) return ''; const n = counts[k] || 0; return `<div class="urow${n ? '' : ' deadrow'}"><span class="ic">${sp.ic}</span><span class="nm">${sp.name}</span><span class="ct">${n ? '×' + n : '—'}</span></div>`; }).join('')}</div>`);
   }
   if (document.querySelectorAll('.fpanel').length !== (G._panelN || 0)) { G._panelN = document.querySelectorAll('.fpanel').length; layoutPanels(); G._dockKey = ''; }
