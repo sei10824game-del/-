@@ -3299,12 +3299,12 @@ SP.missBloomie = {
 };
 SP.fpeAlice = {
   name: 'アリス', ic: '🖤', fac: 'E', kind: 'biped', head: 'human', ai: 'fpeAlice', unique: 1, superArmor: 1,
-  r: 10, scale: 1.12, hp: 560, walk: 52, run: 175, mass: 2,
-  pal: { skin: '#ece6e0', skinD: '#a8a29c', skinL: '#fffaf6', cloth: '#0c0c10', clothD: '#040406', clothL: '#222228', acc: '#111', eye: '#111', blood: '#4a1010' },
-  pp: {}, fx: { face: 'onryo' }, hair: '#0a0a0e', gait: { amp: .62, freq: 1.25, armSwing: .85, bob: .48 },
+  r: 10, scale: 1.12, hp: 800, walk: 56, run: 185, mass: 2,
+  pal: { skin: '#f4f1ea', skinD: '#b8b2a8', skinL: '#ffffff', cloth: '#121016', clothD: '#060508', clothL: '#2a2632', acc: '#c8142e', eye: '#060608', blood: '#4a1010' },
+  pp: {}, fx: { face: 'alice', aliceHair: 1 }, hair: '#0a0a0e', gait: { amp: .62, freq: 1.25, armSwing: .85, bob: .48 },
   pose0: { armS: .25, armE: .4, lean: .06, crouch: .08, headP: .08 },
   forms: [
-    { hpm: 0, spdMul: 1.2, scale: 2.15, log: '🖤 アリスが第二形態 —— 悪魔フォームへ変貌した！', pal: { cloth: '#0a0206', skin: '#1a0810', skinD: '#080204', clothL: '#5a1020', acc: '#ff2040', eye: '#ff3030' }, fx: { claws: 2, tentacle: 1, longHair: 1, wounds: 1 }, walk: 48, run: 155 }
+    { hpm: 0, spdMul: 1.2, scale: 1.45, log: '🖤 アリスの紙の皮膚が裂けた —— 悪魔フォームへ変貌した！', pal: { cloth: '#0a0206', skin: '#120a10', skinD: '#060206', clothL: '#5a1020', acc: '#ff2040', eye: '#ff3030' }, fx: { face: 'aliceDemon', aliceHair: 1, aliceDemon: 1, claws: 2, wounds: 1 }, walk: 52, run: 170 }
   ],
   formAtks: [
     [
@@ -3315,7 +3315,10 @@ SP.fpeAlice = {
       AT({ n: '黒棘飛ばし', dmg: 16, reach: 0, windup: .28, active: .08, rec: .35, cd: 1.4, type: 'proj', projKind: 'bullet', minR: 30, maxR: 400, anim: 'launch', snd: 'whoosh' }),
       AT({ n: '回転蹴り', dmg: 22, reach: 22, windup: .2, active: .14, rec: .3, cd: 1.0, anim: 'spinSlam', knock: 220, snd: 'thud' }),
       AT({ n: '触手引き込み', dmg: 14, reach: 100, windup: .32, active: .1, rec: .4, cd: 2.6, anim: 'tongue', pull: 180, snd: 'slash' }),
-      AT({ n: '黒棘の床', dmg: 12, reach: 0, windup: .4, active: .12, rec: .5, cd: 3.4, type: 'aoe', aoeR: 70, anim: 'stomp', snd: 'squelch' })
+      AT({ n: '黒棘の床', dmg: 12, reach: 0, windup: .4, active: .12, rec: .5, cd: 3.4, type: 'aoe', aoeR: 70, anim: 'stomp', snd: 'squelch' }),
+      AT({ n: '髪の刃', dmg: 14, reach: 44, arc: 2.2, windup: .22, active: .3, rec: .3, cd: 1.6, multi: 3, anim: 'hairWhip', snd: 'slash' }),
+      AT({ n: 'インク潜り', dmg: 34, reach: 22, arc: 2, windup: .3, active: .12, rec: .3, cd: 3.2, anim: 'ambush', aliceBlink: 1, knock: 220, snd: 'whoosh' }),
+      AT({ n: '狂気の微笑', dmg: 6, reach: 0, windup: .5, active: .2, rec: .5, cd: 9, type: 'roar', anim: 'grinScream', flash: 1, snd: 'screech' })
     ],
     [
       AT({ n: '悪魔爪', dmg: 42, reach: 32, windup: .22, active: .18, rec: .38, cd: .55, anim: 'rip', knock: 340, snd: 'rip' }),
@@ -3324,11 +3327,15 @@ SP.fpeAlice = {
       AT({ n: '黒棘嵐', dmg: 22, reach: 0, windup: .4, active: .22, rec: .5, cd: 1.2, type: 'aoe', aoeR: 130, anim: 'stomp', snd: 'screech' }),
       AT({ n: '地面叩き', dmg: 36, reach: 0, windup: .45, active: .16, rec: .55, cd: 2.2, type: 'aoe', aoeR: 90, anim: 'palmWave', down: 1, snd: 'thud' }),
       AT({ n: '悪魔突進', dmg: 38, reach: 28, windup: .32, active: .36, rec: .5, cd: 2.0, type: 'dash', dash: 280, anim: 'charge', knock: 300, snd: 'thud' }),
-      AT({ n: '黒い咆哮', dmg: 14, reach: 0, windup: .5, active: .22, rec: .55, cd: 5, type: 'roar', anim: 'roar', snd: 'screech' })
+      AT({ n: '黒い咆哮', dmg: 14, reach: 0, windup: .5, active: .22, rec: .55, cd: 5, type: 'roar', anim: 'roar', snd: 'screech' }),
+      AT({ n: '奈落の手', dmg: 30, reach: 160, windup: .5, active: .16, rec: .6, cd: 3.6, type: 'aoe', aoeR: 110, hands: 1, anim: 'abyssCall', down: 1, snd: 'screech' }),
+      AT({ n: '悪魔の抱擁', dmg: 30, reach: 24, windup: .4, active: .14, rec: .5, cd: 5, type: 'grab', hold: 'maul', anim: 'demonHug', cond: (u, t) => t.sp.mass < 4, snd: 'rip' }),
+      AT({ n: '触手髪の嵐', dmg: 12, reach: 70, arc: 3, windup: .3, active: .5, rec: .4, cd: 2.2, multi: 6, anim: 'tentacleStorm', snd: 'slash' }),
+      AT({ n: '瞬獄', dmg: 16, reach: 22, arc: 2.2, windup: .22, active: .36, rec: .34, cd: 3, multi: 4, anim: 'blinkRend', aliceBlink: 1, snd: 'rip' })
     ]
   ],
   atks: [],
-  desc: '自室に引きこもる。入室者（オリバー以外）に敵対し、追跡中に遭遇した者も襲う。テレポート・触手・黒棘。体力0で悪魔フォーム。'
+  desc: '紙の肌に黒髪ロングの少女。自室に引きこもり、入室者（オリバー以外）を容赦なく襲う。インクに潜って背後へ瞬間移動し、髪の刃・黒棘・触手で切り刻む。体力0で紙の皮膚が裂け、触手髪と裂けた口を持つ悪魔フォームへ変貌し、奈落の手や瞬獄で全てを蹂躙する。'
 };
 
 SP.dngCircle = {
@@ -3980,6 +3987,14 @@ const AANIM = {
   clawRise: [{ t: 0, armR: [.5, .4] }, { t: .42, armR: [1.3, .2], crouch: .55, lean: .45, headP: .3 }, { t: .58, armR: [-2.7, .1], crouch: 0, lean: -.3, headP: -.35, rootZ: -4 }, { t: 1, armR: [.6, .3], lean: .1 }],
   bash: [{ t: 0, lean: .1 }, { t: .42, armR: [.9, 1.6], armL: [.9, 1.6], twist: -.9, lean: -.1, crouch: .2 }, { t: .56, armR: [.8, 1.5], armL: [.8, 1.5], twist: .6, lean: .6, crouch: .3, headP: .2 }, { t: 1, armR: [.5, .3], armL: [.5, .3], twist: 0, lean: .1 }],
   stabFrenzy: [{ t: 0, armR: [.5, .4] }, { t: .45, armR: [-2.5, .3], lean: -.1 }, { t: .5, armR: [1.2, .05], lean: .4, crouch: .2 }, { t: .54, armR: [-2.5, .3], lean: .1 }, { t: .58, armR: [1.2, .05], lean: .45, crouch: .25 }, { t: .62, armR: [-2.4, .3], lean: .15 }, { t: .66, armR: [1.2, .05], lean: .5, crouch: .3 }, { t: 1, armR: [.6, .3], lean: .1 }],
+  /* アリス */
+  hairWhip: [{ t: 0, headP: .1 }, { t: .4, headP: -.5, twist: .6, lean: -.2, armR: [.3, .6], armL: [.3, .6] }, { t: .55, headP: .5, twist: -.8, lean: .35 }, { t: .7, headP: .3, twist: .6, lean: .2 }, { t: 1, headP: .1, twist: 0 }],
+  ambush: [{ t: 0, crouch: .7, lean: .5, armR: [.4, 1.4] }, { t: .42, crouch: .75, lean: .55, armR: [1.4, 1.6], headP: .3 }, { t: .56, crouch: 0, lean: -.25, armR: [-2.6, .2], rootZ: -5, headP: -.3 }, { t: 1, armR: [.5, .3], crouch: .1 }],
+  grinScream: [{ t: 0, headP: 0 }, { t: .4, headP: .45, twist: .3, armR: [.1, .1], armL: [.1, .1], lean: .1, crouch: .1 }, { t: .6, headP: -.6, jaw: 1, lean: -.3, armR: [-.4, .2], armL: [-.4, .2] }, { t: .8, headP: -.5, jaw: 1, lean: -.25 }, { t: 1, headP: .1 }],
+  abyssCall: [{ t: 0, armR: [.4, .3], armL: [.4, .3] }, { t: .42, armR: [-2.8, .3], armL: [-2.8, .3], lean: -.3, headP: -.4, rootZ: -3 }, { t: .56, armR: [1.5, .05], armL: [1.5, .05], crouch: .55, lean: .5, headP: .4 }, { t: 1, armR: [.6, .3], armL: [.6, .3], crouch: .1 }],
+  tentacleStorm: [{ t: 0, armR: [-.5, .4], armL: [-.5, .4] }, { t: .45, twist: .7, armR: [-1.2, .2], armL: [-1.2, .2], lean: -.2, jaw: .8 }, { t: .52, twist: -.7, jaw: 1 }, { t: .6, twist: .7 }, { t: .68, twist: -.7, jaw: .8 }, { t: 1, twist: 0, armR: [.5, .3], armL: [.5, .3] }],
+  demonHug: [{ t: 0, armR: [.4, .4], armL: [.4, .4] }, { t: .42, armR: [-1.4, .4], armL: [-1.4, .4], lean: -.2, headP: -.3, jaw: .6 }, { t: .56, armR: [1.2, 1.2], armL: [1.2, 1.2], lean: .5, headP: .5, jaw: 1 }, { t: 1, armR: [1, .9], armL: [1, .9], lean: .3 }],
+  blinkRend: [{ t: 0, crouch: .4, lean: .5 }, { t: .45, armR: [-2, 1], armL: [1.4, .1], twist: .6, lean: .5 }, { t: .5, armR: [1.6, .1], armL: [-2, 1], twist: -.6 }, { t: .55, armR: [-2, 1], armL: [1.5, .1], twist: .6 }, { t: .6, armR: [1.6, .1], armL: [-1.8, 1], twist: -.6, lean: .6 }, { t: 1, armR: [.6, .3], armL: [.6, .3], twist: 0, lean: .2 }],
   roundKick: [{ t: 0, legR: [0, .1, 0] }, { t: .42, legR: [-.7, 1.7, 0], twist: .9, lean: -.1, armR: [.9, 1.4], armL: [.9, 1.4] }, { t: .56, legR: [1.75, .05, 0], twist: -1.1, lean: -.38, armR: [-.6, .3], armL: [.4, 1.2] }, { t: .74, legR: [1.4, .3, 0], twist: -.9, lean: -.3 }, { t: 1, legR: [0, .1, 0], twist: 0 }],
 };
 
@@ -4241,7 +4256,7 @@ function srand(seed) { let s = (seed * 9301 + 49297) % 233280; return () => { s 
 
 function solveBiped(u, pose) {
   const P = Object.assign({}, BP, u.sp.pp || {});
-  const sc = u.sp.scale * u.sizeMul;
+  const sc = u.sp.scale * u.sizeMul * (u.formScale || 1);
   for (const k in P) P[k] *= sc;
   const dir = u.dir || 1;
   const baseX = u.x, baseY = u.y * SQ - u.z;
@@ -4601,6 +4616,7 @@ function render() {
   for (const c of (G.cracks || [])) list.push({ d: c.y, f: drawCrack, a: c });
   for (const h of (G.hubs || [])) list.push({ d: h.y, f: drawHub, a: h });
   for (const q of (G.quicks || [])) list.push({ d: q.y, f: drawQuicksand, a: q });
+  for (const h of (G.aliceFx || [])) list.push({ d: h.y, f: drawAliceHand, a: h });
   for (const n of (G.nests || [])) list.push({ d: n.y, f: drawNest, a: n });
   if (G.monument && G.monument.hp > 0) {
     const r = G.map.rooms[G.monument.rid];
@@ -4854,6 +4870,7 @@ function drawBiped(u, pose) {
   const armR = P.armR, legR = P.legR;
   const legsBack = pose.rot > .5; // 横倒し時は脚を下に描かない
 
+  if (fx.aliceHair) drawAliceBack(u, sk, pose);
   // 尻尾(背面)
   if (sk.tailPts) drawTail(sk.tailPts, armR * .85, pal, fx);
   // 遠側の腕 (upperArmL, lowerArmL, handL)
@@ -4865,6 +4882,7 @@ function drawBiped(u, pose) {
   // 上胴 (upperTorso)
   limb(sk.s1, sk.s2, P.torsoW * .96, P.torsoW * .88, fx.bareTorso ? shade(skin, -.06) : cloth);
   torsoDetail(u, sk, fx, pal, hitFlash);
+  if (fx.aliceHair) drawAliceDress(u, sk);
   if (fx.crown) { // クイーンの小さな副腕 (胸から前下へ)
     const qcx = (sk.s1.x + sk.s2.x) / 2 + sk.dir * P.torsoW * .35, qcy = (sk.s1.y + sk.s2.y) / 2 - P.torsoW * .1;
     const qsw = Math.sin((u.gait || 0) * .7 + (u.id || 0)) * .25 + Math.sin(G.time * 1.7 + (u.id || 0)) * .12;
@@ -5322,6 +5340,7 @@ function drawSpecialFace(u, head, R, dir, k, jaw) {
   const X = (a) => head.x + dir * R * a, Y = (b) => head.y + R * b;
   const hair = hairOf(u);
   const eyeX = X(.5), eyeY = Y(-.2);
+  if (k === 'alice' || k === 'aliceDemon') { drawAliceFace(u, head, R, dir, k === 'aliceDemon', jaw); return; }
   if (k === 'blank') { // スレンダーマン: 目鼻口のない顔
     ctx.fillStyle = 'rgba(0,0,0,.06)'; ctx.beginPath(); ctx.ellipse(X(.45), Y(.05), R * .45, R * .7, 0, 0, TAU); ctx.fill();
     return;
@@ -7277,7 +7296,7 @@ function drawUnitBars(u) {
 }
 function unitTopY(u) {
   const sp = u.sp;
-  if (sp.kind === 'biped') return (BP.legU + BP.legL + BP.footH + BP.spine1 + BP.spine2 + BP.headR * 2.2) * sp.scale * u.sizeMul * (sp.fx.tail ? 1.1 : 1);
+  if (sp.kind === 'biped') return (BP.legU + BP.legL + BP.footH + BP.spine1 + BP.spine2 + BP.headR * 2.2) * sp.scale * u.sizeMul * (u.formScale || 1) * (sp.fx.tail ? 1.1 : 1);
   if (sp.kind === 'quad') return (QP.legU + QP.legL + QP.bodyR * 2 + QP.headR) * sp.scale * u.sizeMul;
   if (sp.kind === 'bird') return 20 * sp.scale + (u.z || 0);
   if (sp.srp) return sp.r * sp.scale * (u.sizeMul || 1) * (sp.plan === 'fly' || sp.plan === 'overlord' ? 3 : sp.plan === 'nexus' ? 3.2 : 1.8);
@@ -8614,7 +8633,8 @@ function canUse(u, d, tgt) {
   // 行けない場所 (壁の上など) にいる相手には地上の近接攻撃は届かない
   if (tgt && u.sp.kind !== 'bird' && d.type !== 'proj' && d.type !== 'aoe' && !walkAtPx(tgt.x, tgt.y)) return false;
   const dd = tgt ? dist(u.x, u.y, tgt.x, tgt.y) - u.r - tgt.r : 999;
-  if (d.type === 'proj' || d.type === 'summon') {
+  if (d.aliceBlink) { if (!tgt || dd > 380) return false; }
+  else if (d.type === 'proj' || d.type === 'summon') {
     if (!tgt || dd < d.minR || dd > d.maxR) return false;
   } else if (d.type === 'leap') {
     if (!tgt || dd < 24 || dd > d.leap * 1.06) return false;
@@ -8661,6 +8681,7 @@ function startAttack(u, d, tgt) {
   addNoise(u.x, u.y, 240);
   u.atk = { def: d, tgt, t: 0, fired: false, hitSet: new Set(), nextHit: 0, hitCount: 0 };
   u.cds[d.n] = G.time + d.cd;
+  if (d.aliceBlink && tgt && !tgt.gone) aliceBlinkTo(u, tgt); // アリス: インクに沈み背後へ
   if (tgt) u.faceA = angTo(u.x, u.y, tgt.x, tgt.y);
   if (d.snd === 'whoosh' || d.type === 'proj') Sfx.play(d.type === 'proj' && d.projKind === 'rocket' ? 'whoosh' : 'growl', u.x, u.y);
   else Sfx.play(d.type === 'leap' || d.type === 'dash' ? 'growl' : (u.fac === 'X' ? 'xroach' : 'growl'), u.x, u.y);
@@ -8740,6 +8761,14 @@ function fireAttack(u, d, a) {
       break;
     }
     case 'aoe': {
+      if (d.hands) { // アリス: 奈落の手 — 標的の足元から黒い手が湧き出す
+        const c = tgt && !tgt.gone ? tgt : u;
+        addAliceHands(c.x, c.y, 16, d.aoeR * .8); addShake(8); Sfx.play('screech', c.x, c.y);
+        addShock(c.x, c.y, 10, d.aoeR, 'rgba(120,0,30,.55)');
+        Spatial.query(c.x, c.y, d.aoeR + 20, _q);
+        for (const o of _q.slice()) { if (o === u || o.gone || o.dead || !hostileTo(u, o)) continue; if (dist(c.x, c.y, o.x, o.y) < d.aoeR * .8 + o.r) applyHit(u, d, o, angTo(c.x, c.y, o.x, o.y)); }
+        break;
+      }
       if (d.fireG || u.key === 'dngCircle') {
         for (let i = 0; i < 5; i++) addFire(u.x + rnd(-40, 40), u.y + rnd(-28, 28), 8, 6);
         addDecal('scorch', u.x, u.y, 40);
@@ -11954,7 +11983,7 @@ function aliceRescue(oliver, foe) {
   if (!a || a.state === 'transform') return;
   if ((a.rescueCd || 0) > G.time) return;
   a.rescueCd = G.time + 6;
-  a.x = foe.x + rnd(-28, 28); a.y = foe.y + rnd(-22, 22);
+  if (!aliceBlinkTo(a, foe)) { a.x = foe.x; a.y = foe.y; }
   a.tgt = foe; a.aliceChase = 1;
   addLog('🖤 アリスがテレポートしてオリバーの敵に襲いかかった', 'e', true);
   Sfx.play('whoosh', a.x, a.y); addDust(a.x, a.y, 8);
@@ -12045,8 +12074,7 @@ function thinkFpeAlice(u) {
   const t = u.tgt, d = dist(u.x, u.y, t.x, t.y);
   if (d > 280 && (u.tpCd || 0) <= G.time) {
     u.tpCd = G.time + 5;
-    u.x = t.x + rnd(-36, 36); u.y = t.y + rnd(-28, 28);
-    addDust(u.x, u.y, 10); Sfx.play('whoosh', u.x, u.y);
+    aliceBlinkTo(u, t); // 壁の中に出ないよう歩ける場所へ
   }
   if (d < 420) {
     u.faceA = angTo(u.x, u.y, t.x, t.y);
@@ -12583,6 +12611,7 @@ function stepSim(dt) {
   }
   updateNests(dt);
   updateSRP(dt);
+  updateAliceFx(dt);
   if (G.quicks) {
     for (let i = G.quicks.length - 1; i >= 0; i--) {
       const q = G.quicks[i]; q.t -= dt;
@@ -13994,6 +14023,189 @@ function updateSRP(dt) {
     }
   }
 }
+
+/* ══ アリス (FPE): 紙の肌・黒髪ロング・黒いワンピースに赤いリボン / 悪魔形態はインクの怪物 ══ */
+function aliceStrike(u) {
+  if (u.state !== 'attack' || !u.atk) return 0;
+  const d = u.atk.def, at = u.atk.t / (d.windup + d.active + d.rec);
+  return at > .3 && at < .85 ? Math.sin((at - .3) / .55 * Math.PI) : 0;
+}
+/* 背面: 長い黒髪 / 悪魔形態の触手髪・闇のオーラ */
+function drawAliceBack(u, sk, pose) {
+  const fx = u.fx || u.sp.fx, h = sk.head, R = sk.P.headR, d = sk.dir, T = G.time + (u.id || 0);
+  const demon = !!fx.aliceDemon, st = aliceStrike(u);
+  const gy = u.y * SQ - (u.z || 0);
+  if (demon) { // 足元に広がるインク溜まりと赤黒いオーラ
+    ctx.save();
+    ctx.globalAlpha *= .55;
+    const g = ctx.createRadialGradient(h.x, (h.y + gy) / 2, 0, h.x, (h.y + gy) / 2, (gy - h.y) * .9);
+    g.addColorStop(0, 'rgba(160,0,30,.45)'); g.addColorStop(.6, 'rgba(40,0,10,.25)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(h.x, (h.y + gy) / 2, (gy - h.y) * .9, 0, TAU); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = '#060406'; ctx.beginPath(); ctx.ellipse(u.x, gy, R * 3.2, R * 1, 0, 0, TAU); ctx.fill();
+    for (let i = 0; i < 5; i++) { const px = u.x + Math.sin(T * .7 + i * 2.1) * R * 2.6, pr = R * (.3 + (Math.sin(T * 2 + i) + 1) * .15); ctx.beginPath(); ctx.ellipse(px, gy + Math.cos(i) * R * .4, pr * 1.6, pr * .6, 0, 0, TAU); ctx.fill(); }
+    // 触手と化した髪
+    ctx.lineCap = 'round';
+    for (let i = 0; i < 7; i++) {
+      const base = -Math.PI / 2 - d * (.5 + i * .32);
+      let px = h.x - d * R * .5, py = h.y - R * .3;
+      const L = R * (4.5 + (i % 3) * 1.4) * (1 + st * .8);
+      const aimA = u.faceA != null ? Math.atan2(Math.sin(u.faceA) * SQ, Math.cos(u.faceA)) : (d > 0 ? 0 : Math.PI);
+      for (let k = 1; k <= 8; k++) {
+        const f = k / 8;
+        const a = base * (1 - st * f) + aimA * st * f + Math.sin(T * 3 + i * 1.3 + f * 5) * .5 * f;
+        const nx = px + Math.cos(a) * L / 8, ny = py + Math.sin(a) * L / 8;
+        ctx.strokeStyle = k > 6 ? '#3a0610' : '#07050a'; ctx.lineWidth = Math.max(.8, R * .55 * (1 - f * .8));
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(nx, ny); ctx.stroke();
+        px = nx; py = ny;
+      }
+      ctx.fillStyle = '#e8203c'; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + Math.cos(base) * R * .5, py + Math.sin(base) * R * .5 - R * .2); ctx.lineTo(px + R * .2, py + R * .2); ctx.fill();
+    }
+    ctx.lineCap = 'butt';
+    if (rchance(.35)) addPart({ k: 'spark', x: u.x + rnd(-R * 2, R * 2), y: u.y + rnd(-3, 3), z: rnd(0, gy - h.y), vx: rnd(-6, 6), vy: 0, vz: rnd(10, 30), life: .9, t: 0, s: rnd(1, 2.2), col: rchance(.5) ? '#1a0008' : '#c01830' });
+    return;
+  }
+  // 通常形態: 腰まで届く黒髪 (攻撃時は刃のように広がる)
+  const sw = Math.sin(T * 1.6) * R * .15 + (u.moveSpd > 5 ? -d * R * .5 : 0);
+  ctx.fillStyle = '#0a0a0e';
+  ctx.beginPath();
+  ctx.moveTo(h.x - d * R * 1.05, h.y - R * .3);
+  ctx.quadraticCurveTo(h.x - d * R * 1.5 + sw, h.y + R * 2.2, h.x - d * R * 1.2 + sw * 1.6, h.y + R * 4.4);
+  ctx.lineTo(h.x - d * R * .1 + sw, h.y + R * 4.0);
+  ctx.quadraticCurveTo(h.x + d * R * .3, h.y + R * 1.6, h.x + d * R * .5, h.y - R * .4);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = 'rgba(120,120,160,.18)'; ctx.lineWidth = .7;
+  for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(h.x - d * R * (.9 - i * .2), h.y); ctx.quadraticCurveTo(h.x - d * R * (1.2 - i * .2) + sw, h.y + R * 2.2, h.x - d * R * (1 - i * .2) + sw * 1.5, h.y + R * 4); ctx.stroke(); }
+  if (st > .05 && u.atk && u.atk.def.anim === 'hairWhip') { // 髪の刃
+    ctx.lineCap = 'round';
+    const aimA = u.faceA != null ? Math.atan2(Math.sin(u.faceA) * SQ, Math.cos(u.faceA)) : (d > 0 ? 0 : Math.PI);
+    for (let i = 0; i < 5; i++) {
+      let px = h.x - d * R * .3, py = h.y + R * .3 * i;
+      const L = R * 7.5 * st;
+      for (let k = 1; k <= 7; k++) {
+        const f = k / 7, a = aimA + (i - 2) * .22 + Math.sin(T * 14 + i + f * 6) * .25 * f;
+        const nx = px + Math.cos(a) * L / 7, ny = py + Math.sin(a) * L / 7;
+        ctx.strokeStyle = '#0a0a0e'; ctx.lineWidth = Math.max(.7, R * .38 * (1 - f * .85));
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(nx, ny); ctx.stroke(); px = nx; py = ny;
+      }
+      ctx.fillStyle = '#d0d0e0'; ctx.beginPath(); ctx.arc(px, py, R * .1, 0, TAU); ctx.fill();
+    }
+    ctx.lineCap = 'butt';
+  }
+}
+/* 胴: 黒いワンピースの裾・白い襟・赤いリボン */
+function drawAliceDress(u, sk) {
+  const fx = u.fx || u.sp.fx, P = sk.P, d = sk.dir, T = G.time + (u.id || 0);
+  if (fx.aliceDemon) { // 裂けた紙の皮膚から覗く赤い亀裂
+    ctx.strokeStyle = '#e02040'; ctx.lineWidth = Math.max(.8, P.torsoW * .12);
+    const cx = (sk.s1.x + sk.s2.x) / 2, cy = (sk.s1.y + sk.s2.y) / 2;
+    ctx.beginPath(); ctx.moveTo(cx - P.torsoW * .5, cy - P.torsoW * .6); ctx.lineTo(cx + d * P.torsoW * .1, cy); ctx.lineTo(cx - P.torsoW * .2, cy + P.torsoW * .5); ctx.lineTo(cx + d * P.torsoW * .4, cy + P.torsoW * .9); ctx.stroke();
+    ctx.globalAlpha *= .6; ctx.lineWidth *= 2.4; ctx.strokeStyle = 'rgba(255,40,70,.35)'; ctx.stroke(); ctx.globalAlpha /= .6;
+    return;
+  }
+  const pel = sk.pel, fl = Math.sin(T * 2) * .08 + (u.moveSpd > 5 ? .15 : 0);
+  ctx.fillStyle = '#121016';
+  ctx.beginPath(); ctx.moveTo(pel.x - P.hipW * 1.1, pel.y - P.hipW * .4); ctx.lineTo(pel.x + P.hipW * 1.1, pel.y - P.hipW * .4);
+  ctx.lineTo(pel.x + P.hipW * (1.9 + fl), pel.y + P.legU * .75); ctx.quadraticCurveTo(pel.x, pel.y + P.legU * .95, pel.x - P.hipW * (1.9 - fl), pel.y + P.legU * .75); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#2a2632'; ctx.lineWidth = .8; for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(pel.x + i * P.hipW * .5, pel.y); ctx.lineTo(pel.x + i * P.hipW * 1.1, pel.y + P.legU * .8); ctx.stroke(); }
+  const s2 = sk.s2;
+  ctx.fillStyle = '#f2f0ea';
+  ctx.beginPath(); ctx.moveTo(s2.x - P.torsoW * .9, s2.y - 1); ctx.lineTo(s2.x + P.torsoW * .9, s2.y - 1); ctx.lineTo(s2.x + d * P.torsoW * .5, s2.y + P.torsoW * .55); ctx.lineTo(s2.x, s2.y + P.torsoW * .2); ctx.lineTo(s2.x - d * P.torsoW * .2, s2.y + P.torsoW * .55); ctx.closePath(); ctx.fill();
+  const bx = s2.x + d * P.torsoW * .35, by = s2.y + P.torsoW * .35;
+  ctx.fillStyle = '#c8142e';
+  for (const sd of [-1, 1]) { ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + sd * P.torsoW * .55, by - P.torsoW * .3); ctx.lineTo(bx + sd * P.torsoW * .55, by + P.torsoW * .3); ctx.closePath(); ctx.fill(); }
+  ctx.fillRect(bx - 1, by - 1.2, 2, 2.4);
+  ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx - P.torsoW * .2, by + P.torsoW * .8); ctx.lineTo(bx + P.torsoW * .05, by + P.torsoW * .7); ctx.fill();
+}
+/* 顔 (drawSpecialFace から) */
+function drawAliceFace(u, head, R, dir, demon, jaw) {
+  const X = (a) => head.x + dir * R * a, Y = (b) => head.y + R * b, T = G.time + (u.id || 0);
+  const st = aliceStrike(u), grin = Math.max(st, jaw || 0);
+  if (!demon) {
+    // 前髪 (ぱっつん)
+    ctx.fillStyle = '#0a0a0e';
+    ctx.beginPath(); ctx.ellipse(X(-.05), Y(-.45), R * 1.1, R * .75, 0, Math.PI * .92, TAU * 1.02); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(X(-.7), Y(-.6)); ctx.lineTo(X(1.02), Y(-.62)); ctx.lineTo(X(1.02), Y(-.28)); for (let i = 0; i < 5; i++) ctx.lineTo(X(.9 - i * .3), Y(i % 2 ? -.28 : -.36)); ctx.closePath(); ctx.fill();
+    // FPEの黒い楕円の目 + 小さなハイライト
+    const blink = Math.sin(T * .9) > .985;
+    ctx.fillStyle = '#060608';
+    ctx.beginPath(); ctx.ellipse(X(.52), Y(-.08), R * .15, R * (blink ? .03 : .24), 0, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(X(.95), Y(-.08), R * .08, R * (blink ? .03 : .2), 0, 0, TAU); ctx.fill();
+    if (!blink) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(X(.56), Y(-.18), R * .05, 0, TAU); ctx.fill(); }
+    // 笑み: 攻撃時は耳まで裂けて鋭い歯が並ぶ
+    if (grin > .2) {
+      ctx.fillStyle = '#1a0206';
+      ctx.beginPath(); ctx.moveTo(X(-.05), Y(.28)); ctx.quadraticCurveTo(X(.55), Y(.5 + grin * .45), X(1.05), Y(.3)); ctx.quadraticCurveTo(X(.55), Y(.36 + grin * .15), X(-.05), Y(.28)); ctx.fill();
+      ctx.fillStyle = '#f4f0e8';
+      for (let i = 0; i < 6; i++) { const f = .05 + i * .17; ctx.beginPath(); ctx.moveTo(X(f), Y(.31 + Math.sin(f * 2.8) * .08)); ctx.lineTo(X(f + .07), Y(.44 + grin * .2 * Math.sin(f * 2.8))); ctx.lineTo(X(f + .14), Y(.31 + Math.sin(f * 2.8) * .08)); ctx.fill(); }
+    } else {
+      ctx.strokeStyle = '#3a1010'; ctx.lineWidth = Math.max(.6, R * .07);
+      ctx.beginPath(); ctx.moveTo(X(.25), Y(.36)); ctx.quadraticCurveTo(X(.6), Y(.52), X(.95), Y(.34)); ctx.stroke();
+    }
+    ctx.fillStyle = 'rgba(160,10,30,.55)'; ctx.beginPath(); ctx.arc(X(.2), Y(.2), R * .08, 0, TAU); ctx.arc(X(.3), Y(.32), R * .05, 0, TAU); ctx.fill();
+    return;
+  }
+  // 悪魔形態: 紙の仮面のような白い顔にひび割れ、赤く光る目、顔を裂く巨大な口
+  ctx.fillStyle = '#f0ece2';
+  ctx.beginPath(); ctx.ellipse(X(.35), Y(0), R * .85, R * .98, 0, 0, TAU); ctx.fill();
+  ctx.strokeStyle = '#2a1a1e'; ctx.lineWidth = Math.max(.5, R * .05);
+  ctx.beginPath(); ctx.moveTo(X(.1), Y(-.9)); ctx.lineTo(X(.25), Y(-.5)); ctx.lineTo(X(.12), Y(-.3)); ctx.lineTo(X(.3), Y(0)); ctx.moveTo(X(.7), Y(-.8)); ctx.lineTo(X(.62), Y(-.45)); ctx.stroke();
+  ctx.fillStyle = '#07050a';
+  ctx.beginPath(); ctx.ellipse(X(-.1), Y(-.55), R * 1.2, R * .8, 0, Math.PI * .9, TAU * 1.03); ctx.fill();
+  for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(X(-.1 + i * .3), Y(-.5)); ctx.lineTo(X(.02 + i * .3), Y(-.12 + (i % 2) * .1)); ctx.lineTo(X(.14 + i * .3), Y(-.5)); ctx.fill(); }
+  const pulse = .7 + Math.sin(T * 6) * .3;
+  for (const [ex, er] of [[.55, .2], [.95, .12]]) {
+    ctx.fillStyle = '#060206'; ctx.beginPath(); ctx.ellipse(X(ex), Y(-.1), R * er * 1.1, R * er * 1.3, dir * .3, 0, TAU); ctx.fill();
+    ctx.fillStyle = `rgba(255,${40 + pulse * 40},60,1)`; ctx.beginPath(); ctx.ellipse(X(ex), Y(-.1), R * er * .45, R * er * .9, dir * .3, 0, TAU); ctx.fill();
+    ctx.globalAlpha *= .4; ctx.fillStyle = '#ff2040'; ctx.beginPath(); ctx.arc(X(ex), Y(-.1), R * er * 2.2 * pulse, 0, TAU); ctx.fill(); ctx.globalAlpha /= .4;
+  }
+  const mo = .25 + grin * .75;
+  ctx.fillStyle = '#12010a';
+  ctx.beginPath(); ctx.moveTo(X(-.35), Y(.2)); ctx.quadraticCurveTo(X(.4), Y(.35 + mo * .9), X(1.2), Y(.15)); ctx.quadraticCurveTo(X(.4), Y(.3 - mo * .1), X(-.35), Y(.2)); ctx.fill();
+  ctx.fillStyle = '#8a0418'; ctx.beginPath(); ctx.ellipse(X(.45), Y(.35 + mo * .4), R * .35, R * .12 * mo, 0, 0, TAU); ctx.fill();
+  ctx.fillStyle = '#f8f4ec';
+  for (let i = 0; i < 9; i++) {
+    const f = -.3 + i * .17, top = .22 + Math.sin((f + .35) * 2) * .05, bot = .25 + Math.sin((f + .35) * 2) * (.1 + mo * .75);
+    ctx.beginPath(); ctx.moveTo(X(f), Y(top)); ctx.lineTo(X(f + .08), Y(top + .22 + mo * .12)); ctx.lineTo(X(f + .16), Y(top)); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(X(f), Y(bot)); ctx.lineTo(X(f + .08), Y(bot - .2 - mo * .1)); ctx.lineTo(X(f + .16), Y(bot)); ctx.fill();
+  }
+  ctx.fillStyle = '#10020a'; for (let i = 0; i < 3; i++) { const dx = .1 + i * .3, L = .3 + ((T * .6 + i * .37) % 1) * .9; ctx.fillRect(X(dx) - R * .04, Y(.4), R * .08, R * L); }
+}
+/* 奈落の手: 地面から伸びる黒い手 (演出) */
+function addAliceHands(x, y, n, rad) {
+  G.aliceFx = G.aliceFx || [];
+  for (let i = 0; i < n; i++) { const a = Math.random() * TAU, d = Math.sqrt(Math.random()) * rad; G.aliceFx.push({ x: x + Math.cos(a) * d, y: y + Math.sin(a) * d * .8, t: 0, life: 1.1 + Math.random() * .4, s: rnd(.8, 1.3), dir: rchance(.5) ? 1 : -1 }); }
+}
+function updateAliceFx(dt) { if (!G.aliceFx) return; for (let i = G.aliceFx.length - 1; i >= 0; i--) { G.aliceFx[i].t += dt; if (G.aliceFx[i].t >= G.aliceFx[i].life) G.aliceFx.splice(i, 1); } }
+function drawAliceHand(h) {
+  const f = h.t / h.life, grow = f < .25 ? f / .25 : f > .75 ? (1 - f) / .25 : 1;
+  const x = h.x, gy = h.y * SQ, L = 26 * h.s * grow;
+  ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.beginPath(); ctx.ellipse(x, gy, 9 * h.s, 3.4 * h.s, 0, 0, TAU); ctx.fill();
+  ctx.strokeStyle = '#08060a'; ctx.lineCap = 'round'; ctx.lineWidth = 4.2 * h.s;
+  const sw = Math.sin(h.t * 8 + x) * 3 * h.s;
+  ctx.beginPath(); ctx.moveTo(x, gy); ctx.quadraticCurveTo(x + sw, gy - L * .5, x + h.dir * 3 * h.s, gy - L); ctx.stroke();
+  ctx.lineWidth = 1.6 * h.s;
+  for (let k = -2; k <= 2; k++) { ctx.beginPath(); ctx.moveTo(x + h.dir * 3 * h.s, gy - L); ctx.lineTo(x + h.dir * 3 * h.s + k * 2.4 * h.s, gy - L - (6 - Math.abs(k)) * h.s * grow); ctx.stroke(); }
+  ctx.fillStyle = '#e8203c'; for (let k = -2; k <= 2; k++) { ctx.beginPath(); ctx.arc(x + h.dir * 3 * h.s + k * 2.4 * h.s, gy - L - (6 - Math.abs(k)) * h.s * grow, .8 * h.s, 0, TAU); ctx.fill(); }
+  ctx.lineCap = 'butt';
+}
+/* 背後へ瞬間移動 (インク潜り) */
+function aliceBlinkTo(u, tgt) {
+  if (!tgt) return false;
+  const back = angTo(tgt.x, tgt.y, u.x, u.y) + Math.PI + rnd(-.5, .5);
+  for (const dd of [tgt.r + u.r + 8, tgt.r + u.r + 18, tgt.r + u.r + 30]) {
+    const px = tgt.x + Math.cos(back) * dd, py = tgt.y + Math.sin(back) * dd;
+    if (walkAtPx(px, py)) {
+      addDecal('blood', u.x, u.y, 16); addDust(u.x, u.y, 8, '#100010');
+      for (let i = 0; i < 8; i++) addPart({ k: 'spark', x: u.x + rnd(-8, 8), y: u.y + rnd(-5, 5), z: rnd(0, 30), vx: rnd(-20, 20), vy: rnd(-10, 10), vz: rnd(10, 40), life: .6, t: 0, s: rnd(1.4, 2.6), col: '#0a0008' });
+      u.x = px; u.y = py; u.faceA = angTo(px, py, tgt.x, tgt.y); u.dir = Math.cos(u.faceA) >= 0 ? 1 : -1;
+      addDust(u.x, u.y, 10, '#100010'); Sfx.play('whoosh', u.x, u.y);
+      return true;
+    }
+  }
+  return false;
+}
+
 function srpPanelInfo() {
   const nx = G.units.filter(u => !u.gone && u.fac === 'srp' && u.sp.nexus).length;
   const top = Object.entries(G.srpAdapt || {}).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k, v]) => `${k} -${Math.round(v * 60)}%`).join(' / ');
