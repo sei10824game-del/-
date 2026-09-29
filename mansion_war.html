@@ -27,7 +27,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg0);
 #topbar .logo{font-weight:900;letter-spacing:.14em;font-size:13px;margin-right:6px;white-space:nowrap;
   background:linear-gradient(90deg,var(--tcol),#e8b13f,var(--xcol));-webkit-background-clip:text;background-clip:text;color:transparent}
 .tbtn{pointer-events:auto;cursor:pointer;border:1px solid var(--panelB);background:rgba(255,255,255,.05);color:var(--txt);
-  border-radius:6px;padding:4px 10px;font-size:12px;font-weight:700;user-select:none;transition:.12s;touch-action:manipulation}
+  border-radius:6px;padding:4px 10px;font-size:12px;font-weight:700;user-select:none;transition:.12s;touch-action:manipulation;white-space:nowrap}
 .tbtn:hover{background:rgba(255,255,255,.14)}
 .tbtn.on{background:#5a4f2f;border-color:#c9a84c;color:#ffe9ad}
 .spdgroup{display:flex;gap:2px}
@@ -4452,6 +4452,7 @@ function initCanvas() {
     dpr = Math.min(2, window.devicePixelRatio || 1);
     cv.width = Math.floor(innerWidth * dpr); cv.height = Math.floor(innerHeight * dpr);
     cv.style.width = innerWidth + 'px'; cv.style.height = innerHeight + 'px';
+    if (G.started && $('facDock')) layoutPanels(); // 画面回転・リサイズで上部バーの高さが変わっても追従
   };
   window.addEventListener('resize', rs); rs();
 }
@@ -11406,7 +11407,7 @@ function thinkScp939(u) {
     if (d > 90 && lure && (u.cds[lure.n] || 0) <= G.time) {
       startAttack(u, lure, t);
       t.dest = { x: u.x, y: u.y }; t.panicT = 2; t.faceA = angTo(t.x, t.y, u.x, u.y);
-      addLog('SCP-939 lured prey with a stolen voice', 's');
+      addLog('🗣️ SCP-939が盗んだ声で獲物をおびき寄せた', 's');
       return;
     }
     if (d < u.r + t.r + 28) {
@@ -13630,10 +13631,13 @@ function initUI() {
     const st = document.createElement('style'); st.id = 'accCss';
     st.textContent = `#facDock{position:fixed;left:6px;top:52px;bottom:12px;width:min(210px,42vw);overflow-y:auto;overflow-x:hidden;z-index:12;pointer-events:auto;display:flex;flex-direction:column;gap:3px;padding-bottom:8px}
 #facDock::-webkit-scrollbar{width:5px}#facDock::-webkit-scrollbar-thumb{background:#555;border-radius:3px}
-#facDock .fpanel{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;width:100%!important;max-height:34px;overflow:hidden;cursor:pointer;transition:max-height .18s ease}
-#facDock .fpanel.open{max-height:260px;overflow-y:auto}
-#facDock .fpanel h3{margin:0;padding:6px 8px;pointer-events:auto}
-#inspect{z-index:25!important;left:auto;right:12px;top:56px}
+#facDock .fpanel{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;width:100%!important;flex-shrink:0;box-sizing:border-box;max-height:34px;padding-top:0;padding-bottom:0;overflow:hidden;cursor:pointer;transition:max-height .18s ease}
+#facDock .fpanel.open{max-height:260px;padding-bottom:8px;overflow-y:auto}
+#facDock .fpanel h3{margin:0;padding:7px 0 6px;pointer-events:auto;white-space:nowrap}
+#facDock .fpanel h3:hover{filter:brightness(1.25)}
+#facDock .fpanel:not(.open)>:not(h3){visibility:hidden}
+@media(min-width:701px){#logBox{left:calc(min(210px,42vw) + 16px)}#hint{left:calc(min(210px,42vw) + 16px)!important}}
+#inspect{z-index:25!important;left:auto;right:12px;top:56px;bottom:auto;transform:none;max-height:calc(100vh - 220px);overflow-y:auto}
 @media(max-width:700px){#facDock{width:min(168px,46vw);bottom:100px}#inspect{width:min(280px,52vw)}}`;
     document.head.appendChild(st);
   }
@@ -13891,6 +13895,7 @@ function layoutPanels() {
   const tb = document.getElementById('topbar');
   const top = (tb && tb.offsetHeight ? tb.offsetHeight + 8 : 52);
   dock.style.top = top + 'px';
+  const ins = $('inspect'); if (ins) ins.style.top = (top + 4) + 'px'; // 上部バーが折り返しても被らない
 }
 
 function showUI() {
