@@ -7744,8 +7744,8 @@ function brawlerOnHit(att, tgt, dmg) {
   const n = nitaOwner(att);
   if (n && !n.gone) {
     let gain;
-    if (att.key === 'nBearH' || att.key === 'nBearB') gain = Math.min(.10, .10);
-    else { gain = Math.min(.20, n._ultHit || .10); n._ultHit = 0; }
+    if (att.key === 'nBearH' || att.key === 'nBearB') gain = .04; // クマの攻撃はウルト溜まり控えめ
+    else { gain = Math.min(.20, n._ultHit || .10) * .5; n._ultHit = 0; }
     n.ult = Math.min(1, (n.ult || 0) + gain);
     n.hyper = Math.min(1, (n.hyper || 0) + .055);
     n.idleT = 0;
@@ -7766,7 +7766,7 @@ function brawlerOnHit(att, tgt, dmg) {
   }
   const p = att.key === 'mrP' ? att : (att.mrPId ? G.units.find(v => v.id === att.mrPId) : null);
   if (p && !p.gone && (att.key === 'mrP' || att.key === 'porter' || att.key === 'porterUp')) {
-    p.ult = Math.min(1, (p.ult || 0) + .1);
+    p.ult = Math.min(1, (p.ult || 0) + (att.key === 'mrP' ? .05 : .025)); // ポーター兵の攻撃は本体より溜まりにくい
     p.hyper = Math.min(1, (p.hyper || 0) + .045);
     p.idleT = 0;
   }
