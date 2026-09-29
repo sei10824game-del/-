@@ -59,7 +59,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg0);
 .le{background:rgba(8,7,10,.72);border-left:3px solid #666;padding:3px 8px;font-size:11px;border-radius:0 5px 5px 0;
   animation:lein .25s ease-out;backdrop-filter:blur(3px)}
 @keyframes lein{from{transform:translateX(-14px);opacity:0}to{transform:none;opacity:1}}
-.le.t{border-color:var(--tcol)} .le.x{border-color:var(--xcol)} .le.n{border-color:var(--ncol)} .le.h{border-color:var(--hcol)} .le.w{border-color:#e8e8f2} .le.a{border-color:#c8a24a} .le.big{font-weight:800} .le.srp{border-color:#d04050}
+.le.t{border-color:var(--tcol)} .le.x{border-color:var(--xcol)} .le.n{border-color:var(--ncol)} .le.h{border-color:var(--hcol)} .le.w{border-color:#e8e8f2} .le.a{border-color:#c8a24a} .le.big{font-weight:800} .le.srp{border-color:#d04050} .le.fl{border-color:#c8b870} .le.nm{border-color:#e05030}
 
 /* ─── minimap ─── */
 #miniWrap{position:absolute;right:10px;bottom:12px;background:var(--panel);border:1px solid var(--panelB);
@@ -4572,6 +4572,7 @@ function render() {
   // デカール
   if (decalCv) ctx.drawImage(decalCv, 0, 0, decalCv.width, decalCv.height, 0, 0, G.map.wpx, G.map.hpx * SQ);
   drawWaterTiles();
+  drawBlights(); // フラッド/ネクロモーフに呑まれた部屋
 
   // 影
   for (const u of G.units) {
@@ -4641,6 +4642,7 @@ function render() {
   const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .35, W / 2, H / 2, Math.max(W, H) * .75);
   vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.5)');
   ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+  drawMoonOverlay(W, H);
 }
 
 function drawShadow(x, sy, r, z, a) {
@@ -4827,12 +4829,14 @@ function drawUnit(u) {
     const pose = poseFor(u);
     if (u.fxT > 0) { ctx.globalAlpha = 1; }
     if (u.state === 'resin') drawResin(u); // 巣の樹脂で固定されている
+    if (u.crawl) { ctx.save(); ctx.translate(0, (BP.legU + BP.legL) * u.sp.scale * u.sizeMul * .8); } // 両脚を失い這う
     if (u.sp.kind === 'biped') drawBiped(u, pose);
     else if (u.sp.kind === 'quad') { if (u.sp.fac === 'sp') drawDSSpider(u, pose); else drawQuad(u, pose); }
     else if (u.sp.kind === 'bird') drawBird(u, pose);
     else if (u.sp.kind === 'hugger') drawHugger(u, pose);
     else if (u.sp.kind === 'burster') drawBurster(u, pose);
-    if (u.sp.ov && u.fac === 'srp') drawSRPOverlay(u);
+    if (u.crawl) ctx.restore();
+    if (u.sp.ov && (u.fac === 'srp' || u.fac === 'fl' || u.fac === 'nm')) { drawSRPOverlay(u); if (u.sp.kind === 'biped') drawXOverlayParts(u, pose); }
   } catch (e) { }
 }
 
@@ -4874,9 +4878,10 @@ function drawBiped(u, pose) {
   // 尻尾(背面)
   if (sk.tailPts) drawTail(sk.tailPts, armR * .85, pal, fx);
   // 遠側の腕 (upperArmL, lowerArmL, handL)
-  drawArm(sk.armL, P, skin, skinD, pal, fx, .78, 'L', 0, (fx.bigClawL && fx.claws) ? 1.5 : 0, fx.coat ? clothD : null);
+  const cut = u.cut || {};
+  if (!cut.armL) drawArm(sk.armL, P, skin, skinD, pal, fx, .78, 'L', 0, (fx.bigClawL && fx.claws) ? 1.5 : 0, fx.coat ? clothD : null);
   // 遠側の脚 (upperLegL, lowerLegL, footL)
-  drawLeg(sk.legL, P, cloth === pal.cloth ? shade(pal.clothD, -.12) : clothD, pal, fx, .78);
+  if (!cut.legL) drawLeg(sk.legL, P, cloth === pal.cloth ? shade(pal.clothD, -.12) : clothD, pal, fx, .78);
   // 下胴 (lowerTorso)
   limb(sk.pel, sk.s1, P.hipW, P.torsoW * .92, clothD);
   // 上胴 (upperTorso)
@@ -4902,10 +4907,10 @@ function drawBiped(u, pose) {
   drawHeadBiped(u, sk, pose, hitFlash);
   if (fx.beakMask) drawBeakMask(sk, pose);
   // 近側の脚
-  drawLeg(sk.legR, P, clothD, pal, fx, 1);
+  if (!cut.legR) drawLeg(sk.legR, P, clothD, pal, fx, 1);
   // 近側の腕
-  drawArm(sk.armR, P, skin, skinD, pal, fx, 1, 'R', fx.bigClawR ? 1.5 : (fx.bigArmR ? 2.3 : 0), 0, fx.coat ? cloth : null);
-  drawHeldWeapon(u, sk);
+  if (!cut.armR) drawArm(sk.armR, P, skin, skinD, pal, fx, 1, 'R', fx.bigClawR ? 1.5 : (fx.bigArmR ? 2.3 : 0), 0, fx.coat ? cloth : null);
+  if (!cut.armR) drawHeldWeapon(u, sk);
   if (fx.heart && pose.rot < .4) { const _h = { heart: 1 }; torsoDetail(u, sk, _h, pal, hitFlash); }
   // 追加装飾
   if (fx.hat) drawHat(sk, pal);
@@ -6902,7 +6907,7 @@ function drawHugger(u, pose) {
   if (u.sp.head === 'agrub') { drawAGrub(u, pose); return; }
   if (u.sp.ai === 'slime' || u.sp.ai === 'kingslime') { drawDQSlime(u, pose); return; }
   if (u.sp.ai === 'guardian') { drawMCGuardian(u, pose); return; }
-  if (u.sp.srp) { drawSRP(u, pose); return; }
+  if (u.sp.plan) { drawSRP(u, pose); return; }
   const baseX = u.x, baseY = u.y * SQ - u.z;
   const attached = u.state === 'attached';
   const hf = u.fxT > 0;
@@ -7299,7 +7304,7 @@ function unitTopY(u) {
   if (sp.kind === 'biped') return (BP.legU + BP.legL + BP.footH + BP.spine1 + BP.spine2 + BP.headR * 2.2) * sp.scale * u.sizeMul * (u.formScale || 1) * (sp.fx.tail ? 1.1 : 1);
   if (sp.kind === 'quad') return (QP.legU + QP.legL + QP.bodyR * 2 + QP.headR) * sp.scale * u.sizeMul;
   if (sp.kind === 'bird') return 20 * sp.scale + (u.z || 0);
-  if (sp.srp) return sp.r * sp.scale * (u.sizeMul || 1) * (sp.plan === 'fly' || sp.plan === 'overlord' ? 3 : sp.plan === 'nexus' ? 3.2 : 1.8);
+  if (sp.plan) return sp.r * sp.scale * (u.sizeMul || 1) * (sp.plan === 'fly' || sp.plan === 'overlord' ? 3 : sp.plan === 'nexus' ? 3.2 : 1.8);
   return 16 * sp.scale;
 }
 
@@ -7658,6 +7663,8 @@ function spawnUnit(key, x, y, o = {}) {
     if (sp.fac === 'sp' && countFac('sp') >= (G.capSp || 40)) return null;
     if (sp.fac === 'pv' && countFac('pv') >= (G.capPv || 48)) return null;
     if (sp.fac === 'srp' && countFac('srp') >= (G.capSrp || 70)) return null;
+    if (sp.fac === 'fl' && countFac('fl') >= (G.capFl || 70)) return null;
+    if (sp.fac === 'nm' && countFac('nm') >= (G.capNm || 70)) return null;
     if (key === 'mikeTyson' && countKey('mikeTyson') >= 1) return null;
     if (sp.fac === 'F' && countFac('F') >= (G.capF || 8)) return null;
     if (sp.fac === 'K' && countFac('K') >= (G.capK || 6)) return null;
@@ -7875,6 +7882,8 @@ function dealDamage(att, tgt, dmg, o = {}) {
     tgt.slowT = Math.max(tgt.slowT || 0, 3.5);
   }
   if (tgt.fac === 'srp' && att && att.fac !== 'srp' && dmg > 0) dmg = srpOnHit(tgt, att, dmg, o); // 寄生体: 攻撃毎の適応
+  if ((tgt.fac === 'fl' || tgt.fac === 'nm') && dmg > 0) dmg = xOnHit(tgt, att, dmg, o); // シールド/骨殻/切断
+  if (att && att.cutMul && dmg > 0) dmg *= att.cutMul; // 腕を切断されたネクロモーフは弱る
   tgt.hp -= dmg;
   if (att && att.fac === 'srp' && dmg > 0 && tgt.fac !== 'srp') srpInfect(tgt, att); // COTH 感染
   tgt.idleT = 0;
@@ -8043,6 +8052,7 @@ function spawnMz(key, x, y, o = {}) {
   return spawnUnit(key, x, y, Object.assign({ force: o.force, silent: o.silent, noDress: key.indexOf('mut') === 0 }, o));
 }
 function killUnit(att, u, o = {}) {
+  if (nmSurvive(att, u, o)) return; // ネクロモーフ: 四肢を切断しなければ倒れない
   if ((u.key === 'mutZombie' || u.key === 'mutHusk') && (u.mutLives == null ? u.sp.mutLives : u.mutLives) > 0) {
     u.mutLives = (u.mutLives == null ? u.sp.mutLives : u.mutLives) - 1;
     u.hp = u.mhp / 3;
@@ -8176,6 +8186,7 @@ function killUnit(att, u, o = {}) {
   if (u.host && u.state === 'attached') { u.host.hug = null; }
   if (G.sel === u) { G.sel = null; updateInspector(); }
 
+  if (xDeathHook(att, u, o)) return; // フラッド戦闘体化 / ネクロモーフ再起動
   if (srpDeathHook(att, u, o)) return; // SRP: 同化種として蘇生 / 肉塊化
   const capT = countFac('T'), capX = countFac('X');
   // 死体と蘇生の判定
@@ -8542,6 +8553,10 @@ function hostileTo(u, o) {
   if (u.fac === 'pv') return o.fac !== 'pv';
   if (u.fac === 'srp') return o.fac !== 'srp';
   if (o.fac === 'srp') return true;
+  if (u.fac === 'fl') return o.fac !== 'fl';
+  if (o.fac === 'fl') return true;
+  if (u.fac === 'nm') return o.fac !== 'nm';
+  if (o.fac === 'nm') return true;
   // 擬態中のゴーストフェイスは生存者扱い
   if (o.disguiseN && u.fac !== 'F') {
     if (u.fac === 'N') return false;
@@ -8761,6 +8776,25 @@ function fireAttack(u, d, a) {
       break;
     }
     case 'aoe': {
+      if (d.selfBoom) { // キャリアー / エクスプローダー: 自爆
+        u.burstDone = true;
+        if (u.fac === 'fl') flBurst(u);
+        nmBoom(u, d.dmg);
+        u.hp = 0; killUnit(null, u, { gib: 1, selfBoom: 1 });
+        break;
+      }
+      if (d.tentSlam) { // グレイブマインド / レヴァイアサン: 巨大な触手で部屋を薙ぎ払う
+        const rid = roomOfUnit(u), c = tgt && !tgt.gone ? tgt : u, col = u.fac === 'fl' ? '#8a7438' : '#6a2a1c';
+        for (let i = 0; i < 4; i++) addTentSlam(c.x + rnd(-40, 40), c.y + rnd(-30, 30), col, 1.4 + Math.random());
+        addShake(d.aoeR > 150 ? 10 : 6); Sfx.play('thud', c.x, c.y);
+        addShock(c.x, c.y, 10, d.aoeR * .7, u.fac === 'fl' ? 'rgba(180,170,90,.5)' : 'rgba(160,40,20,.5)');
+        for (const o of G.units.slice()) {
+          if (o === u || o.gone || o.dead || !hostileTo(u, o)) continue;
+          const inRoom = d.roomHit && rid != null && roomOfUnit(o) === rid;
+          if ((inRoom && rchance(.45)) || dist(c.x, c.y, o.x, o.y) < d.aoeR * .6 + o.r) applyHit(u, d, o, angTo(u.x, u.y, o.x, o.y));
+        }
+        break;
+      }
       if (d.hands) { // アリス: 奈落の手 — 標的の足元から黒い手が湧き出す
         const c = tgt && !tgt.gone ? tgt : u;
         addAliceHands(c.x, c.y, 16, d.aoeR * .8); addShake(8); Sfx.play('screech', c.x, c.y);
@@ -9287,6 +9321,9 @@ function aiThink(u) {
       case 'pv': thinkMonster(u); break;
       case 'srp': thinkMonster(u); break;
       case 'srpNexus': thinkSrpNexus(u); break;
+      case 'flood': thinkFlood(u); break;
+      case 'necro': thinkNecro(u); break;
+      case 'xStatic': thinkXStatic(u); break;
       case 'zomboss': thinkZomboss(u); break;
       case 'spider': thinkSpider(u); break;
       case 'spNurse': thinkSpNurse(u); break;
@@ -12612,6 +12649,7 @@ function stepSim(dt) {
   updateNests(dt);
   updateSRP(dt);
   updateAliceFx(dt);
+  updateFloodNecro(dt);
   if (G.quicks) {
     for (let i = G.quicks.length - 1; i >= 0; i--) {
       const q = G.quicks[i]; q.t -= dt;
@@ -13071,8 +13109,9 @@ function checkVictory() {
 function startGame(cfg) {
   G.cfg = Object.assign(G.cfg, cfg);
   G.units = []; G.corpses = []; G.eggs = []; G.projs = []; G.parts = []; G.arcs = []; G.shocks = [];
+  G.blights = []; G.aliceFx = [];
   G.time = 0; G.over = false; G.winner = null; G.sel = null; G.focus = null; G.follow = false; G.mzRaidDone = 0; G.mzRaid = 0;
-  G.stats = { srp: { kills: 0, inf: 0, born: 0, lost: 0, conv: 0 }, T: { kills: 0, inf: 0, born: 0, lost: 0 }, X: { kills: 0, imp: 0, born: 0, lost: 0 }, D: { kills: 0, born: 0, lost: 0 }, H: { kills: 0, imp: 0, born: 0, lost: 0, hug: 0 }, G: { kills: 0, inf: 0, born: 0, lost: 0 }, C: { kills: 0, inf: 0, born: 0, lost: 0 }, W: { kills: 0, born: 0, lost: 0 }, A: { kills: 0, born: 0, lost: 0 }, S: { kills: 0, born: 0, lost: 0 }, J: { kills: 0, born: 0, lost: 0 }, F: { kills: 0, born: 0, lost: 0 }, K: { kills: 0, born: 0, lost: 0 }, M: { kills: 0, born: 0, lost: 0 }, Y: { kills: 0, born: 0, lost: 0 }, Q: { kills: 0, born: 0, lost: 0 }, B: { kills: 0, born: 0, lost: 0 }, P: { kills: 0, born: 0, lost: 0 }, R: { kills: 0, born: 0, lost: 0 }, I: { kills: 0, born: 0, lost: 0 }, U: { kills: 0, born: 0, lost: 0 }, L: { kills: 0, born: 0, lost: 0 }, O: { kills: 0, born: 0, lost: 0 }, "3": { kills: 0, born: 0, lost: 0 }, "4": { kills: 0, born: 0, lost: 0 }, V: { kills: 0, born: 0, lost: 0 }, E: { kills: 0, born: 0, lost: 0 }, "5": { kills: 0, born: 0, lost: 0 }, "6": { kills: 0, born: 0, lost: 0 }, "8": { kills: 0, born: 0, lost: 0 }, "0": { kills: 0, born: 0, lost: 0 }, jk: { kills: 0, born: 0, lost: 0 }, hg: { kills: 0, born: 0, lost: 0 }, pg: { kills: 0, born: 0, lost: 0 }, bk: { kills: 0, born: 0, lost: 0 }, nt: { kills: 0, born: 0, lost: 0 }, mp: { kills: 0, born: 0, lost: 0 }, mz: { kills: 0, born: 0, lost: 0 }, pv: { kills: 0, born: 0, lost: 0 }, gd: { kills: 0, born: 0, lost: 0 }, sp: { kills: 0, born: 0, lost: 0 } };
+  G.stats = { srp: { kills: 0, inf: 0, born: 0, lost: 0, conv: 0 }, fl: { kills: 0, born: 0, lost: 0, conv: 0 }, nm: { kills: 0, born: 0, lost: 0, conv: 0 }, T: { kills: 0, inf: 0, born: 0, lost: 0 }, X: { kills: 0, imp: 0, born: 0, lost: 0 }, D: { kills: 0, born: 0, lost: 0 }, H: { kills: 0, imp: 0, born: 0, lost: 0, hug: 0 }, G: { kills: 0, inf: 0, born: 0, lost: 0 }, C: { kills: 0, inf: 0, born: 0, lost: 0 }, W: { kills: 0, born: 0, lost: 0 }, A: { kills: 0, born: 0, lost: 0 }, S: { kills: 0, born: 0, lost: 0 }, J: { kills: 0, born: 0, lost: 0 }, F: { kills: 0, born: 0, lost: 0 }, K: { kills: 0, born: 0, lost: 0 }, M: { kills: 0, born: 0, lost: 0 }, Y: { kills: 0, born: 0, lost: 0 }, Q: { kills: 0, born: 0, lost: 0 }, B: { kills: 0, born: 0, lost: 0 }, P: { kills: 0, born: 0, lost: 0 }, R: { kills: 0, born: 0, lost: 0 }, I: { kills: 0, born: 0, lost: 0 }, U: { kills: 0, born: 0, lost: 0 }, L: { kills: 0, born: 0, lost: 0 }, O: { kills: 0, born: 0, lost: 0 }, "3": { kills: 0, born: 0, lost: 0 }, "4": { kills: 0, born: 0, lost: 0 }, V: { kills: 0, born: 0, lost: 0 }, E: { kills: 0, born: 0, lost: 0 }, "5": { kills: 0, born: 0, lost: 0 }, "6": { kills: 0, born: 0, lost: 0 }, "8": { kills: 0, born: 0, lost: 0 }, "0": { kills: 0, born: 0, lost: 0 }, jk: { kills: 0, born: 0, lost: 0 }, hg: { kills: 0, born: 0, lost: 0 }, pg: { kills: 0, born: 0, lost: 0 }, bk: { kills: 0, born: 0, lost: 0 }, nt: { kills: 0, born: 0, lost: 0 }, mp: { kills: 0, born: 0, lost: 0 }, mz: { kills: 0, born: 0, lost: 0 }, pv: { kills: 0, born: 0, lost: 0 }, gd: { kills: 0, born: 0, lost: 0 }, sp: { kills: 0, born: 0, lost: 0 } };
   G.items = []; G.noises = []; G.farms = []; G.pools = []; G.daRainT = 34; G.daRally = null; G.contT = .5; G.breedT = 3; G.tankAt = 170; G.spawnG = null; G.hordeRainT = 40; G.sporeBloomT = 50; G.spawnC = null; G.hiveIntel = []; G.hiveOrder = null; G.wsRally = null; G.spawnW = null; G.spawnA = null; G.aKingAt = 200 + rnd(0, 60);
   G.nextId = 1; G.queenDeadT = 0; G.vicT = 3; G.t002At = 55; G.eggDecayLogged = false;
   for (const k in nameCounter) delete nameCounter[k];
@@ -13247,6 +13286,8 @@ function startGame(cfg) {
   spawnGuardians(); spawnSpiders();
   spawnZomboss();
   spawnSRP();
+  spawnFlood();
+  spawnNecro();
   const fRoom = rpick(G.map.preyRooms);
   spawnUnit('ghostface', randWalkIn(fRoom).x, randWalkIn(fRoom).y, { silent: true, force: true });
   spawnUnit('ghostface', randWalkIn(fRoom).x, randWalkIn(fRoom).y, { silent: true, force: true });
@@ -14178,6 +14219,7 @@ function addAliceHands(x, y, n, rad) {
 }
 function updateAliceFx(dt) { if (!G.aliceFx) return; for (let i = G.aliceFx.length - 1; i >= 0; i--) { G.aliceFx[i].t += dt; if (G.aliceFx[i].t >= G.aliceFx[i].life) G.aliceFx.splice(i, 1); } }
 function drawAliceHand(h) {
+  if (h.tent) { const f = h.t / h.life, grow = f < .3 ? f / .3 : f > .7 ? (1 - f) / .3 : 1, x = h.x, gy = h.y * SQ, L = 60 * h.s * grow; ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(x, gy, 12 * h.s, 4 * h.s, 0, 0, TAU); ctx.fill(); ctx.lineCap = 'round'; for (const [w, c] of [[9, shade(h.col, -.3)], [6, h.col]]) { ctx.strokeStyle = c; ctx.lineWidth = w * h.s; ctx.beginPath(); ctx.moveTo(x, gy); ctx.quadraticCurveTo(x + h.dir * 16 * h.s, gy - L * .6, x + h.dir * 6 * h.s * Math.sin(h.t * 6), gy - L); ctx.stroke(); } ctx.lineCap = 'butt'; return; }
   const f = h.t / h.life, grow = f < .25 ? f / .25 : f > .75 ? (1 - f) / .25 : 1;
   const x = h.x, gy = h.y * SQ, L = 26 * h.s * grow;
   ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.beginPath(); ctx.ellipse(x, gy, 9 * h.s, 3.4 * h.s, 0, 0, TAU); ctx.fill();
@@ -14204,6 +14246,708 @@ function aliceBlinkTo(u, tgt) {
     }
   }
   return false;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   Halo: フラッド (fac 'fl') / Dead Space: ネクロモーフ (fac 'nm')
+   ══════════════════════════════════════════════════════════ */
+/* 汎用コンストラクタ (SRP の独自描画プランを共有) */
+function XC(fac, name, ic, plan, hp, r, scale, walk, run, pal, atks, extra) {
+  return Object.assign(SRPC(name, ic, null, plan, hp, r, scale, walk, run, pal, atks), { fac, srp: undefined, ai: fac === 'fl' ? 'flood' : 'necro' }, extra || {});
+}
+function XB(fac, name, ic, hp, scale, walk, run, pal, atks, extra) {
+  const sp = SRPB(name, ic, null, hp, scale, walk, run, pal, atks, extra);
+  return Object.assign(sp, { fac, srp: undefined, ai: (extra && extra.ai) || (fac === 'fl' ? 'flood' : 'necro') });
+}
+function XQ(fac, name, ic, head, hp, r, scale, walk, run, pal, atks, extra) {
+  return Object.assign(SRPQ(name, ic, null, head, hp, r, scale, walk, run, pal, atks, extra), { fac, srp: undefined, ai: fac === 'fl' ? 'flood' : 'necro' });
+}
+const FL_PAL = {
+  flesh: { skin: '#b89a62', skinD: '#6a5a30', skinL: '#d8c088', cloth: '#4a5a3a', clothD: '#2a3420', clothL: '#6a7a50', acc: '#e0d4a0', eye: '#e8e080', blood: '#6a7a30' },
+  human: { skin: '#9a8a60', skinD: '#5a4a2a', skinL: '#c0ae80', cloth: '#4a5a3e', clothD: '#2a3424', clothL: '#6a7a58', acc: '#c8b870', eye: '#e8e080', blood: '#6a7a30' },
+  elite: { skin: '#6a5a40', skinD: '#3a2e1c', skinL: '#8a7a58', cloth: '#3a4a7a', clothD: '#1e2848', clothL: '#5a6aa0', acc: '#c8b870', eye: '#e8e080', blood: '#6a7a30' },
+  brute: { skin: '#7a6a58', skinD: '#4a3e30', skinL: '#9a8a74', cloth: '#5a4a3a', clothD: '#3a2e22', clothL: '#7a6a58', acc: '#c8b870', eye: '#e8e080', blood: '#6a7a30' },
+  pure: { skin: '#c8a868', skinD: '#7a6034', skinL: '#e8cc90', cloth: '#8a7040', clothD: '#5a4424', clothL: '#a88a58', acc: '#6a8a30', eye: '#f0f0a0', blood: '#6a7a30' },
+  mind: { skin: '#a08858', skinD: '#5a4428', skinL: '#c8ac78', cloth: '#6a5030', clothD: '#3a2c18', clothL: '#8a7048', acc: '#5a7a28', eye: '#f0e880', blood: '#6a7a30' },
+};
+const NM_PAL = {
+  slash: { skin: '#b89078', skinD: '#6a4a3a', skinL: '#d8b098', cloth: '#5a5048', clothD: '#302a24', clothL: '#7a7066', acc: '#e8dcc0', eye: '#e8d060', blood: '#5a0808' },
+  rot: { skin: '#8a7050', skinD: '#4a3a28', skinL: '#aa9070', cloth: '#4a4038', clothD: '#2a221c', clothL: '#6a6058', acc: '#e0d0b0', eye: '#f0c040', blood: '#4a0808' },
+  bile: { skin: '#9a9058', skinD: '#5a5230', skinL: '#bab078', cloth: '#4a4a38', clothD: '#2a2a1c', clothL: '#6a6a58', acc: '#e0d8a0', eye: '#f0e060', blood: '#5a5a10' },
+  dark: { skin: '#4a3a34', skinD: '#241a16', skinL: '#6a5850', cloth: '#2a2420', clothD: '#140e0c', clothL: '#4a403a', acc: '#e0d4b8', eye: '#ff6030', blood: '#3a0404' },
+  corr: { skin: '#7a4030', skinD: '#3e1c14', skinL: '#a06048', cloth: '#5a3020', clothD: '#2a140c', clothL: '#7a4a36', acc: '#e8c860', eye: '#f0c040', blood: '#4a0808' },
+  marker: { skin: '#8a1a14', skinD: '#3a0806', skinL: '#c83020', cloth: '#5a0e0a', clothD: '#2a0404', clothL: '#8a2a20', acc: '#ff4830', eye: '#ff6040', blood: '#3a0404' },
+};
+const fA = (o) => AT(Object.assign({ snd: 'slash' }, o));
+
+/* ── 1. フラッド: 感染・育成形態 ── */
+SP.flInfect = XC('fl', '感染体', '🦠', 'finf', 14, 5, .8, 60, 150, FL_PAL.flesh, [fA({ n: '神経侵入', dmg: 6, reach: 11, windup: .2, active: .1, rec: .25, cd: .5, anim: 'h_leap' }), fA({ n: '飛びつき', dmg: 5, reach: 12, windup: .22, active: .3, rec: .3, cd: 1.4, type: 'leap', leap: 110, anim: 'h_leap' })], { desc: '感染体。大群で押し寄せ、宿主の首元に触手を刺し込んで中枢神経を乗っ取る。弱った相手や死体を戦闘体へ変える。', flInfector: 1, swarmN: 1 });
+SP.flCarrier = XC('fl', 'キャリアー', '🎈', 'fcarrier', 120, 11, 1.25, 26, 40, FL_PAL.flesh, [fA({ n: '自爆', dmg: 28, reach: 10, windup: .7, active: .1, rec: .2, cd: 99, type: 'aoe', aoeR: 70, anim: 'h_leap', selfBoom: 1, snd: 'boom' })], { desc: 'キャリアー形態。体内に多数の感染体を抱えた気球状の個体。敵に近づくと自爆して感染体を撒き散らす。', burstInf: 7 });
+SP.flBiomass = XC('fl', 'バイオマス', '🟫', 'mound', 260, 14, 1.3, 0, 0, FL_PAL.flesh, [fA({ n: '胞子噴出', dmg: 5, reach: 0, windup: .6, active: .3, rec: .6, cd: 3, type: 'aoe', aoeR: 70, anim: 'h_leap' })], { ai: 'xStatic', mass: 30, superArmor: 1, desc: 'フラッドのバイオマス（生体腫瘍）。胞子を撒いて周囲の人間を感染させ、死体を取り込み感染体を産む。攻撃されて体力が0になると破壊される。', mound: 'flood' });
+
+/* ── 2. フラッド: 戦闘形態 ── */
+SP.flHuman = XB('fl', '人間戦闘体', '🧟', 150, 1.02, 54, 136, FL_PAL.human, [
+  fA({ n: 'アサルトライフル', dmg: 7, reach: 0, windup: .2, active: .05, rec: .16, cd: .5, type: 'proj', projKind: 'bullet', minR: 40, maxR: 360, anim: 'launch', snd: 'boom' }),
+  fA({ n: 'ショットガン', dmg: 16, reach: 0, windup: .3, active: .06, rec: .4, cd: 1.8, type: 'proj', projKind: 'bullet', minR: 20, maxR: 180, anim: 'launch', snd: 'boom' }),
+  fA({ n: '触手腕の殴打', dmg: 15, reach: 18, windup: .26, active: .12, rec: .34, cd: .7, anim: 'heavy', knock: 220 }),
+], { held: 'pistol', head: 'zombie', ov: { lumps: 4, tend: 2, eyes: 0, tentArm: 1 }, fx: { wounds: 1 }, gait: { amp: .62, freq: 1.2, armSwing: .5, bob: .5, limpy: 1 }, pose0: { armS: .5, armE: .3, lean: .28, crouch: .1, headP: .5 }, desc: '人間戦闘体。宿主の記憶のまま銃器を扱い、素早く駆け回る。', combat: 1 });
+SP.flElite = XB('fl', 'エリート戦闘体', '🗡️', 260, 1.3, 50, 128, FL_PAL.elite, [
+  fA({ n: 'エナジーソード', dmg: 40, reach: 22, arc: 2.2, windup: .3, active: .12, rec: .4, cd: 1, anim: 'slash', knock: 260 }),
+  fA({ n: 'プラズマライフル', dmg: 10, reach: 0, windup: .24, active: .06, rec: .2, cd: .7, type: 'proj', projKind: 'acid', minR: 40, maxR: 380, anim: 'launch' }),
+  fA({ n: '触手鞭', dmg: 18, reach: 26, windup: .3, active: .12, rec: .4, cd: 1.4, anim: 'sweep', knock: 200 }),
+], { head: 'pred', ov: { lumps: 5, tend: 3, eyes: 0, tentArm: 1, eSword: 1 }, pp: { legU: 7.4, legL: 7.4 }, shieldMax: 60, desc: 'エリート戦闘体。残ったエネルギーシールドで身を守り、エナジーソードの斬撃は致命的。', combat: 1 });
+SP.flBrute = XB('fl', 'ブルート戦闘体', '🦍', 420, 1.5, 44, 118, FL_PAL.brute, [
+  fA({ n: '突進', dmg: 30, reach: 22, windup: .4, active: .36, rec: .6, cd: 2.4, type: 'dash', dash: 280, anim: 'charge', knock: 340, down: 1, snd: 'thud' }),
+  fA({ n: '剛腕', dmg: 32, reach: 20, windup: .38, active: .14, rec: .5, cd: .9, anim: 'heavy', knock: 300, snd: 'thud' }),
+  fA({ n: '叩き潰し', dmg: 26, reach: 0, windup: .55, active: .14, rec: .6, cd: 3.2, type: 'aoe', aoeR: 66, anim: 'hammerFist', down: 1, snd: 'thud' }),
+], { head: 'tyrant', superArmor: 1, pp: { shoulder: 5, torsoW: 6.4, armU: 9, armL: 9 }, ov: { lumps: 6, tend: 3, eyes: 0, tentArm: 1 }, desc: 'ブルート戦闘体。非常にタフで、一直線に突進して力押しで襲いかかる。', combat: 1 });
+SP.flBeast = XQ('fl', '感染野獣', '🐗', 'zdog', 160, 9, 1.2, 60, 150, FL_PAL.flesh, [fA({ n: '噛み裂き', dmg: 16, reach: 15, windup: .24, active: .12, rec: .34, cd: .6, anim: 'q_bite' }), fA({ n: '飛びかかり', dmg: 18, reach: 16, windup: .28, active: .3, rec: .4, cd: 2.2, type: 'leap', leap: 190, anim: 'q_pounce' })], { ov: { lumps: 5, tend: 3, eyes: 0 }, desc: '感染した動物。肉弾戦特化の非人型戦闘体。', combat: 1 });
+
+/* ── 3. フラッド: 純粋形態 (グレイブマインド誕生後) ── */
+SP.flStalker = XC('fl', 'ステルス変異', '🦎', 'pstalk', 200, 9, 1.2, 70, 190, FL_PAL.pure, [fA({ n: '飛びかかり', dmg: 22, reach: 18, windup: .26, active: .3, rec: .4, cd: 1.8, type: 'leap', leap: 230, anim: 'h_leap', down: 1 }), fA({ n: '爪', dmg: 16, reach: 15, windup: .2, active: .12, rec: .3, cd: .55, anim: 'h_leap' })], { pure: 'stalk', desc: '純粋形態の基本形。4足で素早く移動し飛びかかる。状況に応じてタンク/レンジへ変身する。' });
+SP.flTank = XC('fl', 'タンク変異', '🫃', 'ptank', 560, 16, 1.6, 36, 80, FL_PAL.pure, [fA({ n: '巨腕パンチ', dmg: 44, reach: 22, windup: .45, active: .14, rec: .55, cd: 1.1, anim: 'h_leap', knock: 380, down: 1, snd: 'thud' }), fA({ n: '感染体吐き出し', dmg: 0, reach: 0, windup: .6, active: .14, rec: .6, cd: 5, type: 'summon', summon: 'flInfect', minR: 10, maxR: 240, anim: 'h_leap' })], { pure: 'tank', superArmor: 1, mass: 8, desc: '純粋形態の突撃形態。圧倒的な耐久力と強烈なパンチ、口から感染体を吐き出す。' });
+SP.flRanged = XC('fl', 'レンジ変異', '🌵', 'pranged', 220, 11, 1.25, 0, 0, FL_PAL.pure, [fA({ n: '有機スパイク連射', dmg: 8, reach: 0, windup: .15, active: .05, rec: .12, cd: .28, type: 'proj', projKind: 'bullet', minR: 30, maxR: 460, anim: 'h_leap' })], { pure: 'ranged', ai: 'xStatic', mass: 10, desc: '純粋形態の射撃形態。壁や高所に張り付き、背中の骨針を機関銃のように撃ち出す。' });
+
+/* ── 4. フラッド: 指揮・超個体 ── */
+SP.flProto = XC('fl', 'プロト・グレイブマインド', '🧠', 'gravemind', 900, 18, 1.4, 0, 0, FL_PAL.mind, [fA({ n: '触手薙ぎ', dmg: 22, reach: 60, windup: .45, active: .16, rec: .5, cd: 1.4, type: 'aoe', aoeR: 90, anim: 'h_leap', tentSlam: 1 })], { ai: 'xStatic', mass: 40, superArmor: 1, unique: 1, mind: 1, desc: 'プロト・グレイブマインド。複数の知的生命体の肉体と脳を融合させた巨大な肉塊。エリア内の全フラッドを指揮し、取り込んだ者の記憶を吸い上げる。' });
+SP.flGravemind = XC('fl', 'グレイブマインド', '🕳️', 'gravemind', 2400, 26, 1.6, 0, 0, FL_PAL.mind, [
+  fA({ n: '巨触手の鉄槌', dmg: 44, reach: 200, windup: .6, active: .16, rec: .6, cd: 1.6, type: 'aoe', aoeR: 150, anim: 'h_leap', tentSlam: 1, roomHit: 1, down: 1 }),
+  fA({ n: '神経言語', dmg: 10, reach: 0, windup: .7, active: .3, rec: .6, cd: 7, type: 'roar', anim: 'roar', flash: 1, snd: 'screech' }),
+  fA({ n: '感染体放出', dmg: 0, reach: 0, windup: .6, active: .14, rec: .6, cd: 5, type: 'summon', summon: 'flInfect', minR: 10, maxR: 300, anim: 'h_leap' }),
+], { ai: 'xStatic', mass: 60, superArmor: 1, unique: 1, mind: 2, desc: 'グレイブマインド。一つの部屋を飲み込んだ集団意識の完全体。全フラッドの記憶を持ち、神経言語で精神を侵し、巨大な触手で部屋の全てを薙ぎ払う。' });
+SP.flKeyMind = XC('fl', 'キーマインド', '🔑', 'gravemind', 4200, 32, 1.8, 0, 0, FL_PAL.mind, [
+  fA({ n: '思考体の圧殺', dmg: 60, reach: 260, windup: .6, active: .16, rec: .6, cd: 1.3, type: 'aoe', aoeR: 190, anim: 'h_leap', tentSlam: 1, roomHit: 1, down: 1 }),
+  fA({ n: '神経言語の奔流', dmg: 18, reach: 0, windup: .7, active: .3, rec: .6, cd: 5, type: 'roar', anim: 'roar', flash: 1, snd: 'screech' }),
+  fA({ n: '純粋形態産出', dmg: 0, reach: 0, windup: .6, active: .14, rec: .6, cd: 6, type: 'summon', summon: 'flStalker', minR: 10, maxR: 400, anim: 'h_leap' }),
+], { ai: 'xStatic', mass: 80, superArmor: 1, unique: 1, mind: 3, desc: 'キーマインド。部屋のバイオマスを完全に飲み込み、部屋そのものが一つの思考物体と化した超絶形態。' });
+
+/* ── ネクロモーフ ── */
+SP.nmMarker = XC('nm', 'マーカー', '🧬', 'marker', 1200, 14, 1.4, 0, 0, NM_PAL.marker, [fA({ n: 'マーカー信号', dmg: 6, reach: 0, windup: .8, active: .3, rec: .8, cd: 9, type: 'roar', anim: 'roar', flash: 1, snd: 'screech' })], { ai: 'xStatic', mass: 99, superArmor: 1, unique: 1, desc: 'マーカー。二重螺旋の異星遺物。電磁波信号で死体の遺伝子を組み替え、ネクロモーフとして再起動させる。' });
+SP.nmInfector = XC('nm', 'インフェクター', '🦇', 'infector', 60, 8, 1, 50, 120, NM_PAL.rot, [fA({ n: '吻針', dmg: 10, reach: 14, windup: .3, active: .12, rec: .4, cd: .9, anim: 'b_dive' })], { desc: 'インフェクター。エイのような姿の吻針で死体の頭部を刺し、数秒でネクロモーフへ変異させる。', nmInfector: 1, limbs: 1 });
+SP.nmLurker = XC('nm', 'ラーカー', '👶', 'lurker', 70, 7, .9, 46, 110, NM_PAL.slash, [fA({ n: '触手針', dmg: 9, reach: 0, windup: .3, active: .06, rec: .4, cd: 1.2, type: 'proj', projKind: 'bullet', minR: 30, maxR: 320, anim: 'h_leap' }), fA({ n: '噛みつき', dmg: 8, reach: 12, windup: .22, active: .1, rec: .3, cd: .7, anim: 'h_leap' })], { desc: 'ラーカー。赤ん坊の死体から変異。背中の3本の触手から鋭い針を撃つ。触手を切断しなければ倒せない。', limbs: 3 });
+SP.nmSwarm = XC('nm', 'スワーム', '🐛', 'bug', 10, 3.5, .6, 64, 150, NM_PAL.rot, [fA({ n: '群がり', dmg: 3, reach: 9, windup: .16, active: .1, rec: .2, cd: .35, anim: 'bite' })], { legs: 6, desc: 'スワーム。極小の変異体。大群で群がり身動きを奪う。' });
+SP.nmCorruption = XC('nm', '腐生組織', '🟤', 'mound', 200, 13, 1.2, 0, 0, NM_PAL.corr, [fA({ n: '汚染ガス', dmg: 5, reach: 0, windup: .6, active: .3, rec: .6, cd: 3, type: 'aoe', aoeR: 66, anim: 'h_leap', slowT: 1 })], { ai: 'xStatic', mass: 30, superArmor: 1, mound: 'corr', desc: '腐生組織（コラプション）。床や壁を覆う有機組織の網。空気を汚染し、スワームを産み、エリアを集団意識へ組み込む。' });
+SP.nmSlasher = XB('nm', 'スラッシャー', '🔪', 140, 1.08, 50, 128, NM_PAL.slash, [fA({ n: '骨刃', dmg: 16, reach: 20, windup: .26, active: .12, rec: .36, cd: .6, anim: 'overhead' }), fA({ n: '突進斬り', dmg: 18, reach: 20, windup: .3, active: .3, rec: .4, cd: 2.4, type: 'dash', dash: 180, anim: 'charge' })], { head: 'zombie', ov: { lumps: 1, tend: 0, eyes: 0, blades: 1, jaw: 1 }, limbs: 3, desc: 'スラッシャー。肩から巨大な骨刃が生えた代表的なネクロモーフ。四肢を切断しなければ倒せない。' });
+SP.nmSpitter = XB('nm', 'スピッター', '🤮', 130, 1.02, 46, 112, NM_PAL.slash, [fA({ n: '強酸液', dmg: 14, reach: 0, windup: .4, active: .1, rec: .5, cd: 1.5, type: 'proj', projKind: 'acid', minR: 40, maxR: 360, anim: 'spit' }), fA({ n: '爪', dmg: 12, reach: 16, windup: .28, active: .12, rec: .4, cd: .8, anim: 'slash' })], { head: 'zombie', hair: '#3a2a20', ov: { lumps: 1, tend: 1, eyes: 0, jaw: 1, spit: 1 }, limbs: 3, desc: 'スピッター（レヴナント）。距離を取り口から強酸性の消化液を吐く。' });
+SP.nmExploder = XB('nm', 'エクスプローダー', '💥', 110, 1, 40, 96, NM_PAL.rot, [fA({ n: '自爆', dmg: 46, reach: 12, windup: .5, active: .1, rec: .2, cd: 99, type: 'aoe', aoeR: 78, anim: 'hammerFist', selfBoom: 1, snd: 'boom' })], { head: 'zombie', ov: { lumps: 1, tend: 0, eyes: 0, bomb: 1 }, limbs: 2, desc: 'エクスプローダー。左腕が巨大な生体爆薬袋。接近して自爆する。倒すと袋が破裂する。', deathBoom: 36 });
+SP.nmLeaper = XC('nm', 'リーパー', '🦂', 'leaper', 150, 9, 1.15, 56, 150, NM_PAL.slash, [fA({ n: '跳躍鎌', dmg: 22, reach: 18, windup: .3, active: .3, rec: .4, cd: 1.8, type: 'leap', leap: 240, anim: 'h_leap', down: 1 }), fA({ n: '鎌', dmg: 16, reach: 18, windup: .22, active: .12, rec: .3, cd: .6, anim: 'h_leap' })], { limbs: 3, desc: 'リーパー。脚が融合して一本の尾となり、上半身の鎌で跳び回る。' });
+SP.nmPuker = XB('nm', 'プーカー', '🤢', 170, 1.05, 38, 88, NM_PAL.bile, [fA({ n: '腐食胆汁', dmg: 8, reach: 0, windup: .45, active: .4, rec: .5, cd: 2.4, type: 'cone', coneR: 110, arc: .6, col: 'rgba(170,170,50,.5)', anim: 'vomit', slowT: 1 }), fA({ n: '殴打', dmg: 14, reach: 16, windup: .3, active: .12, rec: .4, cd: .8, anim: 'heavy' })], { head: 'zombie', ov: { lumps: 5, tend: 0, eyes: 0, belly: 1, jaw: 1 }, limbs: 3, desc: 'プーカー。腐食性の胆汁を撒き散らし、当たった者の動きを大きく鈍らせる。' });
+SP.nmStalker = XC('nm', 'ストーカー', '🐓', 'nstalker', 220, 10, 1.25, 50, 190, NM_PAL.dark, [fA({ n: '頭突き突進', dmg: 26, reach: 20, windup: .4, active: .36, rec: .5, cd: 2.4, type: 'dash', dash: 300, anim: 'h_leap', knock: 320, down: 1 }), fA({ n: '爪', dmg: 16, reach: 16, windup: .24, active: .12, rec: .34, cd: .7, anim: 'h_leap' })], { limbs: 2, desc: 'ストーカー。物陰に隠れて連携し、ダチョウのように頭を下げて突進してくる。' });
+SP.nmGuardian = XC('nm', 'ガーディアン', '🕸️', 'nguard', 300, 13, 1.35, 0, 0, NM_PAL.corr, [fA({ n: '即死触手', dmg: 46, reach: 46, windup: .35, active: .14, rec: .5, cd: 1.2, type: 'aoe', aoeR: 62, anim: 'h_leap', down: 1 }), fA({ n: 'ポッド産出', dmg: 0, reach: 0, windup: .6, active: .14, rec: .6, cd: 6, type: 'summon', summon: 'nmPod', minR: 10, maxR: 300, anim: 'h_leap' })], { ai: 'xStatic', mass: 30, limbs: 3, desc: 'ガーディアン。壁に固着した上半身のみの形態。近づく者を触手で切り裂き、腹から小型ポッドを生み出す。' });
+SP.nmPod = XC('nm', 'ポッド', '🔴', 'pod', 30, 5, .8, 0, 0, NM_PAL.corr, [fA({ n: '触手弾', dmg: 6, reach: 0, windup: .3, active: .06, rec: .4, cd: 1, type: 'proj', projKind: 'bullet', minR: 20, maxR: 260, anim: 'h_leap' })], { ai: 'xStatic', mass: 5, desc: 'ポッド。ガーディアンが産む小型の砲台。' });
+SP.nmTwitcher = XB('nm', 'トゥイッチャー', '⚡', 190, 1.05, 80, 220, NM_PAL.dark, [fA({ n: '高速斬撃', dmg: 16, reach: 18, windup: .12, active: .1, rec: .18, cd: .35, anim: 'slash' }), fA({ n: '乱撃', dmg: 8, reach: 20, windup: .12, active: .3, rec: .2, cd: 1.4, multi: 4, anim: 'clawFrenzy' })], { head: 'zombie', ov: { lumps: 1, tend: 0, eyes: 0, blades: 1, stasis: 1 }, limbs: 3, phase: 1, desc: 'トゥイッチャー（ストレイカー）。体内のステイシス装置が暴走し、目にも留まらぬ速さで動く。' });
+SP.nmDivider = XB('nm', 'ディバイダー', '🦒', 240, 1.5, 40, 90, NM_PAL.dark, [fA({ n: '長腕', dmg: 20, reach: 26, windup: .36, active: .12, rec: .44, cd: .9, anim: 'sweep' }), fA({ n: '首絞め', dmg: 26, reach: 20, windup: .4, active: .12, rec: .5, cd: 4, type: 'grab', hold: 'crush', anim: 'grab', cond: (u, t) => t.sp.mass < 4 })], { head: 'licker', pp: { legU: 9, legL: 9.5, armU: 9, armL: 10 }, ov: { lumps: 2, tend: 3, eyes: 0 }, limbs: 2, splitInto: 'nmDivHead', desc: 'ディバイダー。背が高くひょろりとした形態。倒すと体が分離し、多数の小型生命体となって襲う。' });
+SP.nmDivHead = XC('nm', 'ディバイダーの頭', '🕷️', 'divhead', 30, 5, .8, 58, 140, NM_PAL.dark, [fA({ n: '食いつき', dmg: 6, reach: 10, windup: .2, active: .1, rec: .25, cd: .45, anim: 'h_leap' })], { desc: 'ディバイダーから分離した頭部。クモのような触手脚で這い回る。' });
+SP.nmHunter = XB('nm', 'ハンター (ウーバーモーフ)', '♾️', 360, 1.3, 50, 120, NM_PAL.dark, [fA({ n: '骨刃', dmg: 30, reach: 22, windup: .28, active: .12, rec: .36, cd: .7, anim: 'overhead', knock: 240 }), fA({ n: '突進', dmg: 26, reach: 22, windup: .34, active: .3, rec: .4, cd: 2.4, type: 'dash', dash: 240, anim: 'charge', down: 1 })], { head: 'licker', unique: 1, superArmor: 1, ov: { lumps: 3, tend: 4, eyes: 0, blades: 1, regen: 1 }, limbs: 4, regen: 1, desc: 'ハンター / ウーバーモーフ。極限の再生能力を持つ不死身の個体。切断しても数秒で再生する。爆発や高火力で一気に消し飛ばさなければ死なない。' });
+SP.nmBrute = XC('nm', 'ブルート', '🦍', 'nbrute', 700, 16, 1.6, 36, 110, NM_PAL.dark, [fA({ n: '突進', dmg: 40, reach: 24, windup: .5, active: .4, rec: .6, cd: 2.6, type: 'dash', dash: 300, anim: 'h_leap', knock: 400, down: 1, snd: 'thud' }), fA({ n: '剛腕', dmg: 36, reach: 22, windup: .45, active: .14, rec: .55, cd: 1.1, anim: 'h_leap', knock: 320, snd: 'thud' }), fA({ n: '肉塊投げ', dmg: 22, reach: 0, windup: .5, active: .1, rec: .6, cd: 3.4, type: 'proj', projKind: 'bile', minR: 60, maxR: 320, anim: 'h_leap' })], { superArmor: 1, mass: 10, frontArmor: 1, limbs: 4, desc: 'ブルート。複数の死体が融合したゴリラのような重装甲個体。前面の骨殻で攻撃を弾く。背中が弱点。' });
+SP.nmLeviathan = XC('nm', 'レヴァイアサン (ハイブマインド)', '🐙', 'leviathan', 2600, 26, 1.6, 0, 0, NM_PAL.corr, [
+  fA({ n: '巨触手', dmg: 44, reach: 220, windup: .6, active: .16, rec: .6, cd: 1.5, type: 'aoe', aoeR: 160, anim: 'h_leap', tentSlam: 1, roomHit: 1, down: 1 }),
+  fA({ n: '爆発嚢射出', dmg: 22, reach: 0, windup: .6, active: .1, rec: .6, cd: 2.4, type: 'proj', projKind: 'nade', minR: 60, maxR: 460, anim: 'h_leap' }),
+  fA({ n: 'スワーム放出', dmg: 0, reach: 0, windup: .6, active: .14, rec: .6, cd: 5, type: 'summon', summon: 'nmSwarm', minR: 10, maxR: 300, anim: 'h_leap' }),
+], { ai: 'xStatic', mass: 80, superArmor: 1, unique: 1, desc: 'レヴァイアサン / ハイブマインド。部屋に鎮座する超巨大な融合体。大量の触手で部屋の全てを襲い、エリア全体のネクロモーフを統括する。' });
+SP.nmMoon = XC('nm', 'ブレザレン・ムーン', '🌕', 'moon', 6000, 34, 1.9, 0, 0, NM_PAL.marker, [
+  fA({ n: '収束の触手', dmg: 70, reach: 300, windup: .7, active: .2, rec: .6, cd: 1.4, type: 'aoe', aoeR: 220, anim: 'h_leap', tentSlam: 1, roomHit: 1, down: 1 }),
+  fA({ n: '終焉の信号', dmg: 20, reach: 0, windup: .8, active: .3, rec: .6, cd: 6, type: 'roar', anim: 'roar', flash: 1, snd: 'screech' }),
+], { ai: 'xStatic', mass: 99, superArmor: 1, unique: 1, desc: 'ブレザレン・ムーン。無数のネクロモーフが収束して誕生した惑星規模の生命体。天を覆い、終焉のマーカー信号を館全体へ放つ。' });
+
+const FL_ORDER = ['flInfect', 'flCarrier', 'flBiomass', 'flHuman', 'flElite', 'flBrute', 'flBeast', 'flStalker', 'flTank', 'flRanged', 'flProto', 'flGravemind', 'flKeyMind'];
+const NM_ORDER = ['nmMarker', 'nmInfector', 'nmLurker', 'nmSwarm', 'nmCorruption', 'nmSlasher', 'nmSpitter', 'nmExploder', 'nmLeaper', 'nmPuker', 'nmStalker', 'nmGuardian', 'nmPod', 'nmTwitcher', 'nmDivider', 'nmDivHead', 'nmHunter', 'nmBrute', 'nmLeviathan', 'nmMoon'];
+BIRTH_LOG.flHuman = ['🦠 感染体が宿主を乗っ取り、人間戦闘体が立ち上がった', 'fl'];
+BIRTH_LOG.nmSlasher = ['🧬 死体が再起動し、スラッシャーが目覚めた', 'nm'];
+const GRAVE_QUOTES = ['🕳️ グレイブマインド「我は汝らの罪すべての記念碑なり」', '🕳️ グレイブマインド「恐れるな…我が内に安らぎはある」', '🕳️ グレイブマインド「汝の肉は我が知となる」', '🕳️ グレイブマインド「我は答え…汝らはただの問いにすぎぬ」', '🕳️ グレイブマインド「この館もまた、我が一部となる」'];
+const MARKER_QUOTES = ['🧬 マーカーの囁き「一つになれ…」', '🧬 マーカーの囁き「収束せよ…」', '🧬 マーカーの囁き「我らを完全にせよ」'];
+
+/* ── 汎用: 別種への変異 ── */
+function morphInto(u, key, msg, cls) {
+  if (!SP[key]) return null;
+  const n = spawnUnit(key, u.x, u.y, { force: true, silent: true });
+  if (!n) return null;
+  n.hp = Math.max(1, Math.round(n.mhp * Math.min(1, (u.hp / u.mhp) + .2)));
+  n.kills = u.kills; n.tgt = u.tgt; n.state = 'spawn'; n.st = 0; n.transDur = .8;
+  u.gone = true; u.dead = true;
+  if (G.sel === u) G.sel = n;
+  addDust(u.x, u.y, 12, '#8a7a40'); Sfx.play('morph', u.x, u.y);
+  if (msg) addLog(msg, cls || n.fac, SP[key].hp >= 400);
+  return n;
+}
+/* ── 部屋の侵食 (床を覆うバイオマス) ── */
+function addBlight(rid, fac, lvl) {
+  G.blights = G.blights || [];
+  const b = G.blights.find(x => x.rid === rid);
+  if (b) { b.lvl = Math.max(b.lvl, lvl); b.fac = fac; return; }
+  G.blights.push({ rid, fac, lvl, t: 0, seed: (Math.random() * 1e6) | 0 });
+}
+function drawBlights() {
+  if (!G.blights || !G.blights.length) return;
+  for (const b of G.blights) {
+    const r = G.map.rooms[b.rid]; if (!r) continue;
+    const x0 = r.x0 * TILE, y0 = r.y0 * TILE * SQ, w = (r.x1 - r.x0 + 1) * TILE, h = (r.y1 - r.y0 + 1) * TILE * SQ;
+    const fl = b.fac === 'fl', T = G.time;
+    const a = Math.min(1, b.t / 6) * (.25 + b.lvl * .18);
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.fillStyle = fl ? '#5a4a22' : '#4a1410';
+    ctx.fillRect(x0, y0, w, h);
+    const rd = srand(b.seed);
+    const n = 14 + b.lvl * 10;
+    for (let i = 0; i < n; i++) {
+      const bx = x0 + rd() * w, by = y0 + rd() * h, br = 8 + rd() * (14 + b.lvl * 6), p = 1 + Math.sin(T * 1.5 + i) * .06;
+      ctx.fillStyle = fl ? (i % 3 ? '#8a7438' : '#6a7a30') : (i % 3 ? '#7a2a1c' : '#a06a28');
+      ctx.beginPath(); ctx.ellipse(bx, by, br * p, br * .6 * p, rd() * 3, 0, TAU); ctx.fill();
+      if (i % 4 === 0) { ctx.fillStyle = fl ? '#c8b870' : '#e8c860'; ctx.beginPath(); ctx.arc(bx + br * .3, by, br * .18, 0, TAU); ctx.fill(); }
+    }
+    ctx.strokeStyle = fl ? 'rgba(200,190,110,.6)' : 'rgba(220,70,40,.6)'; ctx.lineWidth = 2;
+    for (let i = 0; i < 6 + b.lvl * 3; i++) {
+      ctx.beginPath(); let px = x0 + rd() * w, py = y0 + rd() * h; ctx.moveTo(px, py);
+      for (let k = 0; k < 5; k++) { px += (rd() - .5) * 60; py += (rd() - .5) * 30; ctx.lineTo(px, py); }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+/* 触手の叩きつけ演出 (アリスの奈落の手と同じリストで描く) */
+function addTentSlam(x, y, col, s) {
+  G.aliceFx = G.aliceFx || [];
+  G.aliceFx.push({ x, y, t: 0, life: .9, s: s || 1.6, dir: rchance(.5) ? 1 : -1, tent: 1, col: col || '#8a7438' });
+}
+
+/* ── ダメージ時: エリートのシールド / ブルートの前面装甲 / ネクロモーフの切断ボーナス ── */
+const NM_SLASHY = { slash: 1, sweep: 1, rip: 1, combo: 1, flurry: 1, clawFrenzy: 1, scissorCross: 1, lowSlice: 1, bigSpin: 1, stabFrenzy: 1, pierce: 1, overhead: 1, lariat: 0 };
+function xOnHit(tgt, att, dmg, o) {
+  if (tgt.shield > 0) {
+    const ab = Math.min(tgt.shield, dmg * .85);
+    tgt.shield -= ab; dmg -= ab; tgt.shieldT = 4;
+    tgt.shieldFx = .25;
+    if (tgt.shield <= 0) { addLog('🛡️ エリート戦闘体のシールドが割れた', 'fl'); addShock(tgt.x, tgt.y, 6, 30, 'rgba(120,180,255,.7)'); }
+  }
+  if (tgt.sp.frontArmor && att) {
+    const front = Math.abs(angDiff(tgt.faceA || 0, angTo(tgt.x, tgt.y, att.x, att.y))) < 1.2;
+    dmg *= front ? .3 : 1.5;
+    if (front && rchance(.3)) addPart({ k: 'spark', x: tgt.x, y: tgt.y, z: unitTopY(tgt) * .5, vx: rnd(-40, 40), vy: rnd(-20, 20), vz: rnd(20, 50), life: .3, t: 0, s: 1.4, col: '#e8dcc0' });
+  }
+  if (tgt.fac === 'nm' && att && att.atk && att.atk.def && NM_SLASHY[att.atk.def.anim]) dmg *= 1.35; // 切断は有効
+  return dmg;
+}
+/* ── ネクロモーフ: 四肢を切断しなければ倒れない ── */
+const NM_LIMBS = ['armL', 'legL', 'armR', 'legR'];
+function nmSurvive(att, u, o) {
+  if (u.fac !== 'nm' || !u.sp.limbs || (o && o.selfBoom)) return false;
+  u.cut = u.cut || {};
+  const left = u.sp.limbs - Object.keys(u.cut).length;
+  const oblit = (o && (o.gib || (o.down && (o.kpow || 0) >= 250))) || (att && att.atk && att.atk.def && (att.atk.def.fx === 'fire' || att.atk.def.fx === 'explosion' || att.atk.def.selfBoom));
+  if (left > 0) {
+    const free = NM_LIMBS.filter(k => !u.cut[k]);
+    const k = free.length ? rpick(free) : 'armL';
+    u.cut[k] = 1;
+    u.hp = Math.round(u.mhp * .38); u.dead = false;
+    if (k.startsWith('leg')) u.spdMul *= .6; else u.cutMul = (u.cutMul || 1) * .75;
+    addGore(u.x, u.y, 6, 6); addBlood(u.x, u.y, unitTopY(u) * .5, 8, u.pal && u.pal.blood);
+    addPart({ k: 'chunk', x: u.x, y: u.y, z: unitTopY(u) * .6, vx: rnd(-40, 40), vy: rnd(-20, 20), vz: rnd(40, 90), life: 1.4, t: 0, s: 3.2, col: u.pal.skin });
+    Sfx.play('squelch', u.x, u.y);
+    if (rchance(.25)) addLog(`🦴 ${u.sp.name}の${k.startsWith('arm') ? '腕' : '脚'}を切断した — まだ動いている`, 'nm');
+    return true;
+  }
+  if (u.sp.regen && !oblit) { // ハンター: 再生して立ち上がる
+    u.cut = {}; u.hp = Math.round(u.mhp * .6); u.dead = false; u.spdMul = rnd(.9, 1.1); u.cutMul = 1;
+    u.state = 'down'; u.st = 0; u.down = 3.2; interrupt(u); u.atk = null;
+    addLog('♾️ ハンターの肉体が再生し、再び立ち上がる……', 'nm', true);
+    Sfx.play('morph', u.x, u.y);
+    return true;
+  }
+  return false;
+}
+/* ── 感染・変換 ── */
+function flHostKey(u) {
+  const sp = u.sp;
+  if (sp.kind === 'quad') return 'flBeast';
+  if (sp.kind !== 'biped') return 'flCarrier';
+  if ((sp.mass || 1) >= 4 || sp.hp >= 320) return 'flBrute';
+  if (sp.hp >= 150 || sp.scale >= 1.2) return 'flElite';
+  return 'flHuman';
+}
+function nmCorpseKey(ck) {
+  const sp = SP[ck]; if (!sp) return null;
+  if (ck === 'dog' || ck === 'cat') return 'nmLurker';
+  if (ck === 'rat' || ck === 'crow') return 'nmSwarm';
+  if (sp.kind !== 'biped') return rchance(.5) ? 'nmSwarm' : null;
+  if ((sp.mass || 1) >= 4 || sp.hp >= 320) return 'nmBrute';
+  const r = Math.random() * 100;
+  return r < 38 ? 'nmSlasher' : r < 50 ? 'nmSpitter' : r < 60 ? 'nmExploder' : r < 70 ? 'nmLeaper' : r < 78 ? 'nmPuker' : r < 85 ? 'nmStalker' : r < 90 ? 'nmTwitcher' : 'nmDivider';
+}
+function xPending(f) { let n = 0; for (const c of G.corpses) if (c.riseAs && c.riseT > 0 && SP[c.riseAs] && SP[c.riseAs].fac === f) n++; return n; }
+function xCap(f) { return f === 'fl' ? (G.capFl || 50) : (G.capNm || 50); }
+function xCanSpawn(f) { return countFac(f) + xPending(f) < xCap(f); }
+/* 感染体が生きた宿主を乗っ取る */
+function flTakeover(inf, host, keep) {
+  if (!host || host.gone || host.dead || host.fac === 'fl' || host.sp.unique || host.sp.superArmor && host.sp.mass >= 6) return false;
+  if (!xCanSpawn('fl')) return false;
+  const k = flHostKey(host);
+  const hx = host.x, hy = host.y;
+  host.hp = 0; killUnit(inf, host, { noRise: true, flTaken: 1 });
+  const G2 = G.corpses.length ? G.corpses[G.corpses.length - 1] : null;
+  if (G2 && G2.x === hx && G2.y === hy) G.corpses.pop();
+  const n = spawnUnit(k, hx, hy, { force: true, rise: true });
+  if (n) { n.state = 'spawn'; n.st = 0; n.transDur = 1; addBlood(hx, hy, 10, 8, '#6a7a30'); G.flPts = (G.flPts || 0) + 2; G.stats.fl.conv++; if (rchance(.4)) addLog(`🦠 感染体が${host.sp.name}を乗っ取り、${n.sp.name}へ変えた`, 'fl'); }
+  if (!keep) { inf.gone = true; inf.dead = true; }
+  return true;
+}
+function xDeathHook(att, u, o) {
+  // フラッドに殺された宿主 → 戦闘体として蘇る
+  if (att && att.fac === 'fl' && u.fac !== 'fl' && !o.flTaken && rchance(.6) && !o.gib && !u.sp.unique && (isInfectHost(u) || u.sp.kind === 'biped' || u.sp.kind === 'quad') && xCanSpawn('fl')) {
+    makeCorpse(u, { riseT: 2.2 + rnd(0, 1.5), riseAs: flHostKey(u), decap: o.decap });
+    G.flPts = (G.flPts || 0) + 2; G.stats.fl.conv++;
+    return true;
+  }
+  // ネクロモーフに殺された / マーカー信号圏内の死体 → ネクロモーフとして再起動
+  if (u.fac !== 'nm' && !o.gib && !u.sp.unique && (att && att.fac === 'nm' ? rchance(.4) : nmInSignal(u)) && xCanSpawn('nm')) {
+    const k = nmCorpseKey(u.key);
+    if (k) { makeCorpse(u, { riseT: 5 + rnd(0, 3), riseAs: k, decap: o.decap }); G.nmPts = (G.nmPts || 0) + 2; G.stats.nm.conv++; return true; }
+  }
+  if (u.fac === 'fl') {
+    if (u.sp.burstInf && !u.burstDone) flBurst(u);
+    if (u.sp.combat && !o.gib && rchance(.25) && xCanSpawn('fl')) { makeCorpse(u, { riseT: 3, riseAs: 'flCarrier' }); return true; } // 損傷した戦闘体はキャリアーへ
+    if (u.sp.mind) addLog(`🧠 ${u.sp.name}が倒れた！`, 'fl', true);
+  }
+  if (u.fac === 'nm') {
+    if (u.sp.deathBoom && !u.burstDone) nmBoom(u, u.sp.deathBoom);
+    if (u.sp.splitInto) { for (let i = 0; i < 4; i++) { const n = spawnUnit(u.sp.splitInto, u.x + rnd(-14, 14), u.y + rnd(-10, 10), { force: true, silent: true }); if (n) n.tgt = att; } addLog('🕷️ ディバイダーの体がバラバラに分離した！', 'nm'); }
+    if (u.key === 'nmMarker') addLog('🧬 マーカーが破壊され、信号が途絶えた', 'nm', true);
+    if (u.key === 'nmMoon') { G.nmMoonOn = 0; addLog('🌕 ブレザレン・ムーンの顕現が崩れ落ちた', 'nm', true); }
+  }
+  return false;
+}
+function nmInSignal(u) {
+  if (!(isInfectHost(u) || u.sp.kind === 'biped')) return false;
+  for (const m of G.units) if (!m.gone && (m.key === 'nmMarker' || m.key === 'nmLeviathan' || m.key === 'nmMoon') && dist(m.x, m.y, u.x, u.y) < (m.key === 'nmMoon' ? 99999 : 320)) return true;
+  return false;
+}
+function flBurst(u) {
+  addBlood(u.x, u.y, 14, 14, '#8a9a40'); addShock(u.x, u.y, 8, 60, 'rgba(180,170,90,.6)'); Sfx.play('burst', u.x, u.y); addShake(4);
+  for (let i = 0; i < u.sp.burstInf; i++) { if (!xCanSpawn('fl')) break; const n = spawnUnit('flInfect', u.x + rnd(-16, 16), u.y + rnd(-12, 12), { force: true, silent: true }); if (n) { n.z = 12; } }
+}
+function nmBoom(u, dmg) {
+  addShake(8); Sfx.play('boom', u.x, u.y); addFire(u.x, u.y, 6, 8); addDecal('scorch', u.x, u.y, 24); addShock(u.x, u.y, 8, 80, 'rgba(255,200,80,.7)');
+  Spatial.query(u.x, u.y, 90, _q);
+  for (const o of _q.slice()) if (!o.gone && !o.dead && o !== u && hostileTo(u, o) && dist(u.x, u.y, o.x, o.y) < 78) dealDamage(u, o, Math.round(dmg * (1 - dist(u.x, u.y, o.x, o.y) / 120)), { kdir: angTo(u.x, u.y, o.x, o.y), kpow: 260, down: true });
+}
+
+/* ── AI ── */
+function thinkXStatic(u) { thinkSrpNexus(u); }
+function xFindCorpse(u, range, filt) {
+  let best = null, bd = range;
+  for (const c of G.corpses) {
+    if (c.hauled || c.riseAs || c.cSpore || c.xClaim && c.xClaim !== u.id) continue;
+    if (!SP[c.key] || SP[c.key].fac === u.fac || (filt && !filt(c))) continue;
+    const d = dist(u.x, u.y, c.x, c.y);
+    if (d < bd) { bd = d; best = c; }
+  }
+  return best;
+}
+function thinkFlood(u) {
+  // 感染体: 弱った生きた宿主へ優先して飛びつき、無ければ死体を蘇らせる
+  if (u.sp.flInfector) {
+    if (u.tgt && !u.tgt.gone && !u.tgt.dead && u.tgt.fac !== 'fl' && dist(u.x, u.y, u.tgt.x, u.tgt.y) < u.r + u.tgt.r + 8 && u.tgt.hp < u.tgt.mhp * .35 && !u.tgt.sp.unique) { if (flTakeover(u, u.tgt)) return; }
+    if (!u.tgt || u.tgt.gone || rchance(.02)) {
+      const c = xFindCorpse(u, 300, c => SP[c.key].kind === 'biped' || SP[c.key].kind === 'quad');
+      if (c && (!u.tgt || dist(u.x, u.y, c.x, c.y) < 140)) {
+        c.xClaim = u.id;
+        if (dist(u.x, u.y, c.x, c.y) < 12) {
+          const i = G.corpses.indexOf(c); if (i >= 0) G.corpses.splice(i, 1);
+          if (xCanSpawn('fl')) { const n = spawnUnit(flHostKey({ sp: SP[c.key] }), c.x, c.y, { force: true, rise: true }); if (n) { G.flPts = (G.flPts || 0) + 2; G.stats.fl.conv++; addBlood(c.x, c.y, 4, 6, '#6a7a30'); } }
+          u.gone = true; u.dead = true; return;
+        }
+        setDest(u, c.x, c.y, true); return;
+      }
+    }
+  }
+  // キャリアー: 敵へ近づいて自爆
+  thinkMonster(u);
+}
+function thinkNecro(u) {
+  if (u.sp.nmInfector) { // インフェクター: 死体に吻針を刺して変異させる
+    const c = (u.nmC && G.corpses.indexOf(u.nmC) >= 0) ? u.nmC : xFindCorpse(u, 520, c => !!nmCorpseKey(c.key));
+    if (c) {
+      u.nmC = c; c.xClaim = u.id;
+      if (dist(u.x, u.y, c.x, c.y) < 14) {
+        u.dest = null; u.moveSpd = 0; u.nmInfT = (u.nmInfT || 0) + .1;
+        if (rchance(.3)) addBlood(c.x, c.y, 4, 2);
+        if (u.nmInfT > 1.8) {
+          const k = nmCorpseKey(c.key); const i = G.corpses.indexOf(c); if (i >= 0) G.corpses.splice(i, 1);
+          if (k && xCanSpawn('nm')) { const n = spawnUnit(k, c.x, c.y, { force: true, rise: true }); if (n) { G.nmPts = (G.nmPts || 0) + 2; G.stats.nm.conv++; if (rchance(.4)) addLog(`🦇 インフェクターが死体を${n.sp.name}へ変異させた`, 'nm'); } }
+          u.nmC = null; u.nmInfT = 0;
+        }
+        return;
+      }
+      if (!u.tgt || dist(u.x, u.y, u.tgt.x, u.tgt.y) > 90) { setDest(u, c.x, c.y, true); return; }
+    }
+  }
+  thinkMonster(u);
+}
+
+/* ── 陣営の毎フレーム処理 ── */
+function updateFloodNecro(dt) {
+  if (!G.stats || !G.stats.fl) return;
+  for (const b of (G.blights || [])) b.t += dt;
+  const fl = [], nm = [];
+  for (const u of G.units) { if (u.gone || u.dead) continue; if (u.fac === 'fl') fl.push(u); else if (u.fac === 'nm') nm.push(u); }
+  // ─ フラッド ─
+  G.flPts = (G.flPts || 0) + dt * .1;
+  const flP = G.flPts + (G.stats.fl.kills || 0) * .5;
+  for (const u of fl) {
+    const sp = u.sp;
+    if (sp.shieldMax) { if (u.shield == null) u.shield = sp.shieldMax; u.shieldT = Math.max(0, (u.shieldT || 0) - dt); if (u.shieldT <= 0) u.shield = Math.min(sp.shieldMax, u.shield + 15 * dt); u.shieldFx = Math.max(0, (u.shieldFx || 0) - dt); }
+    if (sp.mound) { // バイオマス: 胞子・感染体産出・死体吸収・拡散
+      u.hp = Math.min(u.mhp, u.hp + dt * 2);
+      u.spT = (u.spT == null ? 4 : u.spT) - dt;
+      if (u.spT <= 0) { u.spT = 9; if (xCanSpawn('fl')) { const n = srpSpawnNear('flInfect', u.x, u.y, 30); if (n) addDust(n.x, n.y, 4, '#8a7a40'); } }
+      if (rchance(dt * 4)) addPart({ k: 'spark', x: u.x + rnd(-20, 20), y: u.y + rnd(-14, 14), z: rnd(4, 20), vx: rnd(-8, 8), vy: rnd(-5, 5), vz: rnd(4, 14), life: 1.6, t: 0, s: rnd(1, 1.8), col: '#c8b870' });
+      Spatial.query(u.x, u.y, 70, _q);
+      for (const o of _q) if (!o.gone && !o.dead && isInfectHost(o) && o.fac === 'N' && dist(u.x, u.y, o.x, o.y) < 64) {
+        o.flSpore = (o.flSpore || 0) + dt * .12; o.threat = true;
+        if (o.flSpore >= 1 && xCanSpawn('fl')) { o.flSpore = 0; flTakeover(u, o, true); addLog('🌫️ 胞子を吸い込んだ生存者がフラッドに変貌した', 'fl'); }
+      }
+      for (let i = G.corpses.length - 1; i >= 0; i--) { const c = G.corpses[i]; if (!c.riseAs && !c.hauled && dist(c.x, c.y, u.x, u.y) < 60 && rchance(dt * .3)) { G.corpses.splice(i, 1); G.flPts += 1.5; u.mhp += 10; u.hp += 10; addBlood(c.x, c.y, 2, 4, '#6a7a30'); } }
+      u.grT = (u.grT == null ? 40 : u.grT) - dt;
+      if (u.grT <= 0) { u.grT = 55; if (fl.filter(v => v.sp.mound).length < 9) { const n = srpSpawnNear('flBiomass', u.x, u.y, 140); if (n) addLog('🟫 フラッドのバイオマスが広がった', 'fl'); } }
+    }
+    if (sp.pure && u.tgt && !u.tgt.gone && u.state !== 'attack' && u.state !== 'spawn' && (u.pureCd || 0) <= G.time) { // 純粋形態の変身
+      const d = dist(u.x, u.y, u.tgt.x, u.tgt.y);
+      const want = d < 70 ? 'flTank' : d > 240 ? 'flRanged' : 'flStalker';
+      if (want !== u.key && rchance(.02)) { const n = morphInto(u, want, rchance(.3) ? `🦠 純粋形態が${SP[want].name}へ変身した` : null, 'fl'); if (n) n.pureCd = G.time + 7; }
+    }
+    if (sp.mind) {
+      u.mAge = (u.mAge || 0) + dt;
+      const rid = roomOfUnit(u); if (rid != null) addBlight(rid, 'fl', sp.mind);
+      u.hp = Math.min(u.mhp, u.hp + dt * 4 * sp.mind);
+      u.qT = (u.qT == null ? 6 : u.qT) - dt;
+      if (u.qT <= 0 && sp.mind >= 2) { u.qT = 22; addLog(rpick(GRAVE_QUOTES), 'fl', true); }
+      u.mindSpT = (u.mindSpT == null ? 5 : u.mindSpT) - dt;
+      if (u.mindSpT <= 0) { u.mindSpT = 12 - sp.mind * 2; if (xCanSpawn('fl')) { const k = sp.mind >= 2 ? rpick(['flStalker', 'flStalker', 'flTank', 'flRanged', 'flInfect']) : rpick(['flInfect', 'flInfect', 'flCarrier']); srpSpawnNear(k, u.x, u.y, 80); } }
+      for (const v of fl) if (v !== u && dist(u.x, u.y, v.x, v.y) < 260) v.hp = Math.min(v.mhp, v.hp + dt * 2); // 指揮網: 回復
+      if (sp.mind === 1 && (u.mAge || 0) > 90 && flP >= 200) { const n = morphInto(u, 'flGravemind', '🕳️ プロト・グレイブマインドが部屋を飲み込み、グレイブマインドへと成長した！', 'fl'); if (n) { addShake(16); } }
+      else if (sp.mind === 2 && (u.mAge || 0) > 150 && flP >= 420) { const n = morphInto(u, 'flKeyMind', '🔑 グレイブマインドが部屋そのものを思考体へ変えた —— キーマインド誕生！', 'fl'); if (n) { addShake(20); } }
+    }
+  }
+  if (!G.flProtoDone && flP >= 80 && fl.length) {
+    const mounds = fl.filter(v => v.sp.mound);
+    const base = mounds.length ? rpick(mounds) : rpick(fl);
+    const rid = roomOfUnit(base); const r = rid != null ? G.map.rooms[rid] : null;
+    const p = r ? { x: (r.cx + .5) * TILE, y: (r.cy + .5) * TILE } : base;
+    const pg = spawnUnit('flProto', p.x, p.y, { force: true });
+    if (pg) { G.flProtoDone = 1; addLog('🧠 無数の死体と脳が融合し、プロト・グレイブマインドが形成された', 'fl', true); addShake(10); }
+  }
+  // ─ ネクロモーフ ─
+  G.nmPts = (G.nmPts || 0) + dt * .1;
+  const nmP = G.nmPts + (G.stats.nm.kills || 0) * .5;
+  const marker = nm.find(u => u.key === 'nmMarker');
+  for (const u of nm) {
+    const sp = u.sp;
+    if (u.cut && u.cut.legL && u.cut.legR && u.sp.kind === 'biped') u.crawl = 1;
+    if (sp.mound) {
+      u.hp = Math.min(u.mhp, u.hp + dt * 2);
+      u.spT = (u.spT == null ? 5 : u.spT) - dt;
+      if (u.spT <= 0) { u.spT = 11; if (xCanSpawn('nm')) for (let i = 0; i < 2; i++) srpSpawnNear('nmSwarm', u.x, u.y, 30); }
+      if (rchance(dt * 3)) addPart({ k: 'spark', x: u.x + rnd(-18, 18), y: u.y + rnd(-12, 12), z: rnd(2, 14), vx: rnd(-5, 5), vy: rnd(-3, 3), vz: rnd(3, 10), life: 1.4, t: 0, s: rnd(1, 1.8), col: '#c07030' });
+      u.grT = (u.grT == null ? 45 : u.grT) - dt;
+      if (u.grT <= 0) { u.grT = 60; if (nm.filter(v => v.sp.mound).length < 10) srpSpawnNear('nmCorruption', u.x, u.y, 150); }
+    }
+    if (u.key === 'nmMarker') {
+      const rid = roomOfUnit(u); if (rid != null) addBlight(rid, 'nm', 1);
+      u.sigT = (u.sigT == null ? 12 : u.sigT) - dt;
+      if (u.sigT <= 0) { // マーカー信号: 周囲の生存者に幻覚、圏内の死体を再起動
+        u.sigT = 20; addShock(u.x, u.y, 20, 320, 'rgba(255,60,40,.35)'); Sfx.play('screech', u.x, u.y);
+        if (rchance(.4)) addLog(rpick(MARKER_QUOTES), 'nm');
+        Spatial.query(u.x, u.y, 330, _q);
+        for (const o of _q) if (!o.gone && o.fac === 'N') { o.panicT = 3; o.slowT = Math.max(o.slowT || 0, 1.5); o.threat = true; }
+        for (const c of G.corpses) if (!c.riseAs && !c.cSpore && dist(c.x, c.y, u.x, u.y) < 320 && xCanSpawn('nm')) { const k = nmCorpseKey(c.key); if (k) { c.riseAs = k; c.riseT = 3 + rnd(0, 3); c.t = 0; } }
+      }
+      u.spT = (u.spT == null ? 6 : u.spT) - dt;
+      if (u.spT <= 0) { u.spT = 14; if (xCanSpawn('nm')) srpSpawnNear(rpick(['nmInfector', 'nmSlasher', 'nmLurker', 'nmSwarm']), u.x, u.y, 70); }
+    }
+    if (sp.ov && sp.ov.stasis) u.phaseDodge = 1;
+    if (u.key === 'nmLeviathan' || u.key === 'nmMoon') {
+      const rid = roomOfUnit(u); if (rid != null) addBlight(rid, 'nm', u.key === 'nmMoon' ? 3 : 2);
+      u.hp = Math.min(u.mhp, u.hp + dt * 5);
+      for (const v of nm) if (v !== u && dist(u.x, u.y, v.x, v.y) < 280) v.hp = Math.min(v.mhp, v.hp + dt * 2);
+      u.spT = (u.spT == null ? 6 : u.spT) - dt;
+      if (u.spT <= 0) { u.spT = u.key === 'nmMoon' ? 6 : 9; if (xCanSpawn('nm')) srpSpawnNear(rpick(['nmSlasher', 'nmLeaper', 'nmStalker', 'nmExploder', 'nmTwitcher', 'nmDivider', 'nmBrute', 'nmGuardian']), u.x, u.y, 100); }
+    }
+  }
+  if (nmP >= 90 && !G.nmHunterDone && nm.length) { const b = marker || rpick(nm); const h = spawnUnit('nmHunter', b.x + 30, b.y, { force: true }); if (h) { G.nmHunterDone = 1; addLog('♾️ 再生するネクロモーフ「ハンター」が解き放たれた', 'nm', true); } }
+  if (nmP >= 180 && !G.nmLevDone && nm.length) {
+    const b = marker || rpick(nm); const rid = roomOfUnit(b); const r = rid != null ? G.map.rooms[rid] : rpick(G.map.rooms);
+    const lv = spawnUnit('nmLeviathan', (r.cx + .5) * TILE, (r.cy + .5) * TILE, { force: true });
+    if (lv) { G.nmLevDone = 1; addLog('🐙 部屋を覆う巨大融合体「レヴァイアサン」が目覚めた', 'nm', true); addShake(14); }
+  }
+  if (nmP >= 450 && !G.nmMoonDone && nm.some(u => u.key === 'nmLeviathan')) { // 収束イベント
+    const lv = nm.find(u => u.key === 'nmLeviathan');
+    const n = morphInto(lv, 'nmMoon', '🌕 収束イベント発生 —— 無数のネクロモーフが凝集し、ブレザレン・ムーンが顕現した！', 'nm');
+    if (n) { G.nmMoonDone = 1; G.nmMoonOn = 1; G.nmMoonT = 0; addShake(24); for (const v of nm) if (!v.gone && v !== n && !v.sp.unique && rchance(.4)) { v.gone = true; v.dead = true; addBlood(v.x, v.y, 10, 6); } }
+  }
+  if (G.nmMoonOn) { // 終焉の信号: 館全体へ
+    G.nmMoonT = (G.nmMoonT || 0) + dt;
+    G.nmMoonSig = (G.nmMoonSig == null ? 10 : G.nmMoonSig) - dt;
+    if (G.nmMoonSig <= 0) {
+      G.nmMoonSig = 14; addShake(8); addLog('🌕 ブレザレン・ムーンの信号が館を揺らす', 'nm');
+      for (const o of G.units) if (!o.gone && !o.dead && o.fac !== 'nm' && rchance(.7)) { dealDamage(null, o, 5, {}); if (o.fac === 'N') { o.panicT = 4; o.slowT = 2; } }
+    }
+  }
+}
+function spawnFlood() {
+  G.capFl = 50; G.flPts = 0; G.flProtoDone = 0;
+  const r = rpick(G.map.rooms), c = { x: (r.cx + .5) * TILE, y: (r.cy + .5) * TILE };
+  spawnUnit('flBiomass', c.x, c.y, { silent: true, force: true });
+  const p2 = randWalkIn(r); spawnUnit('flBiomass', p2.x, p2.y, { silent: true, force: true });
+  const ks = ['flInfect', 'flInfect', 'flInfect', 'flInfect', 'flInfect', 'flInfect', 'flHuman', 'flHuman', 'flElite', 'flCarrier'];
+  for (const k of ks) { const q = randWalkIn(r); spawnUnit(k, q.x, q.y, { silent: true, force: true }); }
+  addBlight(G.map.rooms.indexOf(r), 'fl', 0);
+  addLog('🦠 館の一室でフラッドの感染が始まった', 'fl', true);
+}
+function spawnNecro() {
+  G.capNm = 50; G.nmPts = 0; G.nmHunterDone = 0; G.nmLevDone = 0; G.nmMoonDone = 0; G.nmMoonOn = 0;
+  const r = rpick(G.map.rooms), c = { x: (r.cx + .5) * TILE, y: (r.cy + .5) * TILE };
+  spawnUnit('nmMarker', c.x, c.y, { silent: true, force: true });
+  const ks = ['nmCorruption', 'nmInfector', 'nmInfector', 'nmSlasher', 'nmSlasher', 'nmSlasher', 'nmSpitter', 'nmLurker', 'nmExploder', 'nmSwarm', 'nmSwarm', 'nmSwarm'];
+  for (const k of ks) { const q = randWalkIn(r); spawnUnit(k, q.x, q.y, { silent: true, force: true }); }
+  addLog('🧬 マーカーが館に持ち込まれ、信号を発し始めた', 'nm', true);
+}
+function xPanelInfo(f) {
+  if (f === 'fl') { const m = G.units.find(u => !u.gone && u.fac === 'fl' && u.sp.mind); return `<div class="substat"><span>乗っ取り ${G.stats.fl.conv}</span><span>${m ? m.sp.name : 'グレイブマインド未形成'}</span></div>`; }
+  return `<div class="substat"><span>再起動 ${G.stats.nm.conv}</span><span>${G.nmMoonOn ? '🌕 収束済' : G.nmLevDone ? '🐙 ハイブマインド' : 'マーカー信号'}</span></div>`;
+}
+
+/* ── 描画 ── */
+function drawXOverlayParts(u, pose) { // 骨格が必要な装飾 (骨刃・爆薬袋・触手腕・エナジーソード・切断面)
+  const ov = u.sp.ov; if (!ov) return;
+  const needSk = ov.blades || ov.bomb || ov.tentArm || ov.eSword || ov.belly || ov.stasis || ov.spit || u.cut || ov.regen;
+  if (!needSk) return;
+  const sk = solveBiped(u, pose), P = sk.P, d = sk.dir, T = G.time + (u.id || 0), st = aliceStrike(u);
+  const cut = u.cut || {};
+  if (ov.blades) for (const side of ['armR', 'armL']) {
+    if (cut[side]) continue;
+    const a = sk[side], sh = a.sh, ha = a.ha;
+    const ang = Math.atan2(ha.y - a.el.y, ha.x - a.el.x);
+    const L = P.armL * 2.8;
+    ctx.fillStyle = side === 'armR' ? '#ece2c8' : '#c8bca0'; ctx.strokeStyle = '#6a5a40'; ctx.lineWidth = .8;
+    ctx.beginPath(); ctx.moveTo(sh.x, sh.y - P.armR * 1.6); ctx.quadraticCurveTo(sh.x + Math.cos(ang - .9) * L * .7, sh.y + Math.sin(ang - .9) * L * .7 - P.armR * 3, ha.x + Math.cos(ang) * L * .6, ha.y + Math.sin(ang) * L * .6);
+    ctx.quadraticCurveTo(sh.x + Math.cos(ang - .5) * L * .5, sh.y + Math.sin(ang - .5) * L * .5, sh.x, sh.y + P.armR); ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
+  if (ov.bomb && !cut.armL) { const h = sk.armL.ha, pr = P.armR * (3.6 + Math.sin(T * 4) * .25); const g = ctx.createRadialGradient(h.x, h.y, 0, h.x, h.y, pr); g.addColorStop(0, '#fff8a0'); g.addColorStop(.5, '#e8c030'); g.addColorStop(1, '#8a6010'); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(h.x, h.y, pr, pr * .85, 0, 0, TAU); ctx.fill(); ctx.strokeStyle = '#6a4a10'; ctx.lineWidth = .8; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(h.x, h.y, pr * (.4 + i * .2), .3, 2.6); ctx.stroke(); } }
+  if (ov.belly) { const c = { x: (sk.s1.x + sk.pel.x) / 2 + d * P.torsoW * .3, y: (sk.s1.y + sk.pel.y) / 2 }; blob(c.x, c.y, P.torsoW * 1.3, P.torsoW * 1.1, '#9a9058', 'rgba(255,255,200,.2)'); ctx.fillStyle = '#4a4a10'; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(c.x + d * P.torsoW * (.3 + i * .25), c.y - P.torsoW * .3 + i * P.torsoW * .3, P.torsoW * .14, 0, TAU); ctx.fill(); } }
+  if (ov.spit && st > .1) { const h = sk.head; ctx.fillStyle = 'rgba(170,220,60,.8)'; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(h.x + d * P.headR * (1.2 + i * .8 * st), h.y + P.headR * .5 + i * 2, P.headR * .25, 0, TAU); ctx.fill(); } }
+  if (ov.tentArm && !cut.armL) { // フラッド戦闘体: 片腕が鞭状の触手
+    const sh = sk.armL.sh, L = P.armU * 3.4 * (1 + st * .7), aimA = Math.atan2(Math.sin(u.faceA || 0) * SQ, Math.cos(u.faceA || 0));
+    let px = sh.x, py = sh.y; ctx.lineCap = 'round';
+    for (let k = 1; k <= 7; k++) { const f = k / 7, a = (Math.PI / 2 - d * .4) * (1 - st) + aimA * st + Math.sin(T * 3 + f * 5) * .45 * f; const nx = px + Math.cos(a) * L / 7, ny = py + Math.sin(a) * L / 7; ctx.strokeStyle = shade(u.pal.skin, -.1 * f); ctx.lineWidth = Math.max(.8, P.armR * 1.4 * (1 - f * .7)); ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(nx, ny); ctx.stroke(); px = nx; py = ny; }
+    for (let k = -1; k <= 1; k++) { ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + k * 3, py + 4); ctx.stroke(); }
+    ctx.lineCap = 'butt';
+  }
+  if (ov.eSword && !cut.armR) { const a = sk.armR, ang = Math.atan2(a.ha.y - a.el.y, a.ha.x - a.el.x) - .5 * d, L = P.armL * 2.6; ctx.save(); ctx.lineCap = 'round'; for (const [w, c] of [[5, 'rgba(80,160,255,.35)'], [2.6, '#8ac8ff'], [1, '#ffffff']]) { ctx.strokeStyle = c; ctx.lineWidth = w; for (const off of [-.18, .18]) { ctx.beginPath(); ctx.moveTo(a.ha.x, a.ha.y); ctx.quadraticCurveTo(a.ha.x + Math.cos(ang + off) * L * .6, a.ha.y + Math.sin(ang + off) * L * .6, a.ha.x + Math.cos(ang) * L, a.ha.y + Math.sin(ang) * L); ctx.stroke(); } } ctx.restore(); }
+  if (u.shield > 0 && u.sp.shieldMax) { ctx.save(); ctx.globalAlpha = .18 + (u.shieldFx || 0) * 2; ctx.strokeStyle = '#8ac8ff'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.ellipse((sk.s1.x + sk.s2.x) / 2, (sk.head.y + sk.ftR.y) / 2, P.torsoW * 2.2, (sk.ftR.y - sk.head.y) * .62, 0, 0, TAU); ctx.stroke(); ctx.restore(); }
+  if (ov.stasis) { ctx.save(); ctx.globalAlpha = .35; ctx.fillStyle = '#60c0ff'; ctx.beginPath(); ctx.arc(sk.s2.x, sk.s2.y + P.torsoW * .5, P.torsoW * .5 * (1 + Math.sin(T * 20) * .3), 0, TAU); ctx.fill(); if ((u.moveSpd || 0) > 20) { ctx.globalAlpha = .18; ctx.fillStyle = u.pal.skin; ctx.beginPath(); ctx.ellipse(sk.s2.x - d * 10, sk.s2.y + 10, P.torsoW, P.torsoW * 3, 0, 0, TAU); ctx.fill(); } ctx.restore(); }
+  if (ov.regen) { ctx.save(); ctx.globalAlpha = .25 + Math.sin(T * 5) * .1; ctx.strokeStyle = '#ff8040'; ctx.lineWidth = 1; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc(sk.s2.x, sk.s2.y + i * 6, P.torsoW * (1 + i * .2), T + i, T + i + 1.5); ctx.stroke(); } ctx.restore(); }
+  for (const k of Object.keys(cut)) { // 切断面
+    const p = k === 'armL' ? sk.armL.sh : k === 'armR' ? sk.armR.sh : k === 'legL' ? sk.legL.hip : sk.legR.hip;
+    if (!p) continue;
+    blob(p.x, p.y, P.armR * 1.1, P.armR * .9, '#8a1010'); blob(p.x, p.y, P.armR * .5, P.armR * .4, '#e8dcc0');
+    if (rchance(.08)) addBlood(u.x, u.y, (u.y * SQ - p.y), 1, u.pal.blood);
+  }
+}
+/* drawSRP へ追加する独自体型 */
+function drawXPlan(u, pose, S, x, gy, T, strike, mv, ph, pal, dir) {
+  const sp = u.sp;
+  switch (sp.plan) {
+    case 'finf': { // 感染体: 膨らんだ嚢と数本の触手脚
+      const bob = mv ? Math.abs(Math.sin(ph * 1.5)) * S * .25 : Math.sin(T * 3) * S * .05, cy = gy - S * .9 - bob;
+      ctx.strokeStyle = shade(pal.skin, -.25); ctx.lineCap = 'round';
+      for (let i = 0; i < 5; i++) { const a = Math.PI / 2 + (i - 2) * .45, sw = mv ? Math.sin(ph * 2 + i) * .3 : 0; ctx.lineWidth = S * .16; ctx.beginPath(); ctx.moveTo(x, cy + S * .3); ctx.quadraticCurveTo(x + Math.cos(a + sw) * S * .9, cy + S * .6, x + Math.cos(a + sw) * S * 1.3, gy); ctx.stroke(); }
+      blob(x, cy, S * .75 * (1 + Math.sin(T * 5) * .05), S * .62, pal.skin, 'rgba(255,250,220,.3)');
+      ctx.strokeStyle = '#6a8a30'; ctx.lineWidth = .8; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(x, cy, S * (.3 + i * .15), 3.4, 5.6); ctx.stroke(); }
+      ctx.strokeStyle = '#6a5a30'; ctx.lineWidth = S * .1; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(x + dir * S * .5, cy + S * .1); ctx.lineTo(x + dir * S * (1 + strike * .8), cy + S * (.1 + (i - 1) * .25)); ctx.stroke(); }
+      ctx.lineCap = 'butt'; return true;
+    }
+    case 'fcarrier': { // キャリアー: 巨大な気球状の嚢
+      const cy = gy - S * 1.5, pr = 1 + Math.sin(T * 3) * .06 + strike * .25;
+      ctx.strokeStyle = shade(pal.skin, -.3); ctx.lineWidth = S * .16; for (const sd of [-1, 1]) { ctx.beginPath(); ctx.moveTo(x + sd * S * .3, cy + S * .6); ctx.lineTo(x + sd * S * .5 + (mv ? Math.sin(ph + sd) * S * .2 : 0), gy); ctx.stroke(); }
+      blob(x, cy, S * 1.1 * pr, S * 1.2 * pr, pal.skinL, 'rgba(255,250,220,.3)');
+      ctx.fillStyle = 'rgba(120,140,50,.45)'; for (let i = 0; i < 6; i++) { const a = T * .5 + i; ctx.beginPath(); ctx.arc(x + Math.cos(a) * S * .5, cy + Math.sin(a * 1.3) * S * .5, S * .2, 0, TAU); ctx.fill(); }
+      ctx.strokeStyle = '#8a7438'; ctx.lineWidth = 1; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(x - S * .9 + i * S * .45, cy - S * .9); ctx.quadraticCurveTo(x - S * .6 + i * S * .3, cy, x - S * .7 + i * S * .35, cy + S * .9); ctx.stroke(); }
+      blob(x + dir * S * .4, cy - S * 1.1, S * .3, S * .25, shade(pal.skin, -.15));
+      return true;
+    }
+    case 'mound': { // バイオマス / 腐生組織
+      const fl = sp.mound === 'flood', cy = gy - S * .5, pr = 1 + Math.sin(T * 1.6) * .04;
+      ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(x, gy, S * 1.6, S * .55, 0, 0, TAU); ctx.fill();
+      ctx.strokeStyle = fl ? '#6a5a28' : '#5a2014'; ctx.lineWidth = S * .12;
+      const rd = srand(u.seed || 3);
+      for (let i = 0; i < 8; i++) { const a = rd() * TAU, L = S * (1.2 + rd() * 1.4); ctx.beginPath(); ctx.moveTo(x, gy - S * .1); ctx.quadraticCurveTo(x + Math.cos(a) * L * .5, gy + Math.sin(a) * L * .2, x + Math.cos(a) * L, gy + Math.sin(a) * L * .4); ctx.stroke(); }
+      blob(x, cy, S * 1.3 * pr, S * .8 * pr, pal.skin, 'rgba(255,240,200,.18)');
+      for (let i = 0; i < 7; i++) { const bx = x + (rd() - .5) * S * 2, by = cy - rd() * S * .6, br = S * (.18 + rd() * .25) * (1 + Math.sin(T * 3 + i) * .1); blob(bx, by, br, br * .9, fl ? (i % 2 ? '#c8b870' : '#8a9a40') : (i % 2 ? '#e8b040' : '#a04020'), 'rgba(255,255,220,.3)'); }
+      if (!fl) { ctx.fillStyle = '#1a0404'; ctx.beginPath(); ctx.ellipse(x + dir * S * .3, cy - S * .1, S * .3, S * .12 + strike * S * .2, 0, 0, TAU); ctx.fill(); ctx.fillStyle = '#e8dcc0'; for (let i = 0; i < 5; i++) ctx.fillRect(x + dir * S * (.1 + i * .1), cy - S * .15, 1, 2); }
+      return true;
+    }
+    case 'pstalk': { // ステルス変異: 低く這う4足
+      const cy = gy - S * .6 - (mv ? Math.abs(Math.sin(ph)) * S * .1 : 0);
+      ctx.strokeStyle = shade(pal.skin, -.3); ctx.lineCap = 'round'; ctx.lineWidth = S * .16;
+      for (let i = 0; i < 4; i++) { const fx2 = x + dir * (i < 2 ? S * .6 : -S * .6), sw = mv ? Math.sin(ph + i * 1.6) * S * .35 : 0; ctx.beginPath(); ctx.moveTo(fx2, cy); ctx.lineTo(fx2 + dir * sw + (i % 2 ? S * .2 : -S * .2), cy - S * .35); ctx.lineTo(fx2 + dir * sw * 1.4, gy); ctx.stroke(); }
+      let px = x - dir * S * .8, py = cy; ctx.lineWidth = S * .2; for (let k = 1; k <= 5; k++) { const nx = px - dir * S * .35, ny = py - Math.sin(T * 3 + k) * S * .12 - S * .05; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(nx, ny); ctx.stroke(); px = nx; py = ny; }
+      blob(x, cy, S * .95, S * .45, pal.skin, 'rgba(255,240,200,.2)');
+      srpLumps(x, cy - S * .2, S * .5, 4, pal, u.seed, T);
+      const hx = x + dir * S * 1.1, hy = cy - S * .1 - strike * S * .3;
+      blob(hx, hy, S * .4, S * .3, shade(pal.skin, .1));
+      ctx.strokeStyle = pal.acc; ctx.lineWidth = S * .1; for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(hx + dir * S * .25, hy + i * S * .1); ctx.lineTo(hx + dir * S * (.6 + strike * .6), hy + i * S * .25); ctx.stroke(); }
+      ctx.lineCap = 'butt'; return true;
+    }
+    case 'ptank': { // タンク変異: 巨大な猫背と両腕
+      const cy = gy - S * 1.4, sw = mv ? Math.sin(ph) * S * .1 : 0;
+      ctx.fillStyle = shade(pal.skin, -.2);
+      for (const sd of [-1, 1]) { ctx.beginPath(); ctx.ellipse(x + sd * S * .35 + sw * sd, gy - S * .3, S * .28, S * .45, 0, 0, TAU); ctx.fill(); }
+      blob(x - dir * S * .2, cy, S * 1.05, S * 1.1, pal.skin, 'rgba(255,240,200,.18)');
+      srpLumps(x - dir * S * .4, cy - S * .6, S * .7, 7, pal, u.seed, T);
+      const armA = strike ? -1.2 + strike * 2.4 : .3;
+      for (const sd of [0, 1]) { const shx = x + dir * S * (.5 - sd * .3), shy = cy - S * .3; const hx = shx + dir * Math.cos(armA) * S * 1.3, hy = shy + Math.sin(armA + 1.2) * S * 1.1 + S * .5; limb({ x: shx, y: shy }, { x: hx, y: hy }, S * .42, S * .35, sd ? shade(pal.skin, -.15) : pal.skin); blob(hx, hy, S * .5, S * .45, pal.skinL); }
+      const mx = x + dir * S * .6, my = cy + S * .1; ctx.fillStyle = '#2a2008'; ctx.beginPath(); ctx.ellipse(mx, my, S * .3, S * .15 + strike * S * .2, 0, 0, TAU); ctx.fill();
+      return true;
+    }
+    case 'pranged': { // レンジ変異: 固着して背中の骨針を連射
+      const cy = gy - S * 1.2;
+      ctx.strokeStyle = shade(pal.skin, -.3); ctx.lineWidth = S * .2; for (let i = 0; i < 5; i++) { const a = Math.PI / 2 + (i - 2) * .5; ctx.beginPath(); ctx.moveTo(x, cy + S * .5); ctx.lineTo(x + Math.cos(a) * S * 1.3, gy); ctx.stroke(); }
+      blob(x, cy, S * .9, S * .8, pal.skin, 'rgba(255,240,200,.2)');
+      ctx.fillStyle = pal.acc; ctx.strokeStyle = shade(pal.acc, -.4); ctx.lineWidth = .8;
+      for (let i = 0; i < 9; i++) { const a = -Math.PI / 2 + (i - 4) * .22 + (strike ? Math.sin(T * 40 + i) * .05 : 0); const L = S * (1 + (i % 3) * .3); ctx.beginPath(); ctx.moveTo(x + Math.cos(a - .08) * S * .6, cy + Math.sin(a - .08) * S * .6); ctx.lineTo(x + Math.cos(a) * (S * .6 + L), cy + Math.sin(a) * (S * .6 + L)); ctx.lineTo(x + Math.cos(a + .08) * S * .6, cy + Math.sin(a + .08) * S * .6); ctx.fill(); ctx.stroke(); }
+      blob(x + dir * S * .4, cy + S * .1, S * .3, S * .25, '#2a2008');
+      return true;
+    }
+    case 'gravemind': { // プロト/グレイブマインド/キーマインド
+      const lvl = sp.mind || 1, cy = gy - S * (1 + lvl * .25), pr = 1 + Math.sin(T * 1.2) * .04;
+      ctx.lineCap = 'round';
+      for (let i = 0; i < 4 + lvl * 3; i++) { const a = -Math.PI / 2 + (i - (2 + lvl * 1.5)) * .32; const tip = srpTendril(x + Math.cos(a) * S * .6, cy + Math.sin(a) * S * .3, S * (1.3 + lvl * .5 + (i % 3) * .3) * (1 + strike * .4), a, S * .32, shade(pal.skin, -.1 - (i % 2) * .1), T * .6, i); blob(tip.x, tip.y, S * .12, S * .12, shade(pal.skin, -.3)); }
+      blob(x, cy, S * 1.5 * pr, S * 1.15 * pr, pal.skin, 'rgba(255,240,200,.18)');
+      const rd = srand(u.seed || 5);
+      for (let i = 0; i < 5 + lvl * 2; i++) { const bx = x + (rd() - .5) * S * 2.2, by = cy - S * .3 + (rd() - .5) * S * 1.2, br = S * (.18 + rd() * .2); blob(bx, by, br, br * .8, '#d8b8a0'); ctx.strokeStyle = '#8a6a50'; ctx.lineWidth = .7; ctx.beginPath(); ctx.arc(bx, by, br * .6, 0, 3); ctx.stroke(); ctx.beginPath(); ctx.moveTo(bx, by - br); ctx.lineTo(bx, by + br); ctx.stroke(); } // 取り込まれた脳
+      for (let i = 0; i < lvl + 1; i++) { const fx2 = x + (i - lvl / 2) * S * .7, fy = cy - S * .7; blob(fx2, fy, S * .2, S * .24, '#c8a888'); ctx.fillStyle = '#1a1008'; ctx.fillRect(fx2 - S * .1, fy - S * .05, S * .06, S * .05); ctx.fillRect(fx2 + S * .04, fy - S * .05, S * .06, S * .05); ctx.fillRect(fx2 - S * .05, fy + S * .1, S * .1, S * .04); } // 取り込まれた顔
+      const mo = .3 + strike * .7 + Math.sin(T * .8) * .05;
+      ctx.fillStyle = '#1a1206'; ctx.beginPath(); ctx.ellipse(x + dir * S * .3, cy + S * .3, S * .7, S * .35 * mo + S * .08, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = '#e8dcb0'; for (let i = 0; i < 10; i++) { const tx = x + dir * S * .3 + (i - 4.5) * S * .13; ctx.beginPath(); ctx.moveTo(tx - S * .04, cy + S * .3 - S * .35 * mo); ctx.lineTo(tx, cy + S * .3 - S * .2 * mo); ctx.lineTo(tx + S * .04, cy + S * .3 - S * .35 * mo); ctx.fill(); }
+      if (lvl >= 3) { ctx.globalAlpha *= .4; const g = ctx.createRadialGradient(x, cy, 0, x, cy, S * 3); g.addColorStop(0, 'rgba(220,210,120,.5)'); g.addColorStop(1, 'rgba(220,210,120,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, cy, S * 3, 0, TAU); ctx.fill(); ctx.globalAlpha /= .4; }
+      ctx.lineCap = 'butt'; return true;
+    }
+    case 'marker': { // マーカー: 赤い二重螺旋の遺物
+      const H = S * 3.4, pul = .6 + Math.sin(T * 2) * .4;
+      ctx.globalAlpha *= .45; const g = ctx.createRadialGradient(x, gy - H * .5, 0, x, gy - H * .5, H * 1.1); g.addColorStop(0, `rgba(255,60,40,${.5 * pul})`); g.addColorStop(1, 'rgba(255,60,40,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, gy - H * .5, H * 1.1, 0, TAU); ctx.fill(); ctx.globalAlpha /= .45;
+      ctx.fillStyle = '#1a0806'; ctx.beginPath(); ctx.ellipse(x, gy, S * .9, S * .3, 0, 0, TAU); ctx.fill();
+      for (const sd of [-1, 1]) { ctx.fillStyle = sd < 0 ? '#5a0e0a' : '#8a1a14'; ctx.beginPath(); for (let k = 0; k <= 20; k++) { const f = k / 20, yy = gy - f * H, xx = x + Math.sin(f * 9 + T * .5 + (sd > 0 ? Math.PI : 0)) * S * .45 * (1 - f * .35); k ? ctx.lineTo(xx - S * .16, yy) : ctx.moveTo(xx - S * .16, yy); } for (let k = 20; k >= 0; k--) { const f = k / 20, yy = gy - f * H, xx = x + Math.sin(f * 9 + T * .5 + (sd > 0 ? Math.PI : 0)) * S * .45 * (1 - f * .35); ctx.lineTo(xx + S * .16, yy); } ctx.closePath(); ctx.fill(); }
+      ctx.fillStyle = `rgba(255,120,80,${.5 + pul * .5})`; for (let k = 0; k < 14; k++) { const f = k / 14, yy = gy - f * H, xx = x + Math.sin(f * 9 + T * .5) * S * .45 * (1 - f * .35); ctx.fillRect(xx - 1, yy - 1, 2, 1.4); ctx.fillRect(x + (xx - x) * -1 - 1, yy - .6, 2, 1.2); }
+      return true;
+    }
+    case 'infector': { // インフェクター: エイのような膜と吻針
+      const cy = gy - S * 1.6 + Math.sin(T * 2.5) * S * .15, fl = Math.sin(T * 8) * .25;
+      ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.beginPath(); ctx.ellipse(x, gy, S, S * .3, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = shade(pal.skin, -.15); ctx.strokeStyle = shade(pal.skinD, -.2); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x + dir * S * .5, cy); ctx.quadraticCurveTo(x, cy - S * (1 + fl), x - dir * S * 1.4, cy - S * (.5 + fl)); ctx.quadraticCurveTo(x - dir * S * .6, cy + S * .1, x - dir * S * 1.4, cy + S * (.5 - fl)); ctx.quadraticCurveTo(x, cy + S * (.6 - fl), x + dir * S * .5, cy); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = shade(pal.skinD, -.3); ctx.lineWidth = .7; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(x, cy); ctx.lineTo(x - dir * S * 1.2, cy - S * .6 + i * S * .4); ctx.stroke(); }
+      blob(x + dir * S * .2, cy, S * .5, S * .35, pal.skin);
+      ctx.strokeStyle = pal.acc; ctx.lineWidth = S * .12; ctx.beginPath(); ctx.moveTo(x + dir * S * .6, cy); ctx.lineTo(x + dir * S * (1.3 + strike * .8), cy + S * (.3 + strike * .6)); ctx.stroke();
+      blob(x + dir * S * .6, cy - S * .15, S * .22, S * .2, '#c8a888'); ctx.fillStyle = '#1a0404'; ctx.fillRect(x + dir * S * .65 - 1, cy - S * .2, 2, 1.5);
+      return true;
+    }
+    case 'lurker': { // ラーカー: 赤子の体と背中の3本触手
+      const cy = gy - S * .6 - (mv ? Math.abs(Math.sin(ph)) * S * .1 : 0);
+      blob(x, cy, S * .9, S * .55, pal.skinL, 'rgba(255,240,230,.25)');
+      ctx.strokeStyle = shade(pal.skin, -.1); ctx.lineCap = 'round'; ctx.lineWidth = S * .16;
+      for (let i = 0; i < 4; i++) { const lx = x + (i - 1.5) * S * .45, sw = mv ? Math.sin(ph + i * 1.6) * S * .2 : 0; ctx.beginPath(); ctx.moveTo(lx, cy + S * .2); ctx.lineTo(lx + sw, gy); ctx.stroke(); }
+      const cut = u.cut || {}, keys = ['armL', 'legL', 'armR'];
+      for (let i = 0; i < 3; i++) { if (cut[keys[i]]) { blob(x - dir * S * .2 + (i - 1) * S * .3, cy - S * .4, S * .15, S * .12, '#8a1010'); continue; } const a = -Math.PI / 2 + (i - 1) * .5 + (strike ? dir * .8 : 0); const tip = srpTendril(x - dir * S * .2 + (i - 1) * S * .3, cy - S * .4, S * (1.8 + strike * .6), a, S * .2, shade(pal.skin, -.2), T, i); ctx.fillStyle = pal.acc; ctx.beginPath(); ctx.moveTo(tip.x - 1.5, tip.y); ctx.lineTo(tip.x, tip.y - 4); ctx.lineTo(tip.x + 1.5, tip.y); ctx.fill(); }
+      ctx.lineCap = 'butt';
+      const hx = x + dir * S * .9, hy = cy - S * .15; blob(hx, hy, S * .5, S * .48, pal.skinL); ctx.fillStyle = '#1a0404'; ctx.beginPath(); ctx.ellipse(hx + dir * S * .2, hy + S * .1, S * .15, S * .1 + strike * S * .1, 0, 0, TAU); ctx.fill(); ctx.fillStyle = '#e8d060'; ctx.fillRect(hx + dir * S * .15, hy - S * .15, 2, 2);
+      return true;
+    }
+    case 'leaper': { // リーパー: 一本の尾と上半身の鎌
+      const cy = gy - S * 1.1 - (mv ? Math.abs(Math.sin(ph)) * S * .2 : 0);
+      let px = x - dir * S * .2, py = cy + S * .4; ctx.strokeStyle = pal.skin; ctx.lineCap = 'round';
+      for (let k = 1; k <= 7; k++) { const f = k / 7, nx = px - dir * S * .32, ny = py + Math.sin(T * 4 + k * .8) * S * .15 + (k < 4 ? S * .12 : -S * .08); ctx.lineWidth = S * .45 * (1 - f * .7); ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(nx, ny); ctx.stroke(); px = nx; py = ny; }
+      ctx.fillStyle = pal.acc; ctx.beginPath(); ctx.moveTo(px, py - 2); ctx.lineTo(px - dir * S * .5, py - S * .3); ctx.lineTo(px, py + 2); ctx.fill();
+      blob(x, cy, S * .55, S * .7, pal.skin, 'rgba(255,240,230,.2)');
+      const cut = u.cut || {};
+      for (const [sd, key] of [[0, 'armR'], [1, 'armL']]) { if (cut[key]) continue; const a0 = -1.6 + strike * 2.2 + sd * .3; ctx.strokeStyle = sd ? shade(pal.acc, -.2) : pal.acc; ctx.lineWidth = S * .16; ctx.beginPath(); ctx.moveTo(x + dir * S * .2, cy - S * .4); ctx.lineTo(x + dir * (S * .2 + Math.cos(a0) * S * .9), cy - S * .4 + Math.sin(a0) * S * .9); ctx.lineTo(x + dir * (S * .2 + Math.cos(a0 + 1) * S * 1.5), cy - S * .4 + Math.sin(a0 + 1) * S * 1.5); ctx.stroke(); }
+      const hx = x + dir * S * .35, hy = cy - S * .85; blob(hx, hy, S * .32, S * .3, shade(pal.skin, .1)); ctx.fillStyle = '#1a0404'; ctx.beginPath(); ctx.ellipse(hx + dir * S * .15, hy + S * .1, S * .14, S * .06 + strike * S * .12, 0, 0, TAU); ctx.fill();
+      ctx.lineCap = 'butt'; return true;
+    }
+    case 'nstalker': { // ストーカー: 頭を低くしたダチョウ型
+      const run = u.state === 'attack' && u.atk && u.atk.def.type === 'dash';
+      const hip = { x: x - dir * S * .2, y: gy - S * 1.3 };
+      ctx.strokeStyle = shade(pal.skin, -.2); ctx.lineCap = 'round';
+      for (const sd of [0, 1]) { const sw = mv ? Math.sin(ph + sd * Math.PI) * S * .5 : 0; const kn = { x: hip.x + dir * (S * .4 + sw * .5), y: gy - S * .7 }; ctx.lineWidth = S * .22; ctx.beginPath(); ctx.moveTo(hip.x, hip.y); ctx.lineTo(kn.x, kn.y); ctx.lineTo(hip.x - dir * S * .1 + sw, gy); ctx.stroke(); }
+      blob(hip.x, hip.y - S * .1, S * .8, S * .5, pal.skin, 'rgba(255,240,230,.15)');
+      const neckA = run ? .15 : -.2, hx = hip.x + dir * S * (1.3 + (run ? .3 : 0)), hy = hip.y + S * (run ? .2 : -.2);
+      ctx.lineWidth = S * .3; ctx.strokeStyle = pal.skin; ctx.beginPath(); ctx.moveTo(hip.x + dir * S * .5, hip.y - S * .2); ctx.quadraticCurveTo(hip.x + dir * S * .9, hip.y - S * (.6 + neckA), hx, hy); ctx.stroke();
+      blob(hx, hy, S * .35, S * .28, shade(pal.skin, .08)); ctx.fillStyle = '#1a0404'; ctx.beginPath(); ctx.ellipse(hx + dir * S * .2, hy + S * .08, S * .12, S * .05 + strike * S * .12, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = pal.acc; for (let i = 0; i < 4; i++) { const sx = hip.x - dir * S * (.4 - i * .25); ctx.beginPath(); ctx.moveTo(sx - 1.5, hip.y - S * .5); ctx.lineTo(sx - dir * 2, hip.y - S * .9); ctx.lineTo(sx + 1.5, hip.y - S * .5); ctx.fill(); }
+      ctx.lineCap = 'butt'; return true;
+    }
+    case 'nguard': case 'pod': { // ガーディアン(壁の上半身と触手) / ポッド
+      if (sp.plan === 'pod') { const cy = gy - S * .6; blob(x, cy, S * .7, S * .6, pal.skin, 'rgba(255,220,180,.2)'); ctx.strokeStyle = pal.acc; ctx.lineWidth = S * .15; for (let i = 0; i < 3; i++) { const a = -Math.PI / 2 + (i - 1) * .7 + Math.sin(T * 4 + i) * .2; ctx.beginPath(); ctx.moveTo(x, cy); ctx.lineTo(x + Math.cos(a) * S * 1.2, cy + Math.sin(a) * S * 1.2); ctx.stroke(); } return true; }
+      const cy = gy - S * 1.2;
+      ctx.fillStyle = shade(pal.skin, -.2); ctx.beginPath(); ctx.ellipse(x, cy, S * 1.4, S * 1.3, 0, 0, TAU); ctx.fill();
+      srpLumps(x, cy, S * 1.1, 8, pal, u.seed, T);
+      const cut = u.cut || {}, keys = ['armL', 'legL', 'armR'];
+      for (let i = 0; i < 3; i++) { if (cut[keys[i]]) continue; const a = (i - 1) * .7 + (dir < 0 ? Math.PI : 0) + (strike ? Math.sin(T * 12 + i) * .8 : Math.sin(T * 2 + i) * .3); const tip = srpTendril(x + dir * S * .4, cy + (i - 1) * S * .4, S * (1.6 + strike * 1.2), a, S * .22, shade(pal.skin, -.1), T, i); ctx.fillStyle = pal.acc; ctx.beginPath(); ctx.moveTo(tip.x - 2, tip.y); ctx.lineTo(tip.x + Math.cos(a) * 6, tip.y + Math.sin(a) * 6); ctx.lineTo(tip.x + 2, tip.y); ctx.fill(); }
+      blob(x + dir * S * .2, cy - S * .6, S * .45, S * .5, '#b89078'); ctx.fillStyle = '#1a0404'; ctx.beginPath(); ctx.ellipse(x + dir * S * .35, cy - S * .5, S * .15, S * .2, 0, 0, TAU); ctx.fill();
+      blob(x, cy + S * .5, S * .4, S * .35, '#e8b040');
+      return true;
+    }
+    case 'divhead': { // ディバイダーの頭: 触手の脚で這う頭部
+      const cy = gy - S * .8 - (mv ? Math.abs(Math.sin(ph * 1.4)) * S * .2 : 0);
+      ctx.strokeStyle = shade(pal.skin, -.2); ctx.lineCap = 'round'; ctx.lineWidth = S * .14;
+      for (let i = 0; i < 5; i++) { const a = Math.PI / 2 + (i - 2) * .5, sw = mv ? Math.sin(ph * 2 + i) * .3 : 0; ctx.beginPath(); ctx.moveTo(x, cy); ctx.quadraticCurveTo(x + Math.cos(a + sw) * S, cy + S * .3, x + Math.cos(a + sw) * S * 1.2, gy); ctx.stroke(); }
+      blob(x, cy, S * .55, S * .6, pal.skinL); ctx.fillStyle = '#1a0404'; ctx.beginPath(); ctx.ellipse(x + dir * S * .25, cy + S * .15, S * .2, S * .08 + strike * S * .15, 0, 0, TAU); ctx.fill(); ctx.fillStyle = '#ff6030'; ctx.fillRect(x + dir * S * .2, cy - S * .2, 2, 2);
+      ctx.lineCap = 'butt'; return true;
+    }
+    case 'nbrute': { // ブルート: 骨殻の重装甲ゴリラ
+      const cy = gy - S * 1.2, sw = mv ? Math.sin(ph) * S * .15 : 0;
+      ctx.strokeStyle = shade(pal.skin, -.2); ctx.lineCap = 'round';
+      for (const [sd, k] of [[-1, 'legL'], [1, 'legR']]) { if ((u.cut || {})[k]) continue; ctx.lineWidth = S * .38; ctx.beginPath(); ctx.moveTo(x - dir * S * .5, cy + S * .2); ctx.lineTo(x - dir * S * .5 + sd * sw, gy); ctx.stroke(); }
+      blob(x - dir * S * .3, cy, S * 1.1, S * .9, pal.skin, 'rgba(255,220,200,.15)');
+      srpLumps(x - dir * S * .7, cy - S * .3, S * .5, 5, NM_PAL.corr, u.seed, T);
+      const ang = strike ? -1 + strike * 2 : .6;
+      for (const [sd, k] of [[0, 'armR'], [1, 'armL']]) { if ((u.cut || {})[k]) continue; const shx = x + dir * S * (.4 - sd * .3), shy = cy - S * .5; const hx = shx + dir * Math.cos(ang) * S * 1.1, hy = gy - S * .15 - (strike ? S * .8 * strike : 0); limb({ x: shx, y: shy }, { x: hx, y: hy }, S * .45, S * .35, sd ? shade(pal.skin, -.15) : pal.skin); blob(hx, hy, S * .45, S * .35, '#d8ccb0'); }
+      ctx.fillStyle = '#e8dcc0'; ctx.strokeStyle = '#8a7a60'; ctx.lineWidth = 1; // 前面の骨殻
+      for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.ellipse(x + dir * S * (.3 + i * .12), cy - S * .6 + i * S * .35, S * .5, S * .22, dir * .5, 0, TAU); ctx.fill(); ctx.stroke(); }
+      const hx = x + dir * S * .7, hy = cy - S * .8; blob(hx, hy, S * .3, S * .25, '#d8ccb0'); ctx.fillStyle = '#1a0404'; ctx.fillRect(hx + dir * S * .05, hy, S * .2, S * .05 + strike * S * .1);
+      ctx.lineCap = 'butt'; return true;
+    }
+    case 'leviathan': case 'moon': { // レヴァイアサン / ブレザレン・ムーン
+      const moon = sp.plan === 'moon', cy = gy - S * (moon ? 2.2 : 1.3), pr = 1 + Math.sin(T * 1.1) * .03;
+      ctx.lineCap = 'round';
+      for (let i = 0; i < (moon ? 14 : 9); i++) { const a = -Math.PI / 2 + (i - (moon ? 6.5 : 4)) * .36; const tip = srpTendril(x + Math.cos(a) * S * .7, cy + Math.sin(a) * S * .4, S * (1.8 + (i % 3) * .5) * (1 + strike * .5), a + Math.PI * (moon ? 1 : 0) * (i % 2), S * .35, shade(pal.skin, -.1 - (i % 2) * .1), T * .5, i); blob(tip.x, tip.y, S * .12, S * .12, pal.acc); }
+      if (moon) { ctx.globalAlpha *= .5; const g = ctx.createRadialGradient(x, cy, 0, x, cy, S * 3.5); g.addColorStop(0, 'rgba(255,60,40,.6)'); g.addColorStop(1, 'rgba(255,60,40,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, cy, S * 3.5, 0, TAU); ctx.fill(); ctx.globalAlpha /= .5; }
+      blob(x, cy, S * (moon ? 1.9 : 1.5) * pr, S * (moon ? 1.9 : 1.1) * pr, pal.skin, 'rgba(255,220,200,.15)');
+      const rd = srand(u.seed || 7);
+      for (let i = 0; i < (moon ? 26 : 12); i++) { const a = rd() * TAU, d = rd() * S * (moon ? 1.6 : 1.2); const bx = x + Math.cos(a) * d, by = cy + Math.sin(a) * d * (moon ? 1 : .7); blob(bx, by, S * .2, S * .24, i % 3 ? '#b89078' : '#8a6a58'); ctx.fillStyle = '#1a0404'; ctx.fillRect(bx - S * .06, by - S * .02, S * .04, S * .04); ctx.fillRect(bx + S * .03, by - S * .02, S * .04, S * .04); } // 融合した無数の死体
+      const mo = .3 + strike * .8;
+      ctx.fillStyle = '#1a0404'; ctx.beginPath(); ctx.ellipse(x + dir * S * (moon ? 0 : .4), cy + S * (moon ? .2 : .3), S * (moon ? 1 : .6), S * .25 * mo + S * .06, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = '#e8dcc0'; for (let i = 0; i < 12; i++) { const tx = x + dir * S * (moon ? 0 : .4) + (i - 5.5) * S * (moon ? .16 : .1); ctx.beginPath(); ctx.moveTo(tx - 1.5, cy + S * (moon ? .2 : .3) - S * .25 * mo); ctx.lineTo(tx, cy + S * (moon ? .2 : .3) - S * .08 * mo); ctx.lineTo(tx + 1.5, cy + S * (moon ? .2 : .3) - S * .25 * mo); ctx.fill(); }
+      srpEyes(x - dir * S * .4, cy - S * .5, moon ? 8 : 5, S * .9, pal.eye, u.seed);
+      ctx.lineCap = 'butt'; return true;
+    }
+  }
+  return false;
+}
+/* 画面空間: 空に浮かぶブレザレン・ムーン */
+function drawMoonOverlay(W, H) {
+  if (!G.nmMoonOn) return;
+  const a = Math.min(1, (G.nmMoonT || 0) / 4), T = G.time;
+  const mx = W * .78, my = H * .2, R = Math.min(W, H) * .16;
+  ctx.save(); ctx.globalAlpha = a;
+  const g = ctx.createRadialGradient(mx, my, R * .6, mx, my, R * 2.2); g.addColorStop(0, 'rgba(200,30,20,.35)'); g.addColorStop(1, 'rgba(200,30,20,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.globalAlpha = a * .9;
+  const g2 = ctx.createRadialGradient(mx - R * .3, my - R * .3, R * .2, mx, my, R); g2.addColorStop(0, '#c86a50'); g2.addColorStop(.7, '#7a2a1c'); g2.addColorStop(1, '#3a0a06'); ctx.fillStyle = g2; ctx.beginPath(); ctx.arc(mx, my, R, 0, TAU); ctx.fill();
+  const rd = srand(77); ctx.fillStyle = 'rgba(40,6,4,.6)'; for (let i = 0; i < 18; i++) { const aa = rd() * TAU, d = rd() * R * .85; ctx.beginPath(); ctx.arc(mx + Math.cos(aa) * d, my + Math.sin(aa) * d, R * (.05 + rd() * .1), 0, TAU); ctx.fill(); }
+  ctx.strokeStyle = 'rgba(90,20,14,.8)'; ctx.lineCap = 'round';
+  for (let i = 0; i < 9; i++) { const aa = Math.PI * (.2 + i * .07); let px = mx + Math.cos(aa) * R, py = my + Math.sin(aa) * R; ctx.lineWidth = R * .06; ctx.beginPath(); ctx.moveTo(px, py); for (let k = 0; k < 8; k++) { px += Math.cos(aa + Math.sin(T + i + k) * .4) * R * .18; py += Math.sin(aa) * R * .18 + R * .05; ctx.lineTo(px, py); } ctx.stroke(); }
+  ctx.fillStyle = `rgba(255,80,50,${.3 + Math.sin(T * 3) * .2})`; ctx.beginPath(); ctx.ellipse(mx, my + R * .1, R * .5, R * .12, 0, 0, TAU); ctx.fill();
+  ctx.restore();
 }
 
 function srpPanelInfo() {
@@ -14277,7 +15021,8 @@ function drawSRPOverlay(u) {
     if (i % 2 === 0) { ctx.fillStyle = pal.acc; ctx.beginPath(); ctx.arc(tip.x, tip.y, 1.1 * s, 0, TAU); ctx.fill(); }
   }
   // 肉の瘤
-  if (ov.lumps) { srpLumps(bx, by + 3 * s, 7.5 * s, ov.lumps, srpPal('flesh'), u.seed, T, .07); if (!quad) srpLumps(x + dir * 3 * s, gy - top * .45, 4 * s, Math.ceil(ov.lumps / 2), srpPal('flesh'), (u.seed || 1) + 7, T, .05); }
+  const lp = u.fac === 'fl' ? FL_PAL.flesh : u.fac === 'nm' ? NM_PAL.corr : srpPal('flesh');
+  if (ov.lumps) { srpLumps(bx, by + 3 * s, 7.5 * s, ov.lumps, lp, u.seed, T, .07); if (!quad) srpLumps(x + dir * 3 * s, gy - top * .45, 4 * s, Math.ceil(ov.lumps / 2), lp, (u.seed || 1) + 7, T, .05); }
   // 骨の棘・装甲
   if (ov.spikes) {
     ctx.fillStyle = pal.acc; ctx.strokeStyle = shade(pal.acc, -.4); ctx.lineWidth = .7;
@@ -14320,6 +15065,7 @@ function drawSRP(u, pose) {
   const dead = u.state === 'dead';
   ctx.save();
   if (dead) { ctx.translate(x, gy); ctx.scale(1, .45); ctx.translate(-x, -gy); ctx.globalAlpha *= .85; }
+  if (drawXPlan(u, pose, S, x, gy, T, strike, mv, ph, pal, dir)) { ctx.restore(); return; }
   switch (sp.plan) {
     case 'bug': {
       const cy = gy - S * .7 - (mv ? Math.abs(Math.sin(ph)) * S * .08 : 0);
@@ -14831,8 +15577,8 @@ function ensureFacDock() {
 }
 function layoutPanels() {
   const dock = ensureFacDock();
-  const ids = ['panelT','panelX','panelD','panelH','panelG','panelC','panelW','panelA','panelS','panelJ','panelF','panelK','panelM','panelY','panelQ','panelB','panelP','panelR','panelI','panel3','panel4','panelU','panelL','panelO','panelV','panelE','panel5','panel6','panel8','panel0','panelJk','panelHg','panelPg','panelBk','panelNt','panelMp','panelMz','panelGd','panelSp','panelPv','panelSrp','preyPanel'];
-  const borders = { panelT:'#d43a3a', panelSrp:'#d04050', panelX:'#3fd6b0', panelD:'#a98fd0', panelH:'#c07830', panelG:'#6fa83a', panelC:'#c8963a', panelW:'#e8e8f2', panelA:'#c8a24a', panelS:'#c45a5a', panelJ:'#e8e8e8', panelF:'#888', panelK:'#e8c040', panelM:'#4ad0e8', panelY:'#e8c040', panelQ:'#c83028', panelB:'#40c0e8', panelP:'#e8c040', panelR:'#8a3030', panelI:'#e8e4dc', panelU:'#888', panelL:'#444', panelO:'#5cb85c', preyPanel:'#c8b070' };
+  const ids = ['panelT','panelX','panelD','panelH','panelG','panelC','panelW','panelA','panelS','panelJ','panelF','panelK','panelM','panelY','panelQ','panelB','panelP','panelR','panelI','panel3','panel4','panelU','panelL','panelO','panelV','panelE','panel5','panel6','panel8','panel0','panelJk','panelHg','panelPg','panelBk','panelNt','panelMp','panelMz','panelGd','panelSp','panelPv','panelSrp','panelFl','panelNm','preyPanel'];
+  const borders = { panelT:'#d43a3a', panelSrp:'#d04050', panelFl:'#c8b870', panelNm:'#e05030', panelX:'#3fd6b0', panelD:'#a98fd0', panelH:'#c07830', panelG:'#6fa83a', panelC:'#c8963a', panelW:'#e8e8f2', panelA:'#c8a24a', panelS:'#c45a5a', panelJ:'#e8e8e8', panelF:'#888', panelK:'#e8c040', panelM:'#4ad0e8', panelY:'#e8c040', panelQ:'#c83028', panelB:'#40c0e8', panelP:'#e8c040', panelR:'#8a3030', panelI:'#e8e4dc', panelU:'#888', panelL:'#444', panelO:'#5cb85c', preyPanel:'#c8b070' };
   for (const id of ids) {
     const el = $(id); if (!el) continue;
     if (el.parentElement !== dock) dock.appendChild(el);
@@ -14997,6 +15743,8 @@ function updatePanels() {
     ['gd', 'panelGd', '🐡 ガーディアン', '#5a8a88', ['guardian','elderG']],
     ['sp', 'panelSp', '🕷️ スパイダー', '#8a4040', ['spider','spWar','spCave','spSpit','spNurse','spHang','spQueen','spDepth']],
     ['srp', 'panelSrp', '☣️ SRP寄生体', '#d04050', SRP_ORDER],
+    ['fl', 'panelFl', '🦠 フラッド', '#c8b870', FL_ORDER],
+    ['nm', 'panelNm', '🧬 ネクロモーフ', '#e05030', NM_ORDER],
     ['pv', 'panelPv', '🧟‍♂️ ゾンボス', '#6aaa50', ['pvZomboss','pvZombie','pvCone','pvBucket','pvPole','pvPaper','pvScreen','pvFoot','pvCatapult','pvJack','pvZomboni','pvGarg','pvBungee']],
   ];
   for (const [fac, id, title, col, order] of extraFac) {
@@ -15005,7 +15753,7 @@ function updatePanels() {
     if (!el) { el = document.createElement('div'); el.id = id; el.className = 'fpanel clickable'; document.getElementById('ui').appendChild(el); }
     const st = G.stats[fac] || { kills: 0 };
     el.innerHTML = `<h3>${title} <span class="tot" style="color:${col};font-size:14px">${n2}</span></h3>
-      <div class="substat"><span>撃破 ${st.kills}</span>${fac === 'srp' ? `<span>フェーズ ${G.srpPhase || 0}</span>` : ''}</div>${fac === 'srp' ? srpPanelInfo() : ''}
+      <div class="substat"><span>撃破 ${st.kills}</span>${fac === 'srp' ? `<span>フェーズ ${G.srpPhase || 0}</span>` : ''}</div>${fac === 'srp' ? srpPanelInfo() : ''}${fac === 'fl' || fac === 'nm' ? xPanelInfo(fac) : ''}
       <div>${order.map(k => { const sp = SP[k]; if (!sp) return ''; const n = counts[k] || 0; return `<div class="urow${n ? '' : ' deadrow'}"><span class="ic">${sp.ic}</span><span class="nm">${sp.name}</span><span class="ct">${n ? '×' + n : '—'}</span></div>`; }).join('')}</div>`;
   }
   layoutPanels();
@@ -15072,6 +15820,10 @@ function updateInspector() {
   if (u.key === 'witch') tags.push(`<span class="tag${u.witchRage ? ' hot' : ''}">${u.witchRage ? '😈 激怒中' : '😭 泣いている (未刺激)'}</span>`);
   if (u.gest >= 0) tags.push(`<span class="tag evo">懐胎 ${Math.round(u.gest * 100)}%</span>`);
   if (u.coth > 0) tags.push(`<span class="tag hot" style="background:#4a1020;color:#ff8090">☣️ COTH 感染 ${Math.round(u.coth * 100)}%</span>`);
+  if (u.sp.shieldMax) tags.push(`<span class="tag" style="background:#1a2a4a;color:#8ac8ff">🛡️ シールド ${Math.round(u.shield || 0)}/${u.sp.shieldMax}</span>`);
+  if (u.fac === 'nm' && u.sp.limbs) tags.push(`<span class="tag hot">🦴 切断 ${Object.keys(u.cut || {}).length}/${u.sp.limbs}${u.sp.regen ? ' (再生)' : ''}</span>`);
+  if (u.flSpore > 0) tags.push(`<span class="tag hot" style="background:#4a4a10;color:#e8e080">🌫️ フラッド胞子 ${Math.round(u.flSpore * 100)}%</span>`);
+  if (u.sp.mind) tags.push(`<span class="tag evo">🧠 指揮中枢</span>`);
   if (u.fac === 'srp') {
     const tr = SRP_TIER[u.sp.srp]; if (tr) tags.push(`<span class="tag evo">${tr.jp}</span>`);
     if (u.sp.nexus) tags.push(`<span class="tag evo">Stage ${SRP_ROMAN[srpStage(u) - 1]}</span>`);
@@ -15129,7 +15881,7 @@ function drawMini() {
     for (const u of G.units) {
       if (u.gone) continue;
       let col = '#c8b070';
-      if (u.fac === 'srp') col = '#ff4060'; else if (u.fac === 'T') col = '#e05555'; else if (u.fac === 'X') col = '#3fd6b0'; else if (u.fac === 'D') col = '#c9a7ff'; else if (u.fac === 'H') col = '#ff9e2a'; else if (u.fac === 'G') col = '#7ec84a'; else if (u.fac === 'C') col = '#d8a04a'; else if (u.fac === 'W') col = '#f0ecf8'; else if (u.fac === 'A') col = '#e0c05a'; else if (u.fac === 'S') col = '#c45a5a'; else if (u.fac === 'J') col = '#eee'; else if (u.fac === 'F') col = '#888'; else if (u.fac === 'K') col = '#e8c040'; else if (u.fac === 'M') col = '#4ad0e8';
+      if (u.fac === 'srp') col = '#ff4060'; else if (u.fac === 'fl') col = '#e8d880'; else if (u.fac === 'nm') col = '#ff7040'; else if (u.fac === 'T') col = '#e05555'; else if (u.fac === 'X') col = '#3fd6b0'; else if (u.fac === 'D') col = '#c9a7ff'; else if (u.fac === 'H') col = '#ff9e2a'; else if (u.fac === 'G') col = '#7ec84a'; else if (u.fac === 'C') col = '#d8a04a'; else if (u.fac === 'W') col = '#f0ecf8'; else if (u.fac === 'A') col = '#e0c05a'; else if (u.fac === 'S') col = '#c45a5a'; else if (u.fac === 'J') col = '#eee'; else if (u.fac === 'F') col = '#888'; else if (u.fac === 'K') col = '#e8c040'; else if (u.fac === 'M') col = '#4ad0e8';
       dot(u.x, u.y, col, u.mhp >= 200 ? 4 : 2.4);
     }
     // ビューポート
