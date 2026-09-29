@@ -213,8 +213,21 @@ kbd{background:#222;border:1px solid #444;border-radius:4px;padding:0 5px;font-s
 .rank .dot{width:8px;height:8px;border-radius:50%;flex:none}
 .rank .alive{color:#9ad870;font-weight:800}.rank .dead{color:#8a7a70}
 /* ─── HUD: 全滅した陣営 ─── */
+.facchip{display:inline-block;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:999px;border:1px solid var(--fc);color:var(--fc);margin-left:4px;vertical-align:2px;white-space:nowrap}
 #facDock .fpanel.elim{opacity:.42}
 #facDock .fpanel.elim h3{text-decoration:line-through;text-decoration-color:rgba(255,255,255,.35)}
+
+/* ─── スマホ: 陣営チップ列 ─── */
+#facMini{display:none}
+@media(max-width:700px){
+  #facMini{display:flex;position:fixed;left:6px;right:6px;gap:4px;overflow-x:auto;z-index:13;padding:2px 0 4px;scrollbar-width:none;pointer-events:auto!important}
+  #facMini::-webkit-scrollbar{display:none}
+  #facMini .fm{pointer-events:auto!important;flex:none;display:inline-flex;align-items:center;gap:3px;background:var(--panel);border:1px solid var(--panelB);border-bottom:2px solid var(--fc);color:#e8dfcc;border-radius:7px;padding:3px 7px;font-size:12px;font-family:inherit}
+  #facMini .fm b{font-size:12px;color:var(--fc);font-variant-numeric:tabular-nums}
+  #facMini .fm.dead{opacity:.4}
+  #facDock{display:none!important}
+  #facDock.show{display:flex!important;width:min(240px,70vw)!important;bottom:110px}
+}
 </style>
 </head>
 <body>
@@ -311,6 +324,13 @@ kbd{background:#222;border:1px solid #444;border-radius:4px;padding:0 5px;font-s
         <li><kbd>Space</kbd> 停止/再開　<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> 速度切替　<kbd>F</kbd> アクション追跡カメラ　<kbd>R</kbd> 屋敷再生成</li>
         <li>右下のミニマップ … クリックでその場所へジャンプ</li>
         <li><kbd>U</kbd> UI表示切替（パネル・ログ・ミニマップを全て隠して観戦に集中）</li>
+      </ul>
+      <div class="helph">🏚 実験の設定と決着</div>
+      <ul>
+        <li>開始画面で<b>参戦する陣営</b>を選べる（定番8 / 寄生・感染 / 全陣営 / ランダム8）。陣営が多いほど負荷が上がるので、大人数なら屋敷を「大」以上に</li>
+        <li>各陣営は互いに離れた部屋から始まる。<b>最後に残った陣営</b>の勝利。全滅した陣営はパネルの下に薄く並び、結果画面に順位・撃破数・最大勢力・全滅時刻が出る</li>
+        <li><b>画質</b>: 高 = 光と闇・光のにじみ・高精細な床 / 標準 = 光と闇のみ / 軽量 = 照明効果なし・遠景を簡略描画</li>
+        <li>部屋の照明は時々明滅し、壊れて真っ暗な部屋もある。炎・爆発・銃口炎・発光する怪物が闇を照らす</li>
       </ul>
       <div class="helph">🧍 獲物の生存</div>
       <ul>
@@ -1723,16 +1743,22 @@ function updateEggs(dt) {
 function addQuicksand(x, y, r, t) {
   (G.quicks = G.quicks || []).push({ x, y, r: r || 46, t: t || 6 });
 }
-function addLog(msg, cls) {
+function addLog(msg, cls, big) {
   { const f = logFac(cls); if (f && G.facOff && G.facOff[f]) return; }
   const box = typeof document !== 'undefined' ? document.getElementById('logBox') : null;
-  if (box) {
-    const d = document.createElement('div');
-    d.className = 'le ' + (cls || '');
-    d.textContent = msg;
-    box.prepend(d);
-    while (box.children.length > 9) box.removeChild(box.lastChild);
+  if (!box) return;
+  const last = G._lastLog, now = G.time || 0;
+  if (last && last.msg === msg && last.el.parentElement === box && now - last.t < 8) { // 同じ出来事はまとめて回数を表示
+    last.n++; last.t = now; last.el.textContent = `${msg}  ×${last.n}`;
+    if (box.firstChild !== last.el) box.prepend(last.el);
+    return;
   }
+  const d = document.createElement('div');
+  d.className = 'le ' + (cls || '') + (big ? ' big' : '');
+  d.textContent = msg;
+  box.prepend(d);
+  G._lastLog = { msg, el: d, n: 1, t: now };
+  while (box.children.length > 9) box.removeChild(box.lastChild);
 }
 function addShake(m) { G.cam.shake = Math.min(26, G.cam.shake + m); }
 function setFocus(x, y) { G.focus = { x, y }; G.focusT = 4; }
@@ -7366,14 +7392,23 @@ function drawShock(s) {
 /* ── HPバー・感染バー ── */
 function drawUnitBars(u) {
   if (u.inTv) return;
-  if (u.hp >= u.mhp && u.inf <= 0 && !(u.infG > 0) && !(u.infC > 0) && G.sel !== u && u.gest < 0 && !(u.biled > 0)) return;
+  const boss = u.mhp >= 600 || (u.sp.unique && u.mhp >= 300);
+  const recent = u.lastHitT != null && G.time - u.lastHitT < 3.5; // 直近に被弾した個体だけバーを出す
+  if (!recent && !boss && G.sel !== u && u.inf <= 0 && !(u.infG > 0) && !(u.infC > 0) && u.gest < 0 && !(u.biled > 0)) return;
+  if (G.cam.z < .45 && !boss && G.sel !== u) return;
   const hgt = unitTopY(u);
   const y = u.y * SQ - u.z - hgt - 12;
-  const w = 22;
-  if (u.hp < u.mhp || G.sel === u) {
-    ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(u.x - w / 2 - 1, y - 1, w + 2, 5);
-    ctx.fillStyle = u.fac === 'T' ? '#d05050' : u.fac === 'X' ? '#3fc9a8' : u.fac === 'G' ? '#7ec84a' : u.fac === 'C' ? '#d8a04a' : '#c8b070';
-    ctx.fillRect(u.x - w / 2, y, w * clamp(u.hp / u.mhp, 0, 1), 3);
+  const w = boss ? 40 : 22;
+  if ((u.hp < u.mhp && (recent || boss)) || G.sel === u) {
+    const fade = boss || G.sel === u ? 1 : clamp((3.5 - (G.time - u.lastHitT)) / 1, 0, 1);
+    ctx.globalAlpha = fade;
+    ctx.fillStyle = 'rgba(0,0,0,.7)'; ctx.fillRect(u.x - w / 2 - 1, y - 1, w + 2, boss ? 6 : 5);
+    if (u.dmgGhost != null && u.dmgGhost > u.hp / u.mhp) { ctx.fillStyle = 'rgba(255,240,200,.55)'; ctx.fillRect(u.x - w / 2, y, w * clamp(u.dmgGhost, 0, 1), boss ? 4 : 3); } // 直前の体力 (減った分が白く残る)
+    const fd = FAC_BY[u.fac]; ctx.fillStyle = fd ? fd.col : '#c8b070';
+    ctx.fillRect(u.x - w / 2, y, w * clamp(u.hp / u.mhp, 0, 1), boss ? 4 : 3);
+    if (u.shield > 0 && u.sp.shieldMax) { ctx.fillStyle = '#8ac8ff'; ctx.fillRect(u.x - w / 2, y - 2.5, w * clamp(u.shield / u.sp.shieldMax, 0, 1), 1.6); }
+    if (boss && G.cam.z > .5) { ctx.fillStyle = 'rgba(255,240,210,.85)'; ctx.font = 'bold 8px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(u.sp.name, u.x, y - 3); ctx.textAlign = 'left'; }
+    ctx.globalAlpha = 1;
   }
   if (u.inf > 0 && u.fac === 'N') {
     ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(u.x - w / 2 - 1, y + 5, w + 2, 3.6);
@@ -7995,6 +8030,7 @@ function dealDamage(att, tgt, dmg, o = {}) {
   if ((tgt.fac === 'fl' || tgt.fac === 'nm') && dmg > 0) dmg = xOnHit(tgt, att, dmg, o); // シールド/骨殻/切断
   if (tgt.fac === 'pg' && dmg > 0) dmg = pgOnHit(tgt, att, dmg); // 鎧/背中の弱点/盾/サドラーの眼
   if (att && att.cutMul && dmg > 0) dmg *= att.cutMul; // 腕を切断されたネクロモーフは弱る
+  if (dmg > 0) { if (tgt.lastHitT == null || G.time - tgt.lastHitT > .6) tgt.dmgGhost = Math.min(1, tgt.hp / tgt.mhp); tgt.lastHitT = G.time; }
   tgt.hp -= dmg;
   if (att && att.fac === 'srp' && dmg > 0 && tgt.fac !== 'srp') srpInfect(tgt, att); // COTH 感染
   tgt.idleT = 0;
@@ -13509,7 +13545,7 @@ function startGame(cfg) {
   // カメラ初期化
   G.cam.x = G.map.wpx / 2; G.cam.y = G.map.hpx / 2;
   const fitZ = Math.min((innerWidth - 40) / G.map.wpx, (innerHeight - 140) / (G.map.hpx * SQ));
-  G.cam.z = clamp(fitZ, .3, .9);
+  G.cam.z = clamp(innerHeight > innerWidth * 1.2 ? Math.max(fitZ, (innerHeight - 260) / (G.map.hpx * SQ)) : fitZ, .3, .9); // 縦画面は地図の高さに合わせる
   G.cam.shake = 0;
   G.started = true; G.paused = false;
   addLog(`🏚 交叉実験を開始 —— 旧洋館に${FACTION_DEFS.filter(d => facOn(d.f)).length}の血統を投入した`, 'n', true);
@@ -15834,9 +15870,29 @@ function arrangeFactionDock() {
   items.sort((a, b) => b.k - a.k);
   const key = items.map(i => i.el.id).join(',');
   if (key !== G._dockKey) { G._dockKey = key; for (const i of items) dock.appendChild(i.el); const prey = $('preyPanel'); if (prey && prey.parentElement === dock) dock.appendChild(prey); }
+  // スマホ用: 陣営ごとの勢力チップ (横スクロール)
+  let mini = $('facMini');
+  if (!mini) {
+    mini = document.createElement('div'); mini.id = 'facMini'; mini.className = 'clickable'; document.getElementById('ui').appendChild(mini);
+    mini.addEventListener('click', e => {
+      const b = e.target.closest('.fm'); if (!b) return;
+      const el = $(b.dataset.p), dk = $('facDock'); if (!el || !dk) return;
+      const same = dk.classList.contains('show') && el.classList.contains('open');
+      dk.querySelectorAll('.fpanel.open').forEach(x => x.classList.remove('open'));
+      if (same) { dk.classList.remove('show'); G.openPanel = null; return; }
+      dk.classList.add('show'); el.classList.add('open'); G.openPanel = el.id; el.scrollIntoView({ block: 'nearest' });
+    });
+  }
+  const byId = {}; for (const d of FACTION_DEFS) byId[d.panel] = d;
+  setHTML(mini, items.map(i => { const d = byId[i.el.id]; if (!d) return ''; const dead = G.facElim[d.f] != null; return `<button type="button" class="fm${dead ? ' dead' : ''}" data-p="${d.panel}" style="--fc:${d.col}">${d.icon}<b>${dead ? '✕' : facLiveCount(d.f)}</b></button>`; }).join(''));
 }
 /* 開始画面: 陣営の選択 */
 function buildFactionPicker() {
+  if (!$('facLogCss')) { // ログの色帯を全陣営に
+    const st = document.createElement('style'); st.id = 'facLogCss';
+    st.textContent = FACTION_DEFS.map(d => { const c = d.f.length === 1 ? d.f.toLowerCase() : d.f; return `.le.${CSS.escape(c)}{border-color:${d.col}}`; }).join('\n') + '\n.le.big{font-weight:800;background:rgba(20,14,16,.86)}';
+    document.head.appendChild(st);
+  }
   const box = $('facPick'); if (!box) return;
   const groups = [];
   for (const d of FACTION_DEFS) { let g = groups.find(x => x.n === d.group); if (!g) groups.push(g = { n: d.group, list: [] }); g.list.push(d); }
@@ -16535,6 +16591,7 @@ function layoutPanels() {
   const tb = document.getElementById('topbar');
   const top = (tb && tb.offsetHeight ? tb.offsetHeight + 8 : 52);
   dock.style.top = top + 'px';
+  const mini = $('facMini'); if (mini) { mini.style.top = top + 'px'; if (innerWidth <= 700) dock.style.top = (top + 40) + 'px'; }
   const ins = $('inspect'); if (ins) ins.style.top = (top + 4) + 'px'; // 上部バーが折り返しても被らない
 }
 
@@ -16731,7 +16788,7 @@ function updateInspector() {
   const u = G.sel;
   if (!u || u.gone) { el.classList.remove('show'); return; }
   el.classList.add('show');
-  $('insName').innerHTML = `${u.sp.ic} ${u.name} <span style="font-size:10px;color:#8a8478">(${u.sp.name})</span>`;
+  { const fd = FAC_BY[u.fac]; setHTML($('insName'), `${u.sp.ic} ${u.name} <span style="font-size:10px;color:#8a8478">(${u.sp.name})</span>${fd ? ` <span class="facchip" style="--fc:${fd.col}">${fd.icon} ${fd.name}</span>` : u.fac === 'N' ? ' <span class="facchip" style="--fc:#c8b070">🧍 獲物</span>' : ''}`); }
   $('insHpF').style.width = clamp(u.hp / u.mhp * 100, 0, 100) + '%';
   $('insInfB').style.display = u.fac === 'N' ? 'block' : 'none';
   $('insInfF').style.width = (u.inf * 100) + '%';
@@ -16828,7 +16885,7 @@ function drawMini() {
     for (const u of G.units) {
       if (u.gone) continue;
       let col = '#c8b070';
-      if (u.fac === 'srp') col = '#ff4060'; else if (u.fac === 'fl') col = '#e8d880'; else if (u.fac === 'nm') col = '#ff7040'; else if (u.fac === 'T') col = '#e05555'; else if (u.fac === 'X') col = '#3fd6b0'; else if (u.fac === 'D') col = '#c9a7ff'; else if (u.fac === 'H') col = '#ff9e2a'; else if (u.fac === 'G') col = '#7ec84a'; else if (u.fac === 'C') col = '#d8a04a'; else if (u.fac === 'W') col = '#f0ecf8'; else if (u.fac === 'A') col = '#e0c05a'; else if (u.fac === 'S') col = '#c45a5a'; else if (u.fac === 'J') col = '#eee'; else if (u.fac === 'F') col = '#888'; else if (u.fac === 'K') col = '#e8c040'; else if (u.fac === 'M') col = '#4ad0e8';
+      if (FAC_BY[u.fac]) col = FAC_BY[u.fac].col; else if (u.fac === 'T') col = '#e05555'; else if (u.fac === 'X') col = '#3fd6b0'; else if (u.fac === 'D') col = '#c9a7ff'; else if (u.fac === 'H') col = '#ff9e2a'; else if (u.fac === 'G') col = '#7ec84a'; else if (u.fac === 'C') col = '#d8a04a'; else if (u.fac === 'W') col = '#f0ecf8'; else if (u.fac === 'A') col = '#e0c05a'; else if (u.fac === 'S') col = '#c45a5a'; else if (u.fac === 'J') col = '#eee'; else if (u.fac === 'F') col = '#888'; else if (u.fac === 'K') col = '#e8c040'; else if (u.fac === 'M') col = '#4ad0e8';
       dot(u.x, u.y, col, u.mhp >= 200 ? 4 : 2.4);
     }
     // ビューポート
