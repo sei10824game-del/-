@@ -3987,6 +3987,22 @@ const AANIM = {
   clawRise: [{ t: 0, armR: [.5, .4] }, { t: .42, armR: [1.3, .2], crouch: .55, lean: .45, headP: .3 }, { t: .58, armR: [-2.7, .1], crouch: 0, lean: -.3, headP: -.35, rootZ: -4 }, { t: 1, armR: [.6, .3], lean: .1 }],
   bash: [{ t: 0, lean: .1 }, { t: .42, armR: [.9, 1.6], armL: [.9, 1.6], twist: -.9, lean: -.1, crouch: .2 }, { t: .56, armR: [.8, 1.5], armL: [.8, 1.5], twist: .6, lean: .6, crouch: .3, headP: .2 }, { t: 1, armR: [.5, .3], armL: [.5, .3], twist: 0, lean: .1 }],
   stabFrenzy: [{ t: 0, armR: [.5, .4] }, { t: .45, armR: [-2.5, .3], lean: -.1 }, { t: .5, armR: [1.2, .05], lean: .4, crouch: .2 }, { t: .54, armR: [-2.5, .3], lean: .1 }, { t: .58, armR: [1.2, .05], lean: .45, crouch: .25 }, { t: .62, armR: [-2.4, .3], lean: .15 }, { t: .66, armR: [1.2, .05], lean: .5, crouch: .3 }, { t: 1, armR: [.6, .3], lean: .1 }],
+  /* 各キャラの原作技 */
+  daPin: [{ t: 0, crouch: .45, lean: .45, headP: .25, legR: [.9, 1.2, 0] }, { t: .5, crouch: .5, lean: .5, headP: .7, jaw: 1, legR: [-.5, .2, 0], legL: [.9, 1.2, 0] }, { t: 1, crouch: .45, lean: .45, headP: .25, legR: [.9, 1.2, 0] }],
+  witchFrenzy: [{ t: 0, armR: [.4, .6], armL: [.4, .6], crouch: .3, lean: .4 }, { t: .45, armR: [-2.4, .6], armL: [1.4, .1], crouch: .45, lean: .6, headP: .4 }, { t: .52, armR: [1.5, .1], armL: [-2.4, .6] }, { t: .59, armR: [-2.4, .6], armL: [1.5, .1] }, { t: .66, armR: [1.5, .1], armL: [-2.2, .6], crouch: .5 }, { t: 1, armR: [.6, .3], armL: [.6, .3], crouch: .15, lean: .2 }],
+  pound: [{ t: 0, armR: [.5, .4], lean: .1 }, { t: .42, armR: [-2.9, .1], lean: -.35, headP: -.3, twist: .3 }, { t: .56, armR: [1.3, .05], lean: .6, crouch: .45, headP: .4, twist: -.3 }, { t: .72, armR: [-1.6, .2], lean: .1, crouch: .2 }, { t: .82, armR: [1.3, .05], lean: .6, crouch: .45 }, { t: 1, armR: [.6, .3], lean: .15 }],
+  screamRend: [{ t: 0, headP: -.4, jaw: 1, armR: [-2.6, .3], armL: [-2.6, .3], lean: -.2 }, { t: .45, armR: [1.2, .1], armL: [-2.4, .4], lean: .5, jaw: 1, twist: .5 }, { t: .55, armR: [-2.4, .4], armL: [1.2, .1], twist: -.5 }, { t: .65, armR: [1.2, .1], armL: [-2.4, .4], twist: .5 }, { t: .75, armR: [-2, .4], armL: [1.2, .1], twist: -.4 }, { t: 1, armR: [.5, .3], armL: [.5, .3], headP: .1, jaw: .3 }],
+  hairSnare: [{ t: 0, headP: .5, crouch: .5, lean: .6 }, { t: .42, headP: -.3, crouch: .55, lean: .7, armR: [1.6, .05], armL: [1.5, .1], ov: { tent: .4 } }, { t: .56, headP: .6, lean: .8, crouch: .6, armR: [1.7, .02], armL: [1.7, .02], ov: { tent: 1 } }, { t: 1, headP: .5, crouch: .5, lean: .6, ov: { tent: .1 } }],
+  curseStare: [{ t: 0, headP: .3 }, { t: .4, headP: -.1, lean: -.05, armR: [.1, .05], armL: [.1, .05] }, { t: .6, headP: -.25, jaw: .6, lean: -.15, armR: [.4, .05], armL: [.4, .05], twist: .15 }, { t: 1, headP: .3 }],
+  determSlash: [{ t: 0, armR: [.4, .3], crouch: .2 }, { t: .4, armR: [-2.9, .6], twist: .9, lean: -.2, rootZ: -3 }, { t: .52, armR: [1.9, .02], twist: -1.1, lean: .5, crouch: .35 }, { t: .62, armR: [-1.4, .5], twist: .8 }, { t: .72, armR: [1.9, .02], twist: -1.1, lean: .55, crouch: .4 }, { t: 1, armR: [.5, .3], twist: 0 }],
+  gasSpray: [{ t: 0, armR: [.3, .4] }, { t: .4, armR: [1.3, .2], lean: -.1, headP: -.2, jaw: .8 }, { t: .55, armR: [1.5, .05], lean: .15, headP: .1, jaw: 1, twist: .3 }, { t: .8, armR: [1.5, .05], twist: -.3, jaw: 1 }, { t: 1, armR: [.4, .3], jaw: .2 }],
+  forkThrust: [{ t: 0, armR: [.6, .9], armL: [.8, 1], lean: -.1 }, { t: .42, armR: [.9, 1.5], armL: [1, 1.4], lean: -.2, crouch: .15 }, { t: .56, armR: [1.6, .05], armL: [1.5, .2], lean: .55, crouch: .25 }, { t: 1, armR: [.6, .5], armL: [.7, .6], lean: .1 }],
+  brickThrow: [{ t: 0, armR: [.4, .3] }, { t: .42, armR: [-2.6, .9], lean: -.3, twist: .6 }, { t: .56, armR: [1.3, .1], lean: .4, twist: -.6, crouch: .1 }, { t: 1, armR: [.6, .3], twist: 0 }],
+  giantStomp: [{ t: 0, legR: [0, .1, 0] }, { t: .42, legR: [1.4, 2.1, 0], armR: [-.5, .6], armL: [-.5, .6], lean: -.2, headP: -.2 }, { t: .56, legR: [-.1, .05, 0], armR: [1.2, .3], armL: [1.2, .3], lean: .35, crouch: .35, rootZ: -2 }, { t: 1, legR: [0, .1, 0], crouch: .05 }],
+  treeSwing: [{ t: 0, armR: [.4, .3], armL: [.4, .3], twist: .3 }, { t: .42, armR: [-1.4, .4], armL: [-1.2, .4], twist: 1.4, lean: -.1 }, { t: .58, armR: [1.6, .05], armL: [1.5, .05], twist: -1.5, lean: .35 }, { t: .75, armR: [1.4, .1], armL: [1.3, .1], twist: -1.7, lean: .3 }, { t: 1, armR: [.5, .3], armL: [.5, .3], twist: 0 }],
+  flailSpin: [{ t: 0, armR: [.5, .3] }, { t: .3, armR: [-1.6, .1], twist: 1.2 }, { t: .45, armR: [1.6, .02], twist: -1.6, lean: .2 }, { t: .6, armR: [-1.6, .1], twist: 1.8 }, { t: .75, armR: [1.6, .02], twist: -1.8, lean: .25 }, { t: 1, armR: [.5, .3], twist: 0 }],
+  spineWhip: [{ t: 0, lean: .2, headP: .2 }, { t: .42, lean: -.5, headP: -.4, twist: 1, armR: [-2, .6], armL: [-2, .6] }, { t: .58, lean: .8, headP: .6, twist: -1.2, crouch: .3, armR: [1.6, .1], armL: [1.4, .2] }, { t: 1, lean: .3, twist: 0 }],
+  qteLunge: [{ t: 0, crouch: .2, armR: [.5, .4] }, { t: .45, crouch: .5, lean: .5, armR: [-1, 1.4], headP: .3 }, { t: .56, crouch: .1, lean: .8, armR: [1.7, .02], twist: -.8, rootZ: -3 }, { t: .8, lean: .7, armR: [1.6, .05], twist: -1 }, { t: 1, armR: [.5, .3], lean: .2, twist: 0 }],
   /* アリス */
   hairWhip: [{ t: 0, headP: .1 }, { t: .4, headP: -.5, twist: .6, lean: -.2, armR: [.3, .6], armL: [.3, .6] }, { t: .55, headP: .5, twist: -.8, lean: .35 }, { t: .7, headP: .3, twist: .6, lean: .2 }, { t: 1, headP: .1, twist: 0 }],
   ambush: [{ t: 0, crouch: .7, lean: .5, armR: [.4, 1.4] }, { t: .42, crouch: .75, lean: .55, armR: [1.4, 1.6], headP: .3 }, { t: .56, crouch: 0, lean: -.25, armR: [-2.6, .2], rootZ: -5, headP: -.3 }, { t: 1, armR: [.5, .3], crouch: .1 }],
@@ -4190,6 +4206,7 @@ function quadPose(u, pose) {
     else applyDelta(pose, kfInterp(AANIM[d.anim] || AANIM.q_bite, u.atk.t / (d.windup + d.active + d.rec)));
     pose.ov.ph = ph; return;
   }
+  if (u.state === 'grapple' && u.grab && u.grab.mode === 'pin') { pose.lean = .45; pose.crouch = .45; applyDelta(pose, kfInterp(AANIM.daPin, (u.st * 2.4) % 1)); pose.ov.ph = ph; return; } // 押さえつけ
   if (u.state === 'down' || u.state === 'hugged' || u.state === 'carried' || u.state === 'grappled') {
     pose.rot = Math.PI / 2 * .95;
     const k = Math.sin(u.st * 10);
@@ -4836,7 +4853,8 @@ function drawUnit(u) {
     else if (u.sp.kind === 'hugger') drawHugger(u, pose);
     else if (u.sp.kind === 'burster') drawBurster(u, pose);
     if (u.crawl) ctx.restore();
-    if (u.sp.ov && (u.fac === 'srp' || u.fac === 'fl' || u.fac === 'nm')) { drawSRPOverlay(u); if (u.sp.kind === 'biped') drawXOverlayParts(u, pose); }
+    if (u.fac === 'pg' && u.sp.kind === 'biped') drawPgExtras(u, pose);
+    if (u.sp.ov && (u.fac === 'srp' || u.fac === 'fl' || u.fac === 'nm' || u.fac === 'pg')) { drawSRPOverlay(u); if (u.sp.kind === 'biped') drawXOverlayParts(u, pose); }
   } catch (e) { }
 }
 
@@ -7748,8 +7766,8 @@ function spawnUnit(key, x, y, o = {}) {
   if (key === 'chara') { u.lv = 1; u.xp = 0; u.lives = 50; u.savePt = null; u.inv = { food: 0, drink: 0 }; }
   if (key === 't1000') { u.mimicOn = true; }
   if (key === 't3000') { u.phaseDodge = true; }
-  if (sp.fac === 'pg' && !sp.unique && rchance(.38)) {
-    u.plagaShow = rpick(['A', 'B', 'C']);
+  if (sp.fac === 'pg' && !sp.unique && sp.kind === 'biped' && rchance(sp.plagaRate != null ? sp.plagaRate : .38)) { // ガナードの種類ごとの寄生体出現率
+    u.plagaShow = rpick(sp.plagaTypes || ['A', 'B', 'C']);
     if (u.plagaShow === 'A') { u.fx = Object.assign({}, u.fx || {}, { tentacle: 1 }); }
     if (u.plagaShow === 'B') { u.headOverride = 'xenoRidge'; u.fx = Object.assign({}, u.fx || {}, { claws: 1 }); }
   }
@@ -7883,6 +7901,7 @@ function dealDamage(att, tgt, dmg, o = {}) {
   }
   if (tgt.fac === 'srp' && att && att.fac !== 'srp' && dmg > 0) dmg = srpOnHit(tgt, att, dmg, o); // 寄生体: 攻撃毎の適応
   if ((tgt.fac === 'fl' || tgt.fac === 'nm') && dmg > 0) dmg = xOnHit(tgt, att, dmg, o); // シールド/骨殻/切断
+  if (tgt.fac === 'pg' && dmg > 0) dmg = pgOnHit(tgt, att, dmg); // 鎧/背中の弱点/盾/サドラーの眼
   if (att && att.cutMul && dmg > 0) dmg *= att.cutMul; // 腕を切断されたネクロモーフは弱る
   tgt.hp -= dmg;
   if (att && att.fac === 'srp' && dmg > 0 && tgt.fac !== 'srp') srpInfect(tgt, att); // COTH 感染
@@ -8053,6 +8072,7 @@ function spawnMz(key, x, y, o = {}) {
 }
 function killUnit(att, u, o = {}) {
   if (nmSurvive(att, u, o)) return; // ネクロモーフ: 四肢を切断しなければ倒れない
+  if (pgSurvive(att, u, o)) return; // リヘナラドール: 体内の寄生体を全て潰すまで倒れない
   if ((u.key === 'mutZombie' || u.key === 'mutHusk') && (u.mutLives == null ? u.sp.mutLives : u.mutLives) > 0) {
     u.mutLives = (u.mutLives == null ? u.sp.mutLives : u.mutLives) - 1;
     u.hp = u.mhp / 3;
@@ -9004,6 +9024,7 @@ function applyHit(u, d, o, ang) {
     o2.decap = true; o2.noRise = true;
     addLog('🦖 ハンターが獲物の首を刈り取った！', 't');
   }
+  if (d.qte && pgQte(u, d, o)) return; // 首刈り/QTE即死
   if (d.slowT) o.slowT = Math.max(o.slowT || 0, 1.8);
   if (d.leech && !u.gone) u.hp = Math.min(u.mhp, u.hp + d.dmg * d.leech);
   dealDamage(u, o, d.dmg * (u.stealth && !canSee(o, u) ? 3.4 : 1), o2);
@@ -9015,7 +9036,7 @@ function applyHit(u, d, o, ang) {
 function beginGrab(u, d, tgt) {
   if (tgt.gone || tgt.dead) return;
   if (tgt.carriedBy || tgt.grabbedBy || tgt.state === 'hugged') return;
-  u.grab = { vic: tgt, mode: d.hold, t: { bite: 2.6, capture: .7, implant: 1.7, maul: 4.2, slam: 3.8 }[d.hold] || .85, tick: .45 };
+  u.grab = { vic: tgt, mode: d.hold, t: { bite: 2.6, capture: .7, implant: 1.7, maul: 4.2, slam: 3.8, pin: 2.8 }[d.hold] || .85, tick: .45 };
   if (d.hold === 'capture') G.stats.X.grab = (G.stats.X.grab || 0) + 1;
   u.atkHold = d.hold;
   u.atk = null; // 攻撃は掴みに置き換わった — 残骸を掃除
@@ -9032,7 +9053,7 @@ function updateGrapple(u, dt) {
   if (v.gone || v.dead || v.state === 'transform') { releaseGrab(u); return; }
   g.t -= dt;
   // 位置同期
-  const holdD = u.r + v.r + 4;
+  const holdD = g.mode === 'pin' ? u.r * .45 : u.r + v.r + 4; // 押さえつけは獲物の真上に覆いかぶさる
   if (g.mode !== 'capture') {
     const tx = u.x + Math.cos(u.faceA) * holdD, ty = u.y + Math.sin(u.faceA) * holdD;
     v.x = lerp(v.x, tx, .5); v.y = lerp(v.y, ty, .5);
@@ -9047,6 +9068,16 @@ function updateGrapple(u, dt) {
       Sfx.play('squelch', u.x, u.y);
       if (v.gone || v.dead || v.state === 'transform') { releaseGrab(u); return; }
     }
+  } else if (g.mode === 'pin') { // 飛びかかって押さえつけ、爪と顎で引き裂き続ける
+    g.tick -= dt;
+    if (g.tick <= 0) {
+      g.tick = .42;
+      dealDamage(u, v, u.mhp >= 400 ? 18 : 13, { kdir: angTo(u.x, u.y, v.x, v.y) });
+      addBlood(v.x, v.y, 4, 3, v.pal && v.pal.blood);
+      Sfx.play(rchance(.5) ? 'rip' : 'slash', u.x, u.y);
+      if (v.gone || v.dead || v.state === 'transform') { releaseGrab(u); return; }
+    }
+    if (g.t <= 0) { knockDown(v); releaseGrab(u); return; }
   } else if (g.mode === 'maul') { // ハンター: マウントポジションで引き裂き続ける
     g.tick -= dt;
     if (g.tick <= 0) {
@@ -9324,6 +9355,9 @@ function aiThink(u) {
       case 'flood': thinkFlood(u); break;
       case 'necro': thinkNecro(u); break;
       case 'xStatic': thinkXStatic(u); break;
+      case 'garrador': thinkGarrador(u); break;
+      case 'armadura': thinkArmadura(u); break;
+      case 'drill': thinkDrill(u); break;
       case 'zomboss': thinkZomboss(u); break;
       case 'spider': thinkSpider(u); break;
       case 'spNurse': thinkSpNurse(u); break;
@@ -11246,7 +11280,7 @@ function thinkWSpike(u) { // 群れの狩猟種: 女王の叫びに応じて集�
 function thinkWSQueen(u) { // 巣に座す母体: 敵に遭遇すると叫びで群れを呼ぶ
   if (!u.home) u.home = { x: u.x, y: u.y };
   if (u.qRoom === undefined) u.qRoom = G.map.roomOf[Math.floor(u.y / TILE) * G.map.w + Math.floor(u.x / TILE)];
-  // 巣室防衛: 部屋に敵が入るか至近に迫ると防衛望�覚める (移動して戦う)
+  // 巣室防衛: 部屋に敵が入るか至近に迫ると防衛本能が目覚める (移動して戦う)
   if (!u.queenFree) {
     const enemy = G.units.find(o => !o.gone && !o.dead && o.fac !== 'W' && o.fac !== 'N' && (G.map.roomOf[Math.floor(o.y / TILE) * G.map.w + Math.floor(o.x / TILE)] === u.qRoom || dist(u.x, u.y, o.x, o.y) < 260));
     if (enemy) {
@@ -12650,6 +12684,7 @@ function stepSim(dt) {
   updateSRP(dt);
   updateAliceFx(dt);
   updateFloodNecro(dt);
+  updatePlagaExtra(dt);
   if (G.quicks) {
     for (let i = G.quicks.length - 1; i >= 0; i--) {
       const q = G.quicks[i]; q.t -= dt;
@@ -13508,13 +13543,13 @@ function spawnPlaga() {
     const p = randWalkIn(r);
     spawnUnit(vkeys[i % 4], p.x, p.y, { silent: true, force: true });
   }
-  for (const k of ['gvChainM','gvChainF','gvGatling','gvMendez']) {
+  for (const k of ['gvChainM','gvChainF','gvMendez']) {
     const r = G.map.rooms[rpick(vil)]; const p = randWalkIn(r);
     spawnUnit(k, p.x, p.y, { silent: true, force: true });
   }
   const cas = pickLinkedRooms(3);
   G.plagaCastle = cas;
-  const ckeys = ['gvCultSh','gvCultBow','gvSoldStun','gvSoldDyna','gvSoldRkt'];
+  const ckeys = ['gvCultSh','gvCultBow','gvCultScythe','gvCultFlail','gvCultSh'];
   for (let i = 0; i < 8; i++) {
     const r = G.map.rooms[cas[i % cas.length]];
     const p = randWalkIn(r);
@@ -13527,6 +13562,7 @@ function spawnPlaga() {
   spawnUnit('gvSaddler', randWalkIn(G.map.rooms[cas[2]]).x, randWalkIn(G.map.rooms[cas[2]]).y, { silent: true, force: true });
   spawnUnit('arana', randWalkIn(G.map.rooms[vil[0]]).x, randWalkIn(G.map.rooms[vil[0]]).y, { silent: true, force: true });
   addLog('🪱 プラガの村と城が館に根付いた', 'pg', true);
+  spawnPlagaExtra(vil, cas);
 }
 function spawnBarakoa() {
   G.capBk = 28;
@@ -14950,6 +14986,389 @@ function drawMoonOverlay(W, H) {
   ctx.restore();
 }
 
+
+/* ══════════════════════════════════════════════════════════
+   プラーガ陣営 拡張 (バイオハザード RE:4 リメイク準拠)
+   村・湖 / 古城 / 孤島 の未実装だった敵・武装・変異形態
+   ══════════════════════════════════════════════════════════ */
+const PG_PAL = {
+  vil: SP.gvAxe.pal,
+  cult: { skin: '#c8a078', skinD: '#8a6848', skinL: '#e8c8a0', cloth: '#3a2a3a', clothD: '#1a101a', clothL: '#5a4058', acc: '#c8a040', eye: '#4a1810', blood: '#8a1518' },
+  red: { skin: '#c8a078', skinD: '#8a6848', skinL: '#e8c8a0', cloth: '#8a1a1a', clothD: '#4a0808', clothL: '#b03030', acc: '#c8a040', eye: '#4a1810', blood: '#8a1518' },
+  sold: { skin: '#c8a078', skinD: '#8a6848', skinL: '#e8c8a0', cloth: '#4a4a3a', clothD: '#26261c', clothL: '#6a6a58', acc: '#2a2a2a', eye: '#4a1810', blood: '#8a1518' },
+  plaga: { skin: '#c8b070', skinD: '#6a5838', skinL: '#e8d090', cloth: '#4a3020', clothD: '#201810', clothL: '#6a4830', acc: '#e8c040', eye: '#e04020', blood: '#8a1518' },
+  regen: { skin: '#9aa0a8', skinD: '#5a6068', skinL: '#c0c6cc', cloth: '#6a6e74', clothD: '#3a3e44', clothL: '#8a8e94', acc: '#e8e0c8', eye: '#101010', blood: '#5a1010' },
+};
+const gA = (o) => AT(Object.assign({ snd: 'hit' }, o));
+/* 独自描画の大型プラーガ (SRP/フラッド等と同じ描画プランの仕組み) */
+function PGC(name, ic, plan, hp, r, scale, walk, run, pal, atks, extra) {
+  return Object.assign(SRPC(name, ic, null, plan, hp, r, scale, walk, run, pal, atks), { fac: 'pg', srp: undefined, ai: 'ganado', mortal: false }, extra || {});
+}
+
+/* ── 村・湖 ── */
+SP.gvPitch = GNA('村人(ピッチフォーク)', '🔱', 'trident', 88, 1.02, [gA({ n: 'ピッチフォーク突き', dmg: 15, reach: 24, arc: 1, windup: .34, active: .14, rec: .45, cd: .85, anim: 'forkThrust', snd: 'slash' })], { plagaRate: .3 });
+SP.gvKnife = GNA('村人(包丁)', '🔪', 'knife', 78, 1, [gA({ n: '包丁', dmg: 13, reach: 15, windup: .22, active: .12, rec: .34, cd: .6, anim: 'slash', snd: 'slash' })], { plagaRate: .3, pal: Object.assign({}, PG_PAL.vil, { cloth: '#7a5a48', clothD: '#4a3428' }) });
+SP.gvBrick = GNA('村人(レンガ投げ)', '🧱', 'none', 80, 1, [gA({ n: 'レンガ投げ', dmg: 14, reach: 0, windup: .4, active: .1, rec: .5, cd: 2, type: 'proj', projKind: 'rock', minR: 40, maxR: 280, anim: 'brickThrow', snd: 'whoosh' }), gA({ n: '殴打', dmg: 10, reach: 14, windup: .3, active: .12, rec: .4, cd: .8, anim: 'heavy', snd: 'thud' })], { plagaRate: .3 });
+SP.gvSling = GNA('村人(投石器)', '🪨', 'none', 82, 1, [gA({ n: '投石器', dmg: 22, reach: 0, windup: .8, active: .12, rec: .8, cd: 4, type: 'proj', projKind: 'rock', minR: 90, maxR: 420, anim: 'brickThrow', snd: 'whoosh' })], { plagaRate: .3, ai: 'ganado' });
+SP.gvGigante = GNA('エル・ヒガンテ', '🗿', 'club', 1600, 3.1, [
+  gA({ n: '踏み潰し', dmg: 46, reach: 0, windup: .7, active: .16, rec: .8, cd: 2.6, type: 'aoe', aoeR: 110, anim: 'giantStomp', down: 1, snd: 'thud' }),
+  gA({ n: '丸太薙ぎ', dmg: 42, reach: 44, arc: 2.6, windup: .6, active: .16, rec: .7, cd: 2, anim: 'treeSwing', knock: 420, snd: 'thud' }),
+  gA({ n: '掴み握り潰し', dmg: 50, reach: 34, windup: .6, active: .14, rec: .7, cd: 5, type: 'grab', hold: 'crush', anim: 'grab', snd: 'rip', cond: (u, t) => t.sp.mass < 5 }),
+  gA({ n: '岩投げ', dmg: 36, reach: 0, windup: .8, active: .12, rec: .8, cd: 4.5, type: 'proj', projKind: 'rock', minR: 100, maxR: 460, anim: 'brickThrow', snd: 'whoosh' }),
+], { unique: 1, superArmor: 1, mass: 30, hp: 1600, walk: 34, run: 60, r: 22, head: 'tyrant', pp: { shoulder: 5, torsoW: 6.2 }, fx: { bareTorso: 1 }, pal: { skin: '#a8876a', skinD: '#6a4c34', skinL: '#c8a888', cloth: '#5a4030', clothD: '#2a1810', clothL: '#7a5840', acc: '#e8c040', eye: '#e04020', blood: '#8a1518' }, plagaRate: 0, backPlaga: 1, desc: 'エル・ヒガンテ。プラーガに寄生された巨人。丸太を振り回し、踏み潰す。弱ると背中から巨大なプラーガが露出する。' });
+SP.gvDelLago = PGC('デル・ラーゴ', '🦎', 'lago', 1400, 20, 1.7, 40, 120, { skin: '#5a6a58', skinD: '#2a3428', skinL: '#7a8a70', cloth: '#3a4a38', clothD: '#1a2418', clothL: '#5a6a58', acc: '#e8dcc0', eye: '#e8d040', blood: '#6a1010' }, [
+  gA({ n: '丸呑み', dmg: 48, reach: 26, windup: .5, active: .14, rec: .6, cd: 4.5, type: 'grab', hold: 'crush', anim: 'bite', snd: 'rip', cond: (u, t) => t.sp.mass < 4 }),
+  gA({ n: '突進', dmg: 40, reach: 26, windup: .5, active: .4, rec: .6, cd: 3, type: 'dash', dash: 320, anim: 'h_leap', knock: 400, down: 1, snd: 'thud' }),
+  gA({ n: '噛みつき', dmg: 32, reach: 24, windup: .4, active: .14, rec: .5, cd: 1.2, anim: 'bite', knock: 260, snd: 'rip' }),
+], { unique: 1, superArmor: 1, mass: 30, desc: 'デル・ラーゴ。湖に棲む巨大なオオサンショウウオ型のプラーガ宿主。突進し、獲物を丸呑みにする。' });
+SP.gvColmillos = Object.assign(SRPQ('コルミロス', '🐺', null, 'zdog', 140, 9, 1.15, 62, 170, { skin: '#4a4640', skinD: '#26221e', skinL: '#6a6660', acc: '#e8c040', eye: '#e04020', blood: '#8a1518' }, [
+  gA({ n: '噛み裂き', dmg: 16, reach: 15, windup: .24, active: .12, rec: .34, cd: .6, anim: 'q_bite', snd: 'rip' }),
+  gA({ n: '飛びかかり', dmg: 18, reach: 16, windup: .28, active: .3, rec: .4, cd: 2.2, type: 'leap', leap: 200, anim: 'q_pounce', snd: 'whoosh' }),
+  gA({ n: '背中の触手', dmg: 14, reach: 40, arc: 2.4, windup: .3, active: .14, rec: .4, cd: 1.8, anim: 'q_rip', snd: 'slash' }),
+], { ov: { lumps: 0, tend: 5, eyes: 0 } }), { fac: 'pg', srp: undefined, ai: 'srp', desc: 'コルミロス。プラーガに寄生された狼。群れで襲い、背中が裂けて触手が飛び出す。' });
+
+/* ── 古城 ── */
+SP.gvGarrador = GNA('ガラドール', '🦯', 'none', 420, 1.35, [
+  gA({ n: '鉄爪突き', dmg: 44, reach: 24, arc: 1.2, windup: .34, active: .12, rec: .45, cd: 1, anim: 'forkThrust', knock: 260, snd: 'slash' }),
+  gA({ n: '鉄爪乱撃', dmg: 16, reach: 22, windup: .22, active: .36, rec: .35, cd: 2, multi: 3, anim: 'clawFrenzy', snd: 'slash' }),
+], { ai: 'garrador', superArmor: 1, run: 150, fx: { face: 'blindfold', claws: 2, bareTorso: 1 }, pal: Object.assign({}, PG_PAL.cult, { cloth: '#3a2a20' }), backWeak: 1, plagaRate: 1, plagaTypes: ['A'], desc: 'ガラドール。盲目の爪戦士。音を立てて動く者だけを襲う。背中のプラーガが弱点。' });
+SP.gvNovis = PGC('ノビスタドール', '🦗', 'fly', 110, 8, 1.05, 52, 140, { skin: '#6a7a40', skinD: '#34401c', skinL: '#8a9a58', cloth: '#4a5a28', clothD: '#26301a', clothL: '#6a7a40', acc: '#c8d060', eye: '#f04030', blood: '#5a6a10' }, [
+  gA({ n: '溶解液', dmg: 12, reach: 0, windup: .4, active: .1, rec: .5, cd: 1.8, type: 'proj', projKind: 'acid', minR: 30, maxR: 300, anim: 'spit', snd: 'whoosh' }),
+  gA({ n: '鉤爪', dmg: 14, reach: 14, windup: .24, active: .12, rec: .34, cd: .7, anim: 'b_dive', snd: 'slash' }),
+], { wings: 4, ai: 'srp', desc: 'ノビスタドール。昆虫型のプラーガ宿主。羽で飛び回り、溶解液を吐きかける。' });
+SP.gvArmadura = GNA('アルマデューラ', '🛡️', 'goldsword', 300, 1.2, [
+  gA({ n: '大剣振り下ろし', dmg: 38, reach: 24, windup: .55, active: .14, rec: .6, cd: 1.4, anim: 'overhead', down: 1, snd: 'thud' }),
+  gA({ n: '薙ぎ払い', dmg: 30, reach: 26, arc: 2.6, windup: .5, active: .16, rec: .6, cd: 1.8, anim: 'sweep', knock: 280, snd: 'slash' }),
+  gA({ n: '兜のプラーガ', dmg: 22, reach: 60, windup: .34, active: .14, rec: .45, cd: 2.4, anim: 'tongue', pull: 140, snd: 'slash' }),
+], { ai: 'armadura', superArmor: 1, mass: 4, head: 'blocky', pal: { skin: '#8a8e96', skinD: '#50545c', skinL: '#b0b4bc', cloth: '#6a6e76', clothD: '#3a3e46', clothL: '#9a9ea6', acc: '#c8a040', eye: '#101010', blood: '#6a5a20' }, fx: { tentacle: 1 }, armorPlate: .5, plagaRate: 0, desc: 'アルマデューラ。展示された鎧に巣食うプラーガ。近づくまで動かない。鎧は攻撃の半分を弾くが、弱ると兜からプラーガが露出する。' });
+SP.gvVerdugo = GNA('ヴェルデューゴ', '🦂', 'none', 1100, 1.5, [
+  gA({ n: '尾刃突き', dmg: 46, reach: 44, arc: 1, windup: .34, active: .12, rec: .44, cd: 1.2, anim: 'pierce', snd: 'rip' }),
+  gA({ n: '尾刃薙ぎ', dmg: 34, reach: 40, arc: 2.8, windup: .4, active: .16, rec: .5, cd: 2, anim: 'sweep', knock: 320, snd: 'slash' }),
+  gA({ n: '天井からの奇襲', dmg: 40, reach: 22, arc: 2, windup: .3, active: .12, rec: .4, cd: 5, anim: 'ambush', aliceBlink: 1, down: 1, snd: 'screech' }),
+], { unique: 1, superArmor: 1, mass: 5, run: 170, head: 'xenoRidge', fx: { tail: 1, claws: 2 }, pal: { skin: '#3a3028', skinD: '#1a140e', skinL: '#5a4a3a', cloth: '#2a2018', clothD: '#140e08', clothL: '#4a3a28', acc: '#e8dcc0', eye: '#e04020', blood: '#5a1010' }, plagaRate: 0, desc: 'ヴェルデューゴ。サラザールの右腕。天井を這い、尾の刃で貫く。' });
+SP.gvCultScythe = GNA('邪教徒(大鎌)', '⚰️', 'scythe', 115, 1.05, [gA({ n: '大鎌', dmg: 22, reach: 26, arc: 2.4, windup: .4, active: .14, rec: .5, cd: 1, anim: 'sweep', snd: 'slash' })], { pal: PG_PAL.cult, fx: { face: 'cult' }, plagaRate: .5 });
+SP.gvCultFlail = GNA('邪教徒(フレイル)', '⛓️', 'hammer', 120, 1.06, [gA({ n: 'フレイル旋回', dmg: 24, reach: 26, arc: 3, windup: .4, active: .3, rec: .5, cd: 1.4, multi: 2, anim: 'flailSpin', knock: 240, snd: 'thud' })], { pal: PG_PAL.cult, fx: { face: 'cult' }, plagaRate: .5 });
+SP.gvCultRkt = GNA('邪教徒(ロケット)', '🚀', 'rocket', 105, 1.05, [gA({ n: 'ロケットランチャー', dmg: 38, reach: 0, windup: .6, active: .12, rec: .8, cd: 4.5, type: 'proj', projKind: 'rocket', minR: 80, maxR: 480, anim: 'launch', snd: 'whoosh' })], { pal: PG_PAL.cult, fx: { face: 'cult' }, plagaRate: .5 });
+SP.gvCultGat = GNA('邪教徒(固定ガトリング)', '🔫', 'gatling', 160, 1.08, [gA({ n: '固定ガトリング', dmg: 8, reach: 0, windup: .3, active: .06, rec: .12, cd: .22, type: 'proj', projKind: 'bullet', minR: 40, maxR: 480, anim: 'launch', snd: 'slash' })], { ai: 'xStatic', walk: 0, run: 0, pal: PG_PAL.cult, fx: { face: 'cult' }, plagaRate: .5 });
+SP.gvPriest = GNA('司祭', '📿', 'club', 220, 1.12, [gA({ n: '錫杖', dmg: 18, reach: 20, windup: .34, active: .14, rec: .45, cd: .9, anim: 'heavy', snd: 'thud' }), gA({ n: '祈祷', dmg: 4, reach: 0, windup: .7, active: .3, rec: .6, cd: 9, type: 'roar', anim: 'roar', snd: 'scream' })], { pal: Object.assign({}, PG_PAL.red, { cloth: '#4a1a3a', clothD: '#200a18', clothL: '#6a2a58' }), fx: { face: 'cult', hat: 1 }, priest: 1, plagaRate: .7, desc: '司祭。邪教徒を率い、祈祷で周囲の教徒を回復させる。' });
+SP.gvCultRed = GNA('赤衣の上級教徒', '🔴', 'scythe', 200, 1.12, [gA({ n: '大鎌', dmg: 28, reach: 26, arc: 2.4, windup: .36, active: .14, rec: .45, cd: .9, anim: 'sweep', snd: 'slash' }), gA({ n: '連続斬り', dmg: 14, reach: 24, windup: .24, active: .32, rec: .35, cd: 2, multi: 3, anim: 'flurry', snd: 'slash' })], { pal: PG_PAL.red, fx: { face: 'cult' }, plagaRate: .8, desc: '赤衣の上級教徒。鍛えられた上位の信徒。' });
+SP.gvCultIron = GNA('鉄仮面の盾教徒', '🛡️', 'shield', 240, 1.15, [gA({ n: '鉄盾突進', dmg: 22, reach: 20, windup: .4, active: .3, rec: .5, cd: 2.4, type: 'dash', dash: 200, anim: 'bash', knock: 300, snd: 'thud' }), gA({ n: 'メイス', dmg: 20, reach: 18, windup: .34, active: .12, rec: .45, cd: .9, anim: 'heavy', snd: 'thud' })], { pal: PG_PAL.cult, fx: { face: 'soldier' }, head: 'blocky', frontArmor: 1, plagaRate: .7, desc: '鉄仮面の盾教徒。鉄の盾で正面からの攻撃を弾く。' });
+SP.gvDrill = PGC('削岩機のガナード', '🚜', 'drill', 700, 16, 1.5, 50, 110, { skin: '#c8a040', skinD: '#7a5a18', skinL: '#e8c060', cloth: '#5a4030', clothD: '#2a1810', clothL: '#7a5840', acc: '#8a8e96', eye: '#e04020', blood: '#8a1518' }, [
+  gA({ n: 'ドリル突撃', dmg: 36, reach: 26, windup: .5, active: .5, rec: .6, cd: 2.4, type: 'dash', dash: 300, anim: 'h_leap', knock: 360, down: 1, snd: 'rip' }),
+  gA({ n: '粉砕', dmg: 30, reach: 26, windup: .4, active: .4, rec: .5, cd: 1.3, multi: 4, anim: 'h_leap', snd: 'rip' }),
+], { ai: 'drill', superArmor: 1, mass: 20, unique: 1, desc: '削岩機に乗ったガナード。獲物(生存者)を執拗に狙い、ドリルで壁ごと粉砕する。' });
+
+/* ── 孤島 ── */
+SP.gvSoldPistol = GNA('戦闘員(拳銃)', '🔫', 'pistol', 95, 1.02, [gA({ n: '拳銃', dmg: 10, reach: 0, windup: .3, active: .06, rec: .3, cd: .8, type: 'proj', projKind: 'bullet', minR: 30, maxR: 340, anim: 'launch', snd: 'boom' })], { pal: PG_PAL.sold, fx: { face: 'soldier' }, plagaRate: .6 });
+SP.gvSoldRifle = GNA('戦闘員(ライフル)', '🎯', 'pistol', 100, 1.04, [gA({ n: 'ライフル', dmg: 26, reach: 0, windup: .7, active: .06, rec: .5, cd: 2.4, type: 'proj', projKind: 'bullet', minR: 60, maxR: 560, anim: 'launch', snd: 'boom' })], { pal: PG_PAL.sold, fx: { face: 'soldier' }, plagaRate: .6 });
+SP.gvSoldNade = GNA('戦闘員(手榴弾)', '💣', 'none', 100, 1.02, [gA({ n: '手榴弾', dmg: 30, reach: 0, windup: .45, active: .1, rec: .6, cd: 3.4, type: 'proj', projKind: 'nade', minR: 50, maxR: 300, anim: 'brickThrow', snd: 'whoosh' })], { pal: PG_PAL.sold, fx: { face: 'soldier' }, plagaRate: .6 });
+SP.gvSoldShield = GNA('戦闘員(盾)', '🛡️', 'shield', 150, 1.08, [gA({ n: '盾殴り', dmg: 16, reach: 16, windup: .3, active: .12, rec: .45, cd: .8, anim: 'bash', knock: 220, snd: 'thud' })], { pal: PG_PAL.sold, fx: { face: 'soldier' }, frontArmor: 1, plagaRate: .6 });
+SP.gvSoldHammer = GNA('戦闘員(ハンマー)', '🔨', 'hammer', 200, 1.3, [gA({ n: 'ハンマー振り下ろし', dmg: 36, reach: 22, windup: .6, active: .14, rec: .65, cd: 1.6, anim: 'overhead', down: 1, snd: 'thud' }), gA({ n: 'ハンマー旋回', dmg: 28, reach: 24, arc: 3, windup: .5, active: .2, rec: .6, cd: 2.6, anim: 'flailSpin', knock: 320, snd: 'thud' })], { pal: PG_PAL.sold, fx: { face: 'soldier' }, superArmor: 1, mass: 3, plagaRate: .8, desc: '大柄な戦闘員。巨大なハンマーを振り回す。' });
+SP.gvRegen = GNA('リヘナラドール', '🫁', 'none', 260, 1.2, [
+  gA({ n: '腕伸ばし掴み', dmg: 30, reach: 46, windup: .6, active: .14, rec: .6, cd: 3, type: 'grab', hold: 'crush', anim: 'grab', snd: 'squelch', cond: (u, t) => t.sp.mass < 3 }),
+  gA({ n: '噛みつき', dmg: 22, reach: 16, windup: .4, active: .12, rec: .5, cd: 1.2, anim: 'headbite', snd: 'rip' }),
+], { ai: 'ganado', walk: 26, run: 34, head: 'zombie', pp: { armU: 9, armL: 10 }, fx: { bareTorso: 1 }, pal: PG_PAL.regen, parasites: 3, regenRate: 8, plagaRate: 0, desc: 'リヘナラドール。体内に複数のプラーガを宿し、驚異的な再生能力を持つ。体内の寄生体を全て潰さない限り倒れない。' });
+SP.gvIronMaiden = GNA('アイアンメイデン', '📌', 'none', 340, 1.25, [
+  gA({ n: '棘の抱擁', dmg: 46, reach: 44, windup: .6, active: .14, rec: .6, cd: 3.6, type: 'grab', hold: 'impale', anim: 'grab', snd: 'rip', cond: (u, t) => t.sp.mass < 3 }),
+  gA({ n: '全身棘突出', dmg: 28, reach: 0, windup: .55, active: .16, rec: .6, cd: 3, type: 'aoe', aoeR: 56, anim: 'roar', snd: 'rip' }),
+], { ai: 'ganado', walk: 26, run: 34, head: 'zombie', pp: { armU: 9, armL: 10 }, fx: { bareTorso: 1 }, pal: Object.assign({}, PG_PAL.regen, { skin: '#6a707a', skinD: '#3a4048' }), parasites: 4, regenRate: 10, spikeBody: 1, plagaRate: 0, desc: 'アイアンメイデン。全身から棘を突き出すリヘナラドールの亜種。抱きついた獲物を串刺しにする。' });
+SP.gvU3 = PGC('U-3', '🐛', 'u3', 1500, 18, 1.6, 44, 130, { skin: '#6a5a48', skinD: '#3a2e22', skinL: '#8a7a64', cloth: '#4a3a2a', clothD: '#241a10', clothL: '#6a5a48', acc: '#e8dcc0', eye: '#e04020', blood: '#6a1010' }, [
+  gA({ n: '鎌腕', dmg: 44, reach: 34, arc: 2.6, windup: .4, active: .14, rec: .5, cd: 1.1, anim: 'h_leap', knock: 300, snd: 'slash' }),
+  gA({ n: '百足突進', dmg: 38, reach: 26, windup: .5, active: .4, rec: .6, cd: 3, type: 'dash', dash: 320, anim: 'h_leap', knock: 360, down: 1, snd: 'thud' }),
+  gA({ n: '尾針', dmg: 30, reach: 50, windup: .4, active: .12, rec: .5, cd: 2, anim: 'h_leap', snd: 'rip' }),
+], { unique: 1, superArmor: 1, mass: 25, desc: 'U-3。上半身は人型、下半身は百足の実験体。コンテナから解き放たれる。' });
+SP.gvSuperSalvador = GNA('スーパーサルバドール', '🪚', 'chainsaw', 700, 1.75, [
+  gA({ n: '巨大チェンソー', dmg: 44, reach: 28, windup: .5, active: .3, rec: .6, cd: 1.3, anim: 'rip', snd: 'rip' }),
+  gA({ n: '首刈り', dmg: 999, reach: 24, arc: 1.4, windup: .8, active: .14, rec: .8, cd: 7, anim: 'qteLunge', qte: 1, snd: 'rip' }),
+], { unique: 1, superArmor: 1, mass: 6, run: 110, fx: { face: 'sack' }, plagaRate: 0, desc: 'スーパーサルバドール。巨大なチェンソーを振るう大男。首刈りはQTEで回避できなければ即死。' });
+/* RE:4 リメイクで追加された敵 */
+SP.gvDesnucado = GNA('デスヌカド', '🦴', 'none', 110, 1.04, [gA({ n: '首の寄生体', dmg: 18, reach: 44, arc: 1.8, windup: .26, active: .14, rec: .4, cd: .8, anim: 'tongue', pull: 100, snd: 'slash' }), gA({ n: '掴みかかり', dmg: 12, reach: 16, windup: .3, active: .12, rec: .4, cd: 1, anim: 'grab', snd: 'hit' })], { run: 130, fx: { tentacle: 1, brokenNeck: 1 }, plagaRate: 0, desc: 'デスヌカド。首がへし折れ、断面から寄生体が露出したガナード。' });
+SP.gvMartinico = GNA('マルティニコ', '💀', 'none', 120, 1.04, [gA({ n: '首なし突進', dmg: 20, reach: 18, windup: .3, active: .3, rec: .4, cd: 2, type: 'dash', dash: 180, anim: 'charge', snd: 'thud' }), gA({ n: '触手鞭', dmg: 16, reach: 50, windup: .3, active: .14, rec: .4, cd: .9, anim: 'tongue', snd: 'slash' })], { run: 120, fx: { tentacle: 1, noHead: 1 }, plagaRate: 0, desc: '首のない体のまま襲ってくるガナード。首の断面からプラーガの触手が伸びる。' });
+SP.gvCowHead = GNA('牛頭のガナード', '🐂', 'hammer', 420, 1.55, [gA({ n: '牛頭突進', dmg: 40, reach: 24, windup: .5, active: .4, rec: .6, cd: 2.6, type: 'dash', dash: 300, anim: 'charge', knock: 380, down: 1, snd: 'thud' }), gA({ n: '大槌', dmg: 36, reach: 22, windup: .5, active: .14, rec: .6, cd: 1.4, anim: 'overhead', down: 1, snd: 'thud' })], { superArmor: 1, mass: 5, fx: { cowSkull: 1 }, pal: Object.assign({}, PG_PAL.vil, { cloth: '#3a2a1a' }), plagaRate: .6, desc: '牛の頭骨をかぶった巨漢のガナード (ブルート)。突進で全てをなぎ倒す。' });
+
+/* ── 変異形態 ── */
+SP.gvSalazarMon = PGC('サラザール (融合体)', '👑', 'salmon', 2400, 26, 1.7, 0, 0, { skin: '#6a5040', skinD: '#3a2818', skinL: '#8a7060', cloth: '#4a1030', clothD: '#200818', clothL: '#6a2848', acc: '#e8c040', eye: '#e04020', blood: '#6a1010' }, [
+  gA({ n: '巨大触手', dmg: 44, reach: 220, windup: .6, active: .16, rec: .6, cd: 1.6, type: 'aoe', aoeR: 150, anim: 'h_leap', tentSlam: 1, roomHit: 1, down: 1, snd: 'thud' }),
+  gA({ n: '捕食', dmg: 50, reach: 40, windup: .6, active: .14, rec: .6, cd: 5, type: 'grab', hold: 'crush', anim: 'h_leap', snd: 'rip', cond: (u, t) => t.sp.mass < 4 }),
+  gA({ n: '幼生プラガ産出', dmg: 0, reach: 0, windup: .6, active: .14, rec: .6, cd: 5, type: 'summon', summon: 'plagaC', minR: 10, maxR: 300, anim: 'h_leap' }),
+], { ai: 'xStatic', unique: 1, superArmor: 1, mass: 60, desc: 'サラザールとヴェルデューゴが巨大プラーガと融合した姿。部屋に根を張り、下部から幼生プラガを産み続ける。' });
+SP.gvSaddlerMon = PGC('サドラー (最終形態)', '🕷️', 'saddlerMon', 2800, 26, 1.8, 30, 80, { skin: '#c8b090', skinD: '#6a5840', skinL: '#e8d0b0', cloth: '#f0ece0', clothD: '#a09888', clothL: '#fff', acc: '#c8a040', eye: '#e8d040', blood: '#8a1518' }, [
+  gA({ n: '巨脚突き刺し', dmg: 56, reach: 44, arc: 1.4, windup: .5, active: .14, rec: .6, cd: 1.3, anim: 'h_leap', snd: 'rip' }),
+  gA({ n: '脚薙ぎ', dmg: 40, reach: 48, arc: 3, windup: .5, active: .16, rec: .6, cd: 2, anim: 'h_leap', knock: 360, snd: 'slash' }),
+  gA({ n: '踏み潰し', dmg: 50, reach: 0, windup: .6, active: .16, rec: .7, cd: 3, type: 'aoe', aoeR: 110, anim: 'h_leap', down: 1, snd: 'thud' }),
+  gA({ n: '幼生プラガ放出', dmg: 0, reach: 0, windup: .6, active: .14, rec: .6, cd: 6, type: 'summon', summon: 'plagaC', minR: 10, maxR: 300, anim: 'h_leap' }),
+], { unique: 1, superArmor: 1, mass: 60, desc: 'オズムンド・サドラーの最終形態。巨大なプラーガと融合した多脚の怪物。巨大な眼が弱点。' });
+/* 既存キャラの変異形態・追加技 */
+(function () {
+  const M = SP.gvMendez;
+  M.forms = [{ hpm: .45, spdMul: 1.3, scale: 1.25, log: '👁️ メンデスの背骨が伸び、上半身が異形へと変異した！', pal: { skin: '#5a3a2a', cloth: '#2a1010', acc: '#e04020' }, fx: { tentacle: 1, bigClawR: 1, claws: 2, bareTorso: 1, wounds: 1, spine: 1 }, walk: 50, run: 120 }];
+  M.formAtks = [M.atks, [
+    gA({ n: '背骨の鞭', dmg: 34, reach: 60, arc: 2.6, windup: .4, active: .16, rec: .5, cd: 1.2, anim: 'spineWhip', knock: 300, snd: 'slash' }),
+    gA({ n: '鉤爪掴み', dmg: 40, reach: 30, windup: .45, active: .14, rec: .5, cd: 4, type: 'grab', hold: 'crush', anim: 'grab', snd: 'rip', cond: (u, t) => t.sp.mass < 4 }),
+    gA({ n: '天井からの叩きつけ', dmg: 44, reach: 0, windup: .6, active: .16, rec: .6, cd: 3.4, type: 'aoe', aoeR: 90, anim: 'hammerFist', down: 1, snd: 'thud' }),
+    gA({ n: '触手', dmg: 22, reach: 80, windup: .36, active: .16, rec: .5, cd: 2, anim: 'tongue', pull: 160, snd: 'slash' }),
+  ]];
+  const K = SP.gvKrauser;
+  K.forms = [{ hpm: .5, spdMul: 1.15, log: '🗡️ クラウザーの左腕がプラーガの刃へと変異した！', fx: { bigClawL: 1, claws: 2 }, walk: 50, run: 160 }];
+  K.formAtks = [K.atks, [
+    gA({ n: '変異腕の刃', dmg: 42, reach: 30, arc: 2.6, windup: .3, active: .14, rec: .4, cd: .9, anim: 'sweep', mir: 1, knock: 300, snd: 'slash' }),
+    gA({ n: '変異腕の突き', dmg: 48, reach: 34, arc: 1, windup: .34, active: .12, rec: .4, cd: 1.6, anim: 'pierce', mir: 1, snd: 'rip' }),
+    gA({ n: 'QTE即死攻撃', dmg: 999, reach: 22, arc: 1.4, windup: .5, active: .14, rec: .5, cd: 6, anim: 'qteLunge', qte: 1, snd: 'rip' }),
+    gA({ n: 'ナイフ連撃', dmg: 24, reach: 16, windup: .16, active: .1, rec: .26, cd: .4, anim: 'slash', snd: 'slash' }),
+    gA({ n: '回し蹴り', dmg: 26, reach: 20, arc: 2.6, windup: .3, active: .14, rec: .4, cd: 2.2, anim: 'roundKick', knock: 300, snd: 'thud' }),
+  ]];
+  SP.gvSaddler.atks.push(gA({ n: '幼生プラガ放出', dmg: 0, reach: 0, windup: .6, active: .14, rec: .6, cd: 7, type: 'summon', summon: 'plagaC', minR: 10, maxR: 260, anim: 'roar' }));
+  SP.gvSalazar.atks.push(gA({ n: 'ヴェルデューゴを呼ぶ', dmg: 6, reach: 0, windup: .7, active: .2, rec: .6, cd: 12, type: 'roar', anim: 'roar', snd: 'scream' }));
+  SP.gvChainM.unique = 0; // 原作では城の地下にも出現する
+  SP.gvChainM.desc = SP.gvChainM.desc || 'チェーンソー男 (ドクター・サルバドール)。村と古城の地下に現れる。首刈りは即死。';
+  SP.gvChainM.atks.push(gA({ n: '首刈り', dmg: 999, reach: 22, arc: 1.4, windup: .8, active: .14, rec: .8, cd: 8, anim: 'qteLunge', qte: 1, snd: 'rip' }));
+  SP.gvChainF.atks.push(gA({ n: '首刈り', dmg: 999, reach: 20, arc: 1.4, windup: .8, active: .14, rec: .8, cd: 9, anim: 'qteLunge', qte: 1, snd: 'rip' }));
+  // 寄生体の出現率テーブル (ガナードの種類ごと)
+  const rate = { gvAxe: .3, gvTorch: .3, gvDyna: .25, gvSickle: .3, gvCultSh: .5, gvCultBow: .45, gvSoldStun: .6, gvSoldDyna: .55, gvSoldRkt: .5 };
+  for (const k in rate) if (SP[k]) SP[k].plagaRate = rate[k];
+})();
+const PG_ORDER_EXTRA = ['gvPitch', 'gvKnife', 'gvBrick', 'gvSling', 'gvColmillos', 'gvGigante', 'gvDelLago', 'gvDesnucado', 'gvMartinico', 'gvCowHead', 'gvGarrador', 'gvNovis', 'gvArmadura', 'gvVerdugo', 'gvCultScythe', 'gvCultFlail', 'gvCultRkt', 'gvCultGat', 'gvPriest', 'gvCultRed', 'gvCultIron', 'gvDrill', 'gvSoldPistol', 'gvSoldRifle', 'gvSoldNade', 'gvSoldShield', 'gvSoldHammer', 'gvRegen', 'gvIronMaiden', 'gvU3', 'gvSuperSalvador', 'gvSalazarMon', 'gvSaddlerMon'];
+
+/* ── 戦闘処理 ── */
+function pgOnHit(tgt, att, dmg) {
+  if (tgt.sp.armorPlate && tgt.hp > tgt.mhp * .5) { dmg *= 1 - tgt.sp.armorPlate; if (rchance(.3)) addPart({ k: 'spark', x: tgt.x, y: tgt.y, z: unitTopY(tgt) * .6, vx: rnd(-40, 40), vy: rnd(-20, 20), vz: rnd(20, 50), life: .3, t: 0, s: 1.4, col: '#e8e0c0' }); }
+  if (tgt.sp.backWeak && att) { const front = Math.abs(angDiff(tgt.faceA || 0, angTo(tgt.x, tgt.y, att.x, att.y))) < 1.3; dmg *= front ? .7 : 2; }
+  if (tgt.sp.frontArmor && tgt.fac === 'pg' && att) { const front = Math.abs(angDiff(tgt.faceA || 0, angTo(tgt.x, tgt.y, att.x, att.y))) < 1.1; if (front) dmg *= .35; }
+  if (tgt.key === 'gvSaddlerMon' && att && rchance(.15)) { dmg *= 2.2; addPart({ k: 'spark', x: tgt.x, y: tgt.y, z: unitTopY(tgt) * .8, vx: 0, vy: 0, vz: 30, life: .4, t: 0, s: 2, col: '#e8d040' }); } // 眼への命中
+  return dmg;
+}
+/* リヘナラドール: 体内の寄生体を全て潰すまで倒れない */
+function pgSurvive(att, u, o) {
+  if (!u.sp.parasites || (o && o.gib)) return false;
+  if (u.parLeft == null) u.parLeft = u.sp.parasites;
+  if (u.parLeft <= 1) return false;
+  u.parLeft--;
+  u.hp = Math.round(u.mhp * .7); u.dead = false;
+  u.state = 'down'; u.st = 0; u.down = 1.4; interrupt(u); u.atk = null;
+  addBlood(u.x, u.y, unitTopY(u) * .5, 10, u.pal.blood); addGore(u.x, u.y, 5, 5);
+  addLog(`🫁 ${u.sp.name}の体内の寄生体を1体潰した —— 残り${u.parLeft}体、再生して立ち上がる`, 'pg');
+  Sfx.play('morph', u.x, u.y);
+  return true;
+}
+/* QTE即死: 回避できなければ一撃で倒れる */
+function pgQte(u, d, o) {
+  if (!d.qte || !o || o.gone) return false;
+  const big = (o.sp.mass || 1) >= 4 || o.sp.unique;
+  if (big || rchance(.45)) { addLog(`⚡ ${o.sp.name}が${u.sp.name}の${d.n}をQTEで回避した！`, 'pg'); o.kvx = -Math.cos(u.faceA) * 260; o.kvy = -Math.sin(u.faceA) * 260; return true; }
+  addLog(`💀 ${u.sp.name}の${d.n}が${o.sp.name}を即死させた (QTE失敗)`, 'pg', true);
+  dealDamage(u, o, 9999, { decap: 1, noRise: 1 });
+  return true;
+}
+/* ── AI ── */
+function thinkGarrador(u) { // 盲目: 音を立てた者 (移動中・攻撃中) だけを狙う
+  const heard = (o) => (o.moveSpd || 0) > 25 || o.state === 'attack';
+  if (u.tgt && (u.tgt.gone || u.tgt.dead || (!heard(u.tgt) && dist(u.x, u.y, u.tgt.x, u.tgt.y) > 40 && rchance(.05)))) u.tgt = null;
+  if (!u.tgt) {
+    let best = null, bd = 380;
+    for (const o of G.units) { if (o.gone || o.dead || !hostileTo(u, o) || !heard(o)) continue; const d = dist(u.x, u.y, o.x, o.y); if (d < bd) { bd = d; best = o; } }
+    u.tgt = best;
+  }
+  if (u.tgt) { thinkMonster(u); return; }
+  u.moveSpd = 0;
+  if (!u.dest || (u.destT || 0) > 12) { if (rchance(.3)) { const p = randWalkIn(G.map.rooms[roomOfUnit(u)] || rpick(G.map.rooms)); setDest(u, p.x, p.y); } }
+}
+function thinkArmadura(u) { // 鎧の展示: 近づく者が現れるまで動かない
+  if (!u.awake) {
+    u.dest = null; u.moveSpd = 0;
+    Spatial.query(u.x, u.y, 90, _q);
+    for (const o of _q) if (!o.gone && !o.dead && hostileTo(u, o) && dist(u.x, u.y, o.x, o.y) < 80) { u.awake = 1; u.tgt = o; addLog('🛡️ 飾られていた鎧が動き出した —— アルマデューラ！', 'pg'); Sfx.play('thud', u.x, u.y); break; }
+    if (!u.awake) return;
+  }
+  thinkMonster(u);
+}
+function thinkDrill(u) { // 生存者 (アシュリー役) を最優先で狙う
+  if (!u.tgt || u.tgt.gone || u.tgt.dead || u.tgt.fac !== 'N' || rchance(.01)) {
+    let best = null, bd = 900;
+    for (const o of G.units) { if (o.gone || o.dead || o.fac !== 'N' || !o.sp.mortal) continue; const d = dist(u.x, u.y, o.x, o.y); if (d < bd) { bd = d; best = o; } }
+    if (best) u.tgt = best;
+  }
+  thinkMonster(u);
+}
+/* ── 毎フレーム処理: 再生・祈祷・変異・融合 ── */
+function updatePlagaExtra(dt) {
+  for (const u of G.units) {
+    if (u.gone || u.dead || u.fac !== 'pg') continue;
+    const sp = u.sp;
+    if (sp.regenRate && u.state !== 'down') u.hp = Math.min(u.mhp, u.hp + sp.regenRate * dt);
+    if (sp.priest) { u.prT = (u.prT == null ? 5 : u.prT) - dt; if (u.prT <= 0) { u.prT = 6; let n = 0; for (const v of G.units) if (!v.gone && v.fac === 'pg' && v !== u && dist(u.x, u.y, v.x, v.y) < 140) { v.hp = Math.min(v.mhp, v.hp + 18); n++; } if (n) addShock(u.x, u.y, 8, 140, 'rgba(200,60,60,.35)'); } }
+    if (sp.backPlaga && !u.plagaOut && u.hp < u.mhp * .4) { u.plagaOut = 1; u.fx = Object.assign({}, u.fx, { tentacle: 1 }); addLog('🗿 エル・ヒガンテの背中が裂け、巨大なプラーガが露出した！', 'pg', true); addShake(8); }
+    if (u.key === 'gvSalazar' && u.hp < u.mhp * .5 && !G.salFused) { // ヴェルデューゴと巨大プラーガの融合
+      G.salFused = 1;
+      const vd = G.units.find(v => !v.gone && v.key === 'gvVerdugo');
+      if (vd) { vd.gone = true; vd.dead = true; addBlood(vd.x, vd.y, 20, 10); }
+      const n = morphInto(u, 'gvSalazarMon', '👑 サラザールが巨大プラーガと融合した —— 下部から幼生プラガが湧き出す！', 'pg');
+      if (n) { n.hp = n.mhp; addShake(18); const rid = roomOfUnit(n); if (rid != null) addBlight(rid, 'fl', 1); }
+    }
+    if (u.key === 'gvSaddler' && u.hp < u.mhp * .45 && !G.sadFinal) {
+      G.sadFinal = 1;
+      const n = morphInto(u, 'gvSaddlerMon', '🕷️ サドラーが巨大プラーガの本性を現した —— 最終形態！', 'pg');
+      if (n) { n.hp = n.mhp; addShake(20); }
+    }
+    if (u.key === 'gvSalazarMon') { u.lvT = (u.lvT == null ? 4 : u.lvT) - dt; if (u.lvT <= 0) { u.lvT = 7; if (countFac('pg') < (G.capPg || 36) + 10) { const n = srpSpawnNear('plagaC', u.x, u.y, 40); if (n) addDust(n.x, n.y, 4, '#c8b070'); } } }
+  }
+}
+function spawnPlagaExtra(vil, cas) {
+  G.capPg = 60; G.salFused = 0; G.sadFinal = 0;
+  const at = (rid, k, o) => { const r = G.map.rooms[rid]; if (!r) return null; const p = randWalkIn(r); return spawnUnit(k, p.x, p.y, Object.assign({ silent: true, force: true }, o || {})); };
+  // 村・湖
+  ['gvPitch', 'gvKnife', 'gvBrick', 'gvSling', 'gvDesnucado', 'gvMartinico'].forEach((k, i) => at(vil[i % vil.length], k));
+  at(vil[1 % vil.length], 'gvCowHead');
+  at(vil[2 % vil.length], 'gvGigante');
+  const lake = pickLinkedRooms(1)[0];
+  at(lake, 'gvDelLago');
+  for (let i = 0; i < 4; i++) at(lake, 'gvColmillos');
+  // 古城
+  ['gvCultScythe', 'gvCultFlail', 'gvCultRkt', 'gvCultGat', 'gvCultRed', 'gvCultIron', 'gvPriest'].forEach((k, i) => at(cas[i % cas.length], k));
+  at(cas[1 % cas.length], 'gvGarrador'); at(cas[2 % cas.length], 'gvGarrador');
+  for (let i = 0; i < 4; i++) at(cas[2 % cas.length], 'gvNovis');
+  at(cas[0], 'gvArmadura'); at(cas[0], 'gvArmadura');
+  at(cas[0], 'gvVerdugo');
+  at(cas[1 % cas.length], 'gvDrill');
+  at(cas[2 % cas.length], 'gvChainM'); // 城の地下のチェーンソー男
+  // 孤島
+  const isl = pickLinkedRooms(3);
+  G.plagaIsland = isl;
+  ['gvSoldPistol', 'gvSoldRifle', 'gvSoldNade', 'gvSoldShield', 'gvSoldHammer', 'gvSoldStun', 'gvSoldDyna', 'gvSoldPistol'].forEach((k, i) => at(isl[i % isl.length], k));
+  at(isl[0], 'gvRegen'); at(isl[1 % isl.length], 'gvRegen'); at(isl[1 % isl.length], 'gvIronMaiden');
+  at(isl[2 % isl.length], 'gvU3');
+  at(isl[2 % isl.length], 'gvSuperSalvador');
+  at(isl[0], 'gvGatling'); // J.J. は孤島の要塞の隊長格
+  addLog('🏝️ 孤島の要塞と湖にもプラーガの勢力が広がった', 'pg', true);
+}
+
+/* ── 描画 ── */
+function drawPgExtras(u, pose) { // 骨格に沿った装飾 (首の折れ/牛の頭骨/背骨/背中のプラーガ/棘/寄生体の数)
+  const fx = u.fx || u.sp.fx, sp = u.sp;
+  if (!(fx.brokenNeck || fx.cowSkull || fx.spine || u.plagaOut || sp.spikeBody || sp.parasites || sp.backWeak)) return;
+  const sk = solveBiped(u, pose), P = sk.P, d = sk.dir, h = sk.head, T = G.time + (u.id || 0);
+  if (fx.brokenNeck) { ctx.strokeStyle = '#c8b070'; ctx.lineWidth = P.armR * .9; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(sk.s2.x, sk.s2.y); ctx.quadraticCurveTo(sk.s2.x + d * P.headR, sk.s2.y - P.headR * 1.4, sk.s2.x + d * P.headR * (1.4 + Math.sin(T * 4) * .3), sk.s2.y - P.headR * 2.2); ctx.stroke(); ctx.lineCap = 'butt'; blob(sk.s2.x + d * P.headR * 1.5, sk.s2.y - P.headR * 2.2, P.headR * .45, P.headR * .35, '#e8d090'); }
+  if (fx.cowSkull) { ctx.fillStyle = '#e8e0cc'; ctx.strokeStyle = '#8a7a60'; ctx.lineWidth = .8; ctx.beginPath(); ctx.ellipse(h.x + d * P.headR * .3, h.y, P.headR * 1.1, P.headR * .95, 0, 0, TAU); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.ellipse(h.x + d * P.headR * 1, h.y + P.headR * .45, P.headR * .5, P.headR * .35, 0, 0, TAU); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#1a1008'; ctx.beginPath(); ctx.ellipse(h.x + d * P.headR * .5, h.y - P.headR * .15, P.headR * .22, P.headR * .28, 0, 0, TAU); ctx.fill(); ctx.strokeStyle = '#d8ccb0'; ctx.lineWidth = P.headR * .3; ctx.lineCap = 'round'; for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(h.x + s * P.headR * .7, h.y - P.headR * .6); ctx.quadraticCurveTo(h.x + s * P.headR * 2, h.y - P.headR * .9, h.x + s * P.headR * 2.1, h.y - P.headR * 2); ctx.stroke(); } ctx.lineCap = 'butt'; }
+  if (fx.spine) { ctx.fillStyle = '#e8dcc0'; for (let i = 0; i < 7; i++) { const f = i / 6, x = sk.pel.x + (sk.s2.x - sk.pel.x) * f - d * P.torsoW * .9, y = sk.pel.y + (sk.s2.y - sk.pel.y) * f; ctx.beginPath(); ctx.ellipse(x, y, P.torsoW * .35, P.torsoW * .22, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.moveTo(x - 1.5, y); ctx.lineTo(x - d * P.torsoW * .9, y - P.torsoW * .3); ctx.lineTo(x + 1.5, y); ctx.fill(); } }
+  if (u.plagaOut) { const bx = sk.s2.x - d * P.torsoW, by = sk.s2.y; for (let i = 0; i < 5; i++) { const tip = srpTendril(bx, by, P.headR * (3 + i * .6), -Math.PI / 2 - d * (.3 + i * .25) + Math.sin(T + i) * .2, P.armR * .8, '#c8b070', T, i); blob(tip.x, tip.y, P.armR * .5, P.armR * .45, '#e8d090'); } blob(bx, by, P.torsoW * .9, P.torsoW * .7, '#c8a060'); srpEyes(bx, by, 1, P.torsoW * .6, '#e04020', 5); }
+  if (sp.backWeak) { const bx = sk.s2.x - d * P.torsoW * .9, by = (sk.s1.y + sk.s2.y) / 2; blob(bx, by, P.torsoW * .5, P.torsoW * .4, '#c8b070', 'rgba(255,255,200,.3)'); ctx.strokeStyle = '#6a5838'; ctx.lineWidth = .7; ctx.beginPath(); ctx.arc(bx, by, P.torsoW * .3, 0, 3); ctx.stroke(); }
+  if (sp.spikeBody) { ctx.fillStyle = '#d8d4c8'; const pts = [sk.s2, sk.s1, sk.pel, sk.armL.el, sk.armR.el, sk.legL.kn || sk.pel, sk.legR.kn || sk.pel]; for (let i = 0; i < pts.length; i++) { const p = pts[i]; if (!p) continue; for (let k = 0; k < 3; k++) { const a = -Math.PI / 2 + (k - 1) * .8 + i; ctx.beginPath(); ctx.moveTo(p.x - 1.2, p.y); ctx.lineTo(p.x + Math.cos(a) * P.torsoW * 1.1, p.y + Math.sin(a) * P.torsoW * 1.1); ctx.lineTo(p.x + 1.2, p.y); ctx.fill(); } } }
+  if (sp.parasites) { const left = u.parLeft == null ? sp.parasites : u.parLeft; const pts = [sk.s2, { x: (sk.s1.x + sk.pel.x) / 2, y: (sk.s1.y + sk.pel.y) / 2 }, sk.armL.el, sk.legR.kn || sk.pel]; ctx.save(); ctx.globalAlpha = .45 + Math.sin(T * 3) * .15; for (let i = 0; i < left; i++) { const p = pts[i % pts.length]; blob(p.x + d * 1.5, p.y, P.armR * .7, P.armR * .55, '#e8c040'); } ctx.restore(); }
+}
+function drawPgPlan(u, pose, S, x, gy, T, strike, mv, ph, pal, dir) {
+  const sp = u.sp;
+  switch (sp.plan) {
+    case 'lago': { // デル・ラーゴ: 巨大なオオサンショウウオ
+      const cy = gy - S * .7 - (mv ? Math.abs(Math.sin(ph)) * S * .06 : 0);
+      ctx.fillStyle = 'rgba(40,70,90,.35)'; ctx.beginPath(); ctx.ellipse(x, gy, S * 2.4, S * .7, 0, 0, TAU); ctx.fill();
+      ctx.strokeStyle = 'rgba(160,200,220,.35)'; ctx.lineWidth = 1; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.ellipse(x, gy, S * (1.6 + i * .5 + (T % 1) * .3), S * (.5 + i * .15), 0, 0, TAU); ctx.stroke(); }
+      let px = x - dir * S * 1, py = cy; ctx.lineCap = 'round';
+      for (let k = 1; k <= 6; k++) { const f = k / 6, nx = px - dir * S * .35, ny = py + Math.sin(T * 2 + k) * S * .12; ctx.strokeStyle = shade(pal.skin, -.1 * f); ctx.lineWidth = S * .8 * (1 - f * .7); ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(nx, ny); ctx.stroke(); px = nx; py = ny; }
+      ctx.strokeStyle = pal.skinD; ctx.lineWidth = S * .25; for (let i = 0; i < 4; i++) { const lx = x + dir * (i < 2 ? S * .6 : -S * .6) + (i % 2 ? S * .1 : -S * .1), sw = mv ? Math.sin(ph + i * 1.6) * S * .3 : 0; ctx.beginPath(); ctx.moveTo(lx, cy); ctx.lineTo(lx + dir * sw + (i % 2 ? S * .4 : -S * .4), gy); ctx.stroke(); }
+      blob(x, cy, S * 1.3, S * .65, pal.skin, 'rgba(220,240,220,.2)');
+      ctx.fillStyle = shade(pal.skin, -.2); for (let i = 0; i < 9; i++) { ctx.beginPath(); ctx.arc(x + (i - 4) * S * .25, cy - S * .2 + Math.sin(i * 2) * S * .15, S * .07, 0, TAU); ctx.fill(); }
+      const hx = x + dir * S * 1.3, hy = cy - S * .1, mo = .2 + strike * .9;
+      ctx.fillStyle = shade(pal.skin, .05); ctx.beginPath(); ctx.moveTo(hx - dir * S * .5, hy - S * .35); ctx.lineTo(hx + dir * S * .9, hy - S * .25 - mo * S * .5); ctx.lineTo(hx + dir * S * .9, hy); ctx.lineTo(hx - dir * S * .5, hy + S * .1); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(hx - dir * S * .5, hy + S * .15); ctx.lineTo(hx + dir * S * .85, hy + S * .1 + mo * S * .3); ctx.lineTo(hx + dir * S * .8, hy + S * .35); ctx.lineTo(hx - dir * S * .5, hy + S * .4); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#1a0806'; ctx.beginPath(); ctx.moveTo(hx - dir * S * .3, hy + S * .05); ctx.lineTo(hx + dir * S * .85, hy - mo * S * .45); ctx.lineTo(hx + dir * S * .82, hy + S * .1 + mo * S * .25); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = pal.acc; for (let i = 0; i < 7; i++) { const f = i / 6; ctx.beginPath(); ctx.moveTo(hx + dir * S * (-.2 + f), hy - mo * S * .45 * f); ctx.lineTo(hx + dir * S * (-.15 + f), hy - mo * S * .45 * f + S * .12); ctx.lineTo(hx + dir * S * (-.1 + f), hy - mo * S * .45 * f); ctx.fill(); }
+      srpEyes(hx - dir * S * .1, hy - S * .4, 2, S * .35, pal.eye, 11);
+      ctx.lineCap = 'butt'; return true;
+    }
+    case 'drill': { // 削岩機に乗ったガナード
+      const cy = gy - S * .8, spin = T * 30;
+      ctx.fillStyle = '#2a2622'; for (const s of [-1, 1]) { ctx.beginPath(); ctx.ellipse(x + s * S * .55, gy - S * .25, S * .35, S * .3, 0, 0, TAU); ctx.fill(); ctx.strokeStyle = '#4a4640'; ctx.lineWidth = 1; for (let i = 0; i < 4; i++) { const a = spin * .1 + i * Math.PI / 2; ctx.beginPath(); ctx.moveTo(x + s * S * .55, gy - S * .25); ctx.lineTo(x + s * S * .55 + Math.cos(a) * S * .3, gy - S * .25 + Math.sin(a) * S * .26); ctx.stroke(); } }
+      ctx.fillStyle = pal.skin; ctx.strokeStyle = shade(pal.skin, -.4); ctx.lineWidth = 1.2; ctx.fillRect(x - S * .9, cy - S * .4, S * 1.8, S * .7); ctx.strokeRect(x - S * .9, cy - S * .4, S * 1.8, S * .7);
+      ctx.fillStyle = '#1a1a1a'; ctx.fillRect(x - S * .8, cy - S * .05, S * 1.6, S * .1);
+      const dx = x + dir * S * (.9 + strike * .3), len = S * 1.3;
+      ctx.fillStyle = '#9a9ea6'; ctx.beginPath(); ctx.moveTo(dx, cy - S * .35); ctx.lineTo(dx + dir * len, cy - S * .05); ctx.lineTo(dx, cy + S * .25); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#5a5e66'; ctx.lineWidth = 1.2; for (let i = 0; i < 6; i++) { const f = ((i / 6) + (spin % 1) / 6) % 1; const xx = dx + dir * len * f, hh = S * .3 * (1 - f); ctx.beginPath(); ctx.moveTo(xx, cy - S * .05 - hh); ctx.lineTo(xx + dir * S * .12, cy - S * .05 + hh); ctx.stroke(); }
+      if (strike && rchance(.5)) addPart({ k: 'spark', x: x + dir * S * 2, y: u.y, z: S * .8, vx: dir * rnd(20, 60), vy: rnd(-20, 20), vz: rnd(20, 50), life: .3, t: 0, s: 1.4, col: '#ffd060' });
+      const rx = x - dir * S * .2, ry = cy - S * .4; limb({ x: rx, y: ry }, { x: rx, y: ry - S * .8 }, S * .3, S * .25, '#5a4030'); blob(rx, ry - S * 1.05, S * .28, S * .3, '#c8a078'); ctx.fillStyle = '#e04020'; ctx.fillRect(rx + dir * S * .1, ry - S * 1.1, 2, 2);
+      return true;
+    }
+    case 'u3': { // U-3: 人型の上半身と百足の下半身
+      const N = 8; ctx.lineCap = 'round';
+      for (let i = 0; i < N; i++) {
+        const sx = x - dir * i * S * .42, sy = gy - S * .45 + Math.sin(ph + i * .8) * S * .06;
+        ctx.strokeStyle = shade(pal.skin, -.35); ctx.lineWidth = S * .1;
+        for (const s of [-1, 1]) { const sw = mv ? Math.sin(ph * 2 + i + (s > 0 ? Math.PI : 0)) * S * .12 : 0; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + sw, sy - S * .25 * s + S * .1); ctx.lineTo(sx + sw * 1.4, gy + (s > 0 ? S * .08 : -S * .05)); ctx.stroke(); }
+        blob(sx, sy, S * .32, S * .26, i % 2 ? pal.skin : shade(pal.skin, -.12), 'rgba(255,240,220,.15)');
+        ctx.fillStyle = pal.acc; ctx.beginPath(); ctx.moveTo(sx - 1.2, sy - S * .2); ctx.lineTo(sx, sy - S * .45); ctx.lineTo(sx + 1.2, sy - S * .2); ctx.fill();
+      }
+      const tx = x - dir * N * S * .42, ty = gy - S * .6; ctx.strokeStyle = pal.acc; ctx.lineWidth = S * .12; ctx.beginPath(); ctx.moveTo(tx, ty); ctx.quadraticCurveTo(tx - dir * S * .4, ty - S * 1.2, tx + dir * S * .2, ty - S * 1.6); ctx.stroke();
+      const bx = x + dir * S * .2, by = gy - S * .6;
+      limb({ x: bx, y: by }, { x: bx + dir * S * .15, y: by - S * 1.2 }, S * .42, S * .38, pal.skin);
+      const sh = { x: bx + dir * S * .2, y: by - S * 1.1 }, a0 = -1.4 + strike * 2.2;
+      const el = { x: sh.x + dir * Math.cos(a0) * S * .8, y: sh.y + Math.sin(a0) * S * .8 };
+      limb(sh, el, S * .22, S * .18, pal.skinL);
+      ctx.fillStyle = pal.acc; ctx.beginPath(); ctx.moveTo(el.x, el.y); ctx.quadraticCurveTo(el.x + dir * Math.cos(a0 + .6) * S * 1.4, el.y + Math.sin(a0 + .6) * S * 1.4, el.x + dir * Math.cos(a0 + 1.4) * S * 1.6, el.y + Math.sin(a0 + 1.4) * S * 1.6); ctx.lineTo(el.x + dir * S * .1, el.y + S * .1); ctx.fill();
+      blob(bx + dir * S * .3, by - S * 1.45, S * .3, S * .32, pal.skinL); srpEyes(bx + dir * S * .4, by - S * 1.5, 3, S * .35, pal.eye, 9);
+      ctx.fillStyle = '#1a0806'; ctx.fillRect(bx + dir * S * .35, by - S * 1.35, dir * S * .2, S * (.05 + strike * .1));
+      ctx.lineCap = 'butt'; return true;
+    }
+    case 'salmon': { // サラザール融合体: 巨大プラーガの上にサラザールの上半身
+      const cy = gy - S * 1.4, pr = 1 + Math.sin(T * 1.2) * .03;
+      for (let i = 0; i < 8; i++) { const a = -Math.PI / 2 + (i - 3.5) * .4; const tip = srpTendril(x + Math.cos(a) * S * .6, cy + Math.sin(a) * S * .3, S * (1.6 + (i % 3) * .5) * (1 + strike * .5), a, S * .3, i % 2 ? '#8a6a48' : '#6a5040', T * .5, i); blob(tip.x, tip.y, S * .12, S * .12, '#c8b070'); }
+      blob(x, cy + S * .4, S * 1.7 * pr, S * 1.1 * pr, pal.skin, 'rgba(255,230,200,.15)');
+      srpLumps(x, cy + S * .3, S * 1.3, 9, PG_PAL.plaga, 13, T, .07);
+      ctx.fillStyle = '#1a0806'; ctx.beginPath(); ctx.ellipse(x + dir * S * .5, cy + S * .9, S * .7, S * .2 + strike * S * .25, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = '#e8dcc0'; for (let i = 0; i < 9; i++) { const tx = x + dir * S * .5 + (i - 4) * S * .14; ctx.beginPath(); ctx.moveTo(tx - 1.5, cy + S * .75 - strike * S * .2); ctx.lineTo(tx, cy + S * .95); ctx.lineTo(tx + 1.5, cy + S * .75 - strike * S * .2); ctx.fill(); }
+      for (let i = 0; i < 3; i++) blob(x + (i - 1) * S * .6, gy - S * .15, S * .22, S * .15, '#e8d090'); // 産み落とされる幼生
+      const sx = x, sy = cy - S * .6; limb({ x: sx, y: sy + S * .2 }, { x: sx, y: sy - S * .5 }, S * .28, S * .24, '#4a1030'); blob(sx, sy - S * .7, S * .2, S * .22, '#e8d8c8'); ctx.fillStyle = '#4a1030'; ctx.beginPath(); ctx.moveTo(sx - S * .22, sy - S * .8); ctx.lineTo(sx, sy - S * 1.15); ctx.lineTo(sx + S * .22, sy - S * .8); ctx.fill(); ctx.fillStyle = '#e04020'; ctx.fillRect(sx + dir * S * .05, sy - S * .75, 2, 1.5);
+      srpEyes(x - dir * S * .6, cy, 4, S * .8, pal.eye, 17);
+      return true;
+    }
+    case 'saddlerMon': { // サドラー最終形態: 多脚の巨大プラーガと巨大な眼
+      const cy = gy - S * 1.6 - (mv ? Math.abs(Math.sin(ph)) * S * .05 : 0);
+      ctx.lineCap = 'round';
+      for (let pass = 0; pass < 2; pass++) for (let i = 0; i < 4; i++) {
+        if (i % 2 !== pass) continue;
+        const side = i < 2 ? -1 : 1, k = i % 2, sw = mv ? Math.sin(ph + i * 1.5) * S * .4 : 0;
+        const hx = x + side * S * .4, kx = x + side * S * (1.2 + k * .3) + sw, ky = cy - S * 1.1, fx2 = x + side * S * (1.4 + k * .5) + sw * 1.3;
+        const stab = strike && i === 3 ? strike : 0;
+        ctx.strokeStyle = pass ? '#b89a78' : '#8a7058'; ctx.lineWidth = S * .28; ctx.beginPath(); ctx.moveTo(hx, cy); ctx.lineTo(kx, ky); ctx.stroke();
+        ctx.lineWidth = S * .18; ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(fx2 + dir * stab * S * 1.2, gy - stab * S * .6); ctx.stroke();
+        ctx.fillStyle = '#e8dcc0'; ctx.beginPath(); ctx.moveTo(fx2 + dir * stab * S * 1.2 - 2, gy - stab * S * .6); ctx.lineTo(fx2 + dir * stab * S * 1.2, gy + S * .1 - stab * S * .6); ctx.lineTo(fx2 + dir * stab * S * 1.2 + 2, gy - stab * S * .6); ctx.fill();
+      }
+      blob(x, cy, S * 1.1, S * .85, pal.skin, 'rgba(255,240,220,.15)');
+      srpLumps(x, cy - S * .2, S * .8, 7, PG_PAL.plaga, 23, T);
+      const er = S * .45 * (1 + Math.sin(T * 2) * .05); ctx.fillStyle = '#2a1a10'; ctx.beginPath(); ctx.arc(x + dir * S * .2, cy + S * .1, er * 1.2, 0, TAU); ctx.fill();
+      const g = ctx.createRadialGradient(x + dir * S * .2, cy + S * .1, 0, x + dir * S * .2, cy + S * .1, er); g.addColorStop(0, '#fff8c0'); g.addColorStop(.5, '#e8c040'); g.addColorStop(1, '#8a5010'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x + dir * S * .2, cy + S * .1, er, 0, TAU); ctx.fill();
+      ctx.fillStyle = '#100'; ctx.beginPath(); ctx.ellipse(x + dir * S * .3, cy + S * .1, er * .2, er * .7, 0, 0, TAU); ctx.fill();
+      const sx = x - dir * S * .1, sy = cy - S * .8; limb({ x: sx, y: sy + S * .2 }, { x: sx, y: sy - S * .5 }, S * .26, S * .22, '#f0ece0'); blob(sx, sy - S * .7, S * .2, S * .22, '#c8b090'); ctx.fillStyle = '#e04020'; ctx.fillRect(sx + dir * S * .05, sy - S * .75, 2, 1.5);
+      ctx.lineCap = 'butt'; return true;
+    }
+  }
+  return false;
+}
+
+/* ── 原作にある(ありそうな)攻撃の追加 ── */
+(function () {
+  const add = (k, ...a) => { if (SP[k] && SP[k].atks) for (const x of a) SP[k].atks.push(AT(x)); };
+  add('dangel', { n: '飛びかかり押さえつけ', dmg: 18, reach: 20, windup: .3, active: .3, rec: .4, cd: 5, type: 'leap', leap: 240, anim: 'pounce', grabAfter: 1, hold: 'pin', snd: 'whoosh', cond: (u, t) => t.sp.mass < 4 });
+  add('daqueen', { n: '飛びかかり押さえつけ', dmg: 24, reach: 24, windup: .34, active: .3, rec: .45, cd: 6, type: 'leap', leap: 280, anim: 'pounce', grabAfter: 1, hold: 'pin', snd: 'whoosh', cond: (u, t) => t.sp.mass < 5 });
+  add('witch', { n: '馬乗り引き裂き', dmg: 20, reach: 18, windup: .2, active: .3, rec: .4, cd: 4, type: 'leap', leap: 180, anim: 'pounce', grabAfter: 1, hold: 'pin', snd: 'screech', cond: (u, t) => t.sp.mass < 4 },
+    { n: '狂乱の爪', dmg: 12, reach: 18, windup: .18, active: .36, rec: .3, cd: 1.6, multi: 4, anim: 'witchFrenzy', snd: 'slash' });
+  add('charger', { n: '掴み叩きつけ', dmg: 18, reach: 18, windup: .4, active: .14, rec: .5, cd: 5, type: 'grab', hold: 'slam', anim: 'pound', snd: 'thud', cond: (u, t) => t.sp.mass < 3 });
+  add('scp096', { n: '絶叫の乱打', dmg: 22, reach: 20, windup: .2, active: .4, rec: .3, cd: 1.4, multi: 4, anim: 'screamRend', snd: 'screech' },
+    { n: '頭部粉砕', dmg: 60, reach: 18, windup: .3, active: .14, rec: .4, cd: 3, type: 'grab', hold: 'crush', anim: 'grab', snd: 'rip', cond: (u, t) => t.sp.mass < 5 });
+  add('kayako', { n: '髪の絡め取り', dmg: 12, reach: 90, windup: .4, active: .14, rec: .5, cd: 3, anim: 'hairSnare', pull: 200, snd: 'squelch' },
+    { n: '這い寄り', dmg: 18, reach: 16, windup: .4, active: .3, rec: .5, cd: 4, type: 'leap', leap: 160, anim: 'hairSnare', grabAfter: 1, hold: 'pin', snd: 'screech', cond: (u, t) => t.sp.mass < 3 });
+  add('sadako', { n: '呪いの凝視', dmg: 16, reach: 0, windup: .6, active: .3, rec: .6, cd: 7, type: 'roar', anim: 'curseStare', flash: 1, snd: 'screech' },
+    { n: '髪の絞殺', dmg: 30, reach: 60, windup: .5, active: .14, rec: .5, cd: 5, type: 'grab', hold: 'crush', anim: 'hairSnare', snd: 'squelch', cond: (u, t) => t.sp.mass < 3 });
+  add('chucky', { n: 'めった刺し', dmg: 9, reach: 14, windup: .2, active: .36, rec: .3, cd: 2.2, multi: 4, anim: 'stabFrenzy', snd: 'rip' },
+    { n: 'アキレス腱斬り', dmg: 14, reach: 14, arc: 2.2, windup: .22, active: .12, rec: .34, cd: 3, anim: 'lowSlice', down: 1, snd: 'slash' });
+  add('t1000', { n: '槍腕突き', dmg: 34, reach: 44, arc: 1, windup: .3, active: .12, rec: .4, cd: 1.8, anim: 'pierce', snd: 'rip' },
+    { n: '液体金属の抱擁', dmg: 28, reach: 18, windup: .34, active: .14, rec: .45, cd: 4.5, type: 'grab', hold: 'crush', anim: 'grab', snd: 'squelch', cond: (u, t) => t.sp.mass < 3 });
+  add('chara', { n: 'DETERMINATION斬り', dmg: 30, reach: 22, arc: 2.4, windup: .3, active: .2, rec: .4, cd: 2.4, multi: 2, anim: 'determSlash', knock: 240, snd: 'slash' });
+  add('ghostface', { n: '物陰からの奇襲', dmg: 32, reach: 20, arc: 2, windup: .3, active: .12, rec: .3, cd: 4, anim: 'ambush', aliceBlink: 1, snd: 'rip' });
+  add('smile', { n: 'にやけ顔の凝視', dmg: 10, reach: 0, windup: .6, active: .3, rec: .6, cd: 8, type: 'roar', anim: 'grinScream', flash: 1, snd: 'screech' });
+  add('t800', { n: '掴み投げ', dmg: 22, reach: 18, windup: .34, active: .14, rec: .45, cd: 4, type: 'grab', hold: 'throw', anim: 'grab', snd: 'thud', cond: (u, t) => t.sp.mass < 3 },
+    { n: 'ヘッドバット', dmg: 26, reach: 15, windup: .3, active: .12, rec: .4, cd: 2.4, anim: 'headbutt', knock: 240, down: 1, snd: 'thud' });
+  add('joker', { n: '笑気ガス', dmg: 6, reach: 0, windup: .4, active: .5, rec: .5, cd: 5, type: 'cone', coneR: 110, arc: .8, col: 'rgba(120,220,90,.45)', anim: 'gasSpray', slowT: 1, snd: 'whoosh' });
+  add('ravager', { n: '咆哮', dmg: 12, reach: 0, windup: .6, active: .2, rec: .6, cd: 8, type: 'roar', anim: 'roar', snd: 'roar' },
+    { n: '噛みつき', dmg: 24, reach: 18, windup: .34, active: .12, rec: .44, cd: 1, anim: 'q_bite', knock: 220, snd: 'rip' });
+})();
 function srpPanelInfo() {
   const nx = G.units.filter(u => !u.gone && u.fac === 'srp' && u.sp.nexus).length;
   const top = Object.entries(G.srpAdapt || {}).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k, v]) => `${k} -${Math.round(v * 60)}%`).join(' / ');
@@ -15021,7 +15440,7 @@ function drawSRPOverlay(u) {
     if (i % 2 === 0) { ctx.fillStyle = pal.acc; ctx.beginPath(); ctx.arc(tip.x, tip.y, 1.1 * s, 0, TAU); ctx.fill(); }
   }
   // 肉の瘤
-  const lp = u.fac === 'fl' ? FL_PAL.flesh : u.fac === 'nm' ? NM_PAL.corr : srpPal('flesh');
+  const lp = u.fac === 'pg' ? PG_PAL.plaga : u.fac === 'fl' ? FL_PAL.flesh : u.fac === 'nm' ? NM_PAL.corr : srpPal('flesh');
   if (ov.lumps) { srpLumps(bx, by + 3 * s, 7.5 * s, ov.lumps, lp, u.seed, T, .07); if (!quad) srpLumps(x + dir * 3 * s, gy - top * .45, 4 * s, Math.ceil(ov.lumps / 2), lp, (u.seed || 1) + 7, T, .05); }
   // 骨の棘・装甲
   if (ov.spikes) {
@@ -15065,7 +15484,7 @@ function drawSRP(u, pose) {
   const dead = u.state === 'dead';
   ctx.save();
   if (dead) { ctx.translate(x, gy); ctx.scale(1, .45); ctx.translate(-x, -gy); ctx.globalAlpha *= .85; }
-  if (drawXPlan(u, pose, S, x, gy, T, strike, mv, ph, pal, dir)) { ctx.restore(); return; }
+  if (drawXPlan(u, pose, S, x, gy, T, strike, mv, ph, pal, dir) || drawPgPlan(u, pose, S, x, gy, T, strike, mv, ph, pal, dir)) { ctx.restore(); return; }
   switch (sp.plan) {
     case 'bug': {
       const cy = gy - S * .7 - (mv ? Math.abs(Math.sin(ph)) * S * .08 : 0);
@@ -15735,7 +16154,7 @@ function updatePanels() {
     ['0', 'panel0', '🕴️ スレンダーマン', '#ddd', ['slender']],
     ['jk', 'panelJk', '🃏 ジョーカー', '#c04080', ['joker', 'jokerFan']],
     ['hg', 'panelHg', '🌼 ホルガ村', '#e8d8b0', ['horgaHam', 'horgaScythe', 'horgaAxe']],
-    ['pg', 'panelPg', '🪱 プラガ', '#c8a040', ['gvAxe','gvTorch','gvDyna','gvSickle','gvChainM','gvChainF','gvGatling','gvMendez','gvCultSh','gvCultBow','gvSoldStun','gvSoldDyna','gvSoldRkt','gvSalazar','gvKrauser','gvSaddler','plagaA','plagaB','plagaC','arana']],
+    ['pg', 'panelPg', '🪱 プラガ', '#c8a040', ['gvAxe','gvTorch','gvDyna','gvSickle','gvChainM','gvChainF','gvGatling','gvMendez','gvCultSh','gvCultBow','gvSoldStun','gvSoldDyna','gvSoldRkt','gvSalazar','gvKrauser','gvSaddler',...PG_ORDER_EXTRA,'plagaA','plagaB','plagaC','arana']],
     ['bk', 'panelBk', '☀️ バラコア', '#e8c040', ['barako','barakoana','bkDart','bkClub']],
     ['nt', 'panelNt', '🐻 ニタ', '#e07030', ['nita','nBearH','nBearB']],
     ['mp', 'panelMp', '🐧 ミスターP', '#4a6aa0', ['mrP','porter','porterUp']],
