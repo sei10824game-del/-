@@ -1869,11 +1869,15 @@ SP.tyrantX = {
       AT({ n: '裏拳', dmg: 26, reach: 22, arc: 2.4, windup: .5, active: .12, rec: .55, cd: 1.1, anim: 'heavy', knock: 300, snd: 'thud' }),
       AT({ n: '掌底砕き', dmg: 34, reach: 20, windup: .68, active: .12, rec: .7, cd: 2, anim: 'overhead', down: 1, aoe: 52, snd: 'thud' }),
       AT({ n: '掴み投げ', dmg: 18, reach: 20, windup: .5, active: .12, rec: .4, cd: 4, type: 'grab', hold: 'throw', anim: 'grab', cond: (u, t) => t.sp.mass < 4 }),
+      AT({ n: 'ダブルスレッジ', dmg: 30, reach: 0, windup: .62, active: .14, rec: .75, cd: 3.6, type: 'aoe', aoeR: 72, anim: 'hammerFist', down: 1, snd: 'thud' }),
+      AT({ n: 'ラリアット', dmg: 28, reach: 24, arc: 2.8, windup: .45, active: .16, rec: .6, cd: 2.8, anim: 'lariat', knock: 380, snd: 'thud' }),
     ],
     [
       AT({ n: '巨爪斬り', dmg: 34, reach: 24, arc: 2.6, windup: .42, active: .12, rec: .5, cd: .9, anim: 'slash', knock: 240, snd: 'slash' }),
       AT({ n: '突進', dmg: 26, reach: 22, windup: .5, active: .34, rec: .7, cd: 3, type: 'dash', dash: 380, anim: 'charge', down: 1, snd: 'thud' }),
       AT({ n: '連爪', dmg: 15, reach: 20, windup: .26, active: .28, rec: .35, cd: .5, multi: 2, anim: 'combo', snd: 'slash' }),
+      AT({ n: '爪かち上げ', dmg: 32, reach: 22, arc: 1.6, windup: .42, active: .14, rec: .6, cd: 3.2, anim: 'clawRise', toss: 1, down: 1, snd: 'slash' }),
+      AT({ n: '怒りの鉄槌', dmg: 36, reach: 0, windup: .55, active: .14, rec: .7, cd: 4, type: 'aoe', aoeR: 90, anim: 'hammerFist', down: 1, snd: 'thud' }),
     ],
   ],
   atks: [],
@@ -1900,10 +1904,12 @@ SP.tyrant002 = {
     [
       AT({ n: '怒りの乱撃', dmg: 12, reach: 19, windup: .2, active: .4, rec: .35, cd: .6, multi: 3, anim: 'flurry', snd: 'slash' }),
       AT({ n: '突進掴み', dmg: 10, reach: 20, windup: .44, active: .3, rec: .5, cd: 3.6, type: 'leap', leap: 210, anim: 'pounce', grabAfter: 1, snd: 'thud' }),
+      AT({ n: '暴走鉄槌', dmg: 28, reach: 0, windup: .55, active: .14, rec: .7, cd: 3.4, type: 'aoe', aoeR: 70, anim: 'hammerFist', down: 1, snd: 'thud' }),
     ],
     [
       AT({ n: '巨爪大薙ぎ', dmg: 42, reach: 26, arc: 3, windup: .5, active: .12, rec: .6, cd: 1.1, anim: 'sweep', knock: 260, snd: 'slash' }),
       AT({ n: '狂乱突進', dmg: 30, reach: 23, windup: .5, active: .34, rec: .7, cd: 3, type: 'dash', dash: 340, anim: 'charge', down: 1, snd: 'thud' }),
+      AT({ n: '巨爪かち上げ', dmg: 38, reach: 24, arc: 1.6, windup: .42, active: .14, rec: .6, cd: 3, anim: 'clawRise', toss: 1, down: 1, snd: 'slash' }),
     ],
   ],
   atks: [],
@@ -2681,6 +2687,7 @@ SP.jeff = {
   atks: [
     AT({ n: '喉切り', dmg: 28, reach: 16, windup: .22, active: .12, rec: .4, cd: .8, anim: 'slash', snd: 'rip' }),
     AT({ n: '家具破壊突撃', dmg: 16, reach: 18, windup: .35, active: .28, rec: .5, cd: 3, type: 'dash', dash: 140, anim: 'charge', snd: 'thud' }),
+    AT({ n: 'めった刺し', dmg: 9, reach: 15, windup: .26, active: .3, rec: .45, cd: 2.4, multi: 3, anim: 'stabFrenzy', snd: 'rip' }),
   ],
   desc: '家具の陰に無音で潜む。射程に敵が入れば家具を砕いて襲いかかる。'
 };
@@ -2943,7 +2950,11 @@ SP.pbrute = {
   pal: { skin: '#c87850', skinD: '#7a4020', skinL: '#e8a078', cloth: '#4a3020', clothD: '#241810', clothL: '#6a4830', acc: '#888', eye: '#2a1810', blood: '#8a3030' },
   pp: { shoulder: 5, torsoW: 6.2 }, fx: {}, gait: { amp: .45, freq: .75, armSwing: .5, bob: .55 },
   pose0: { armS: .3, armE: .28, lean: .1, crouch: .06, headP: .05 },
-  atks: [AT({ n: '金斧', dmg: 26, reach: 20, windup: .4, active: .14, rec: .55, cd: 1.1, anim: 'heavy', knock: 240, snd: 'thud' })],
+  atks: [
+    AT({ n: '金斧', dmg: 26, reach: 20, windup: .4, active: .14, rec: .55, cd: 1.1, anim: 'heavy', knock: 240, snd: 'thud' }),
+    AT({ n: '斧大回転', dmg: 22, reach: 0, windup: .45, active: .16, rec: .6, cd: 3.5, type: 'aoe', aoeR: 62, anim: 'bigSpin', knock: 220, snd: 'slash' }),
+    AT({ n: '体当たり', dmg: 16, reach: 18, arc: 1.8, windup: .3, active: .14, rec: .45, cd: 2.6, anim: 'bash', knock: 340, snd: 'thud' })
+  ],
   desc: '重装のピグリン。斧で叩き潰す。'
 };
 SP.hoglin = {
@@ -3253,7 +3264,9 @@ SP.missCircle = {
   pose0: { armS: .35, armE: .4, lean: .08, crouch: .05, headP: .04 },
   atks: [
     AT({ n: 'コンパス斬り', dmg: 28, reach: 26, windup: .36, active: .14, rec: .5, cd: .9, anim: 'slash', knock: 220, snd: 'slash' }),
-    AT({ n: 'コンパス突進', dmg: 22, reach: 22, windup: .4, active: .3, rec: .55, cd: 2.6, type: 'dash', dash: 180, anim: 'charge', snd: 'thud' })
+    AT({ n: 'コンパス突進', dmg: 22, reach: 22, windup: .4, active: .3, rec: .55, cd: 2.6, type: 'dash', dash: 180, anim: 'charge', snd: 'thud' }),
+    AT({ n: 'コンパス大回転', dmg: 24, reach: 0, windup: .45, active: .16, rec: .6, cd: 3.2, type: 'aoe', aoeR: 70, anim: 'bigSpin', knock: 260, snd: 'slash' }),
+    AT({ n: 'コンパス串刺し', dmg: 40, reach: 24, arc: 1.1, windup: .55, active: .14, rec: .7, cd: 4, anim: 'pierce', mir: 1, down: 1, snd: 'rip' })
   ],
   desc: '数学教師。左手が巨大なコンパス。オリバーは襲わない。アリスを見ると逃げる。'
 };
@@ -3265,7 +3278,9 @@ SP.missThavel = {
   pose0: { armS: .4, armE: .45, lean: .1, crouch: .08, headP: .05 },
   atks: [
     AT({ n: '鉤爪', dmg: 20, reach: 18, windup: .26, active: .12, rec: .4, cd: .65, anim: 'slash', snd: 'slash' }),
-    AT({ n: '角突進', dmg: 24, reach: 20, windup: .38, active: .28, rec: .5, cd: 2.4, type: 'dash', dash: 200, anim: 'charge', snd: 'whoosh' })
+    AT({ n: '角突進', dmg: 24, reach: 20, windup: .38, active: .28, rec: .5, cd: 2.4, type: 'dash', dash: 200, anim: 'charge', snd: 'whoosh' }),
+    AT({ n: '乱れ引っ掻き', dmg: 9, reach: 18, windup: .24, active: .36, rec: .4, cd: 2, multi: 4, anim: 'clawFrenzy', snd: 'slash' }),
+    AT({ n: '角かち上げ', dmg: 26, reach: 18, arc: 1.4, windup: .4, active: .14, rec: .55, cd: 3.4, anim: 'antlerToss', toss: 1, down: 1, snd: 'thud' })
   ],
   desc: '言語教師。鹿の角と鋭い爪。オリバーは襲わない。アリスを見ると逃げる。'
 };
@@ -3275,7 +3290,11 @@ SP.missBloomie = {
   pal: { skin: '#f4d8c8', skinD: '#c0a090', skinL: '#fff0e4', cloth: '#f0a0c0', clothD: '#a05078', clothL: '#ffc0d8', acc: '#fff', eye: '#2a1810', blood: '#8a1518' },
   pp: { armU: 8, armL: 8.4 }, fx: { claws: 1 }, gait: { amp: .55, freq: 1.15, armSwing: .7, bob: .4 },
   pose0: { armS: .3, armE: .4, lean: .06, crouch: .08, headP: .04 },
-  atks: [AT({ n: 'カッター', dmg: 22, reach: 16, windup: .22, active: .12, rec: .35, cd: .55, anim: 'slash', snd: 'slash' })],
+  atks: [
+    AT({ n: 'カッター', dmg: 22, reach: 16, windup: .22, active: .12, rec: .35, cd: .55, anim: 'slash', snd: 'slash' }),
+    AT({ n: 'クロスカット', dmg: 30, reach: 17, arc: 2, windup: .36, active: .14, rec: .45, cd: 2.2, anim: 'scissorCross', knock: 200, snd: 'rip' }),
+    AT({ n: '足元斬り', dmg: 18, reach: 18, arc: 2.4, windup: .3, active: .14, rec: .5, cd: 3, anim: 'lowSlice', down: 1, snd: 'slash' })
+  ],
   desc: '科学教師。小柄だが左手が鋭い刃物。オリバーは襲わない。アリスを見ると逃げる。'
 };
 SP.fpeAlice = {
@@ -3513,7 +3532,8 @@ SP.gvSalazar = GNA('ラモン・サラザール', '👑', 'none', 380, .72, [
 ], { unique: 1, ai: 'salazar', hp: 400, scale: .72, pal: { skin: '#e8d8c8', skinD: '#a09080', skinL: '#fff8f0', cloth: '#4a1030', clothD: '#200818', clothL: '#6a2848', acc: '#c8a040', eye: '#2a1810', blood: '#8a1518' } });
 SP.gvKrauser = GNA('ジャック・クラウザー', '🗡️', 'knife', 420, 1.15, [
   AT({ n: 'ナイフ連撃', dmg: 22, reach: 16, windup: .18, active: .1, rec: .28, cd: .4, anim: 'slash', snd: 'slash' }),
-  AT({ n: '斬撃', dmg: 28, reach: 20, windup: .3, active: .14, rec: .4, cd: 1.2, anim: 'heavy', snd: 'slash' })
+  AT({ n: '斬撃', dmg: 28, reach: 20, windup: .3, active: .14, rec: .4, cd: 1.2, anim: 'heavy', snd: 'slash' }),
+  AT({ n: '回し蹴り', dmg: 24, reach: 20, arc: 2.6, windup: .34, active: .14, rec: .45, cd: 2.4, anim: 'roundKick', knock: 300, snd: 'thud' })
 ], { unique: 1, superArmor: 1, ai: 'shambler', hp: 440, run: 140 });
 SP.gvSaddler = GNA('オズムンド・サドラー', '🕷️', 'none', 640, 1.6, [
   AT({ n: '触手', dmg: 24, reach: 80, windup: .4, active: .16, rec: .5, cd: 1.4, anim: 'tongue', pull: 160, snd: 'slash' }),
@@ -3948,6 +3968,19 @@ const AANIM = {
   spinSlam: [{ t: 0, twist: 0, armR: [.4, .4] }, { t: .3, twist: 1.4, armR: [-1.2, .8], crouch: .15 }, { t: .55, twist: -1.6, armR: [1.6, .05], lean: .4, crouch: .3, rootZ: -5 }, { t: 1, twist: 0, armR: [.5, .3] }],
   palmWave: [{ t: 0, armR: [-1.5, .4], armL: [-1.5, .4], lean: -.2 }, { t: .45, armR: [1.7, .05], armL: [1.6, .08], lean: .5, crouch: .2, rootZ: -3 }, { t: 1, armR: [.6, .3] }],
   b_claw: [{ t: 0, lean: .1 }, { t: .4, lean: .35 }, { t: .6, lean: .15 }, { t: 1, lean: 0 }],
+  /* 武闘派の追加技 */
+  bigSpin: [{ t: 0, armR: [.5, .4], armL: [.5, .4] }, { t: .3, armR: [1.5, .05], armL: [1.5, .05], twist: 1.6, crouch: .2 }, { t: .45, armR: [1.55, .02], armL: [1.55, .02], twist: -1.9, crouch: .25, lean: .15 }, { t: .56, armR: [1.55, .02], armL: [1.55, .02], twist: 2.1, crouch: .25, lean: .2 }, { t: .7, armR: [1.4, .1], armL: [1.4, .1], twist: -1, crouch: .15 }, { t: 1, armR: [.6, .3], armL: [.6, .3], twist: 0 }],
+  pierce: [{ t: 0, armR: [.4, .3] }, { t: .42, armR: [-2.8, .25], lean: -.28, headP: -.15, crouch: 0 }, { t: .56, armR: [1.05, .02], lean: .62, crouch: .38, headP: .3 }, { t: .8, armR: [1.1, .05], lean: .55, crouch: .34 }, { t: 1, armR: [.5, .3], lean: .12 }],
+  clawFrenzy: [{ t: 0, armR: [.4, .5], armL: [.4, .5] }, { t: .45, armR: [-2, 1], armL: [1.4, .1], twist: .5, lean: .2 }, { t: .5, armR: [1.5, .1], armL: [-2, 1], twist: -.5, lean: .3 }, { t: .55, armR: [-2, 1], armL: [1.5, .1], twist: .5, lean: .3 }, { t: .6, armR: [1.5, .1], armL: [-1.8, 1], twist: -.5, lean: .35 }, { t: 1, armR: [.6, .3], armL: [.6, .3], lean: .1 }],
+  antlerToss: [{ t: 0, headP: .1 }, { t: .42, headP: .75, lean: .55, crouch: .42, armR: [-.3, .8], armL: [-.3, .8] }, { t: .56, headP: -.6, lean: -.35, crouch: 0, armR: [-1.2, .5], armL: [-1.2, .5], rootZ: -4 }, { t: 1, headP: .05, lean: .05 }],
+  scissorCross: [{ t: 0, armR: [.5, .4], armL: [.5, .4] }, { t: .42, armR: [-1.6, .5], armL: [-1.6, .5], lean: -.12, crouch: .1 }, { t: .56, armR: [1.3, .05], armL: [1.3, .05], twist: .8, lean: .4, crouch: .25 }, { t: .66, twist: -.8, lean: .4 }, { t: 1, armR: [.6, .3], armL: [.6, .3], twist: 0 }],
+  lowSlice: [{ t: 0, armR: [.5, .4] }, { t: .42, armR: [-1.2, 1], crouch: .6, lean: .3, twist: .7, legL: [.9, 1.6, 0], legR: [-.6, .4, 0] }, { t: .58, armR: [1.7, .05], crouch: .65, lean: .45, twist: -.9, legL: [.9, 1.6, 0], legR: [-.6, .4, 0] }, { t: 1, armR: [.6, .3], crouch: .05 }],
+  hammerFist: [{ t: 0, armR: [.4, .3], armL: [.4, .3] }, { t: .42, armR: [-3, .15], armL: [-3, .15], lean: -.3, headP: -.2, rootZ: -3 }, { t: .56, armR: [1.35, .05], armL: [1.35, .05], lean: .6, crouch: .5, headP: .25 }, { t: .8, armR: [1.3, .1], armL: [1.3, .1], lean: .5, crouch: .45 }, { t: 1, armR: [.6, .3], armL: [.6, .3], lean: .15 }],
+  lariat: [{ t: 0, armR: [.4, .3], twist: .2 }, { t: .4, armR: [1.55, .02], twist: 1.3, lean: -.05, crouch: .1 }, { t: .58, armR: [1.6, .02], twist: -1.5, lean: .35, crouch: .15 }, { t: .75, armR: [1.5, .05], twist: -1.7, lean: .3 }, { t: 1, armR: [.5, .3], twist: 0 }],
+  clawRise: [{ t: 0, armR: [.5, .4] }, { t: .42, armR: [1.3, .2], crouch: .55, lean: .45, headP: .3 }, { t: .58, armR: [-2.7, .1], crouch: 0, lean: -.3, headP: -.35, rootZ: -4 }, { t: 1, armR: [.6, .3], lean: .1 }],
+  bash: [{ t: 0, lean: .1 }, { t: .42, armR: [.9, 1.6], armL: [.9, 1.6], twist: -.9, lean: -.1, crouch: .2 }, { t: .56, armR: [.8, 1.5], armL: [.8, 1.5], twist: .6, lean: .6, crouch: .3, headP: .2 }, { t: 1, armR: [.5, .3], armL: [.5, .3], twist: 0, lean: .1 }],
+  stabFrenzy: [{ t: 0, armR: [.5, .4] }, { t: .45, armR: [-2.5, .3], lean: -.1 }, { t: .5, armR: [1.2, .05], lean: .4, crouch: .2 }, { t: .54, armR: [-2.5, .3], lean: .1 }, { t: .58, armR: [1.2, .05], lean: .45, crouch: .25 }, { t: .62, armR: [-2.4, .3], lean: .15 }, { t: .66, armR: [1.2, .05], lean: .5, crouch: .3 }, { t: 1, armR: [.6, .3], lean: .1 }],
+  roundKick: [{ t: 0, legR: [0, .1, 0] }, { t: .42, legR: [-.7, 1.7, 0], twist: .9, lean: -.1, armR: [.9, 1.4], armL: [.9, 1.4] }, { t: .56, legR: [1.75, .05, 0], twist: -1.1, lean: -.38, armR: [-.6, .3], armL: [.4, 1.2] }, { t: .74, legR: [1.4, .3, 0], twist: -.9, lean: -.3 }, { t: 1, legR: [0, .1, 0], twist: 0 }],
 };
 
 /* ── 歩行サイクル（二足） ── */
