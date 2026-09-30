@@ -1004,6 +1004,7 @@ function hasMemoryOf(u, o) {
   return m && m.t > G.time;
 }
 function canPerceive(u, o) {
+  if (o.shDisguise && dist(u.x, u.y, o.x, o.y) > 80) return false; // サイレンヘッドの擬態 (電柱・枯れ木)
   if (canSee(u, o)) { rememberSeen(u, o); return true; }
   if (hasMemoryOf(u, o)) return true;
   if (o.sp.loud && dist(u.x, u.y, o.x, o.y) < o.sp.loud) return true; // 騒がしい拠点は音で気付かれる
@@ -1486,7 +1487,7 @@ function makeCorpse(u, opts = {}) {
     key: u.key, x: u.x, y: u.y, dir: u.dir, seed: u.seed || u.id, t: 0,
     riseT: opts.riseT || 0, riseAs: opts.riseAs || null, tint: u.tint, sizeMul: u.sizeMul, form: u.form,
     burst: opts.burst || false, decap: opts.decap || false, pooled: 0, cSpore: !!opts.cSpore, sporeT: 0,
-    hauled: null, farmT: 0, tInf: (u.sp && u.sp.fac === 'N' && u.sp.mortal) ? 0 : -1, scanT: Math.random() * .5
+    hauled: null, farmT: 0, tInf: (u.sp && u.sp.fac === 'N' && u.sp.mortal) ? 0 : -1, scanT: Math.random() * .5, virusFac: opts.virusFac || null
   });
 }
 function updateCorpses(dt) {
@@ -4770,7 +4771,7 @@ function render() {
 
   list.sort((a, b) => a.d - b.d);
   for (const it of list) it.f(it.a);
-  drawMkLinks();
+  drawMkLinks(); drawTvWorld();
   collectLights();
   renderLighting(W, H, z, ox, oy); // 光と闇 (乗算)
   ctx.setTransform(dpr * z, 0, 0, dpr * z, dpr * ox, dpr * oy);
@@ -4974,6 +4975,7 @@ function drawUnit(u) {
   try {
     const pose = poseFor(u);
     if (u.mkCtrl) drawMkMark(u);
+    if (u.virusFac) drawVirusMark(u);
     if (u.state === 'resin') drawResin(u); // 巣の樹脂で固定されている
     if (u.crawl) ctx.translate(0, (BP.legU + BP.legL) * u.sp.scale * u.sizeMul * .8); // 両脚を失い這う
     const lite = G.lod && u.sp.kind === 'biped' && !u.sp.unique && !u.sp.superArmor && G.sel !== u;
@@ -4984,6 +4986,7 @@ function drawUnit(u) {
     else if (u.sp.kind === 'burster') drawBurster(u, pose);
     if (!lite) {
       if (u.sp.kind === 'biped' && (u.key === 'makima' || u.key === 'denji')) drawCsExtras(u, pose);
+      if (u.sp.kind === 'biped' && (u.fx || u.sp.fx).tv) drawTvExtras(u, pose);
       if (u.fac === 'pg' && u.sp.kind === 'biped') drawPgExtras(u, pose);
       if (u.sp.ov && (u.fac === 'srp' || u.fac === 'fl' || u.fac === 'nm' || u.fac === 'pg')) { drawSRPOverlay(u); if (u.sp.kind === 'biped') drawXOverlayParts(u, pose); }
     }
@@ -7465,7 +7468,7 @@ function unitTopY(u) {
   if (sp.kind === 'biped') return (BP.legU + BP.legL + BP.footH + BP.spine1 + BP.spine2 + BP.headR * 2.2) * sp.scale * u.sizeMul * (u.formScale || 1) * (sp.fx.tail ? 1.1 : 1);
   if (sp.kind === 'quad') return (QP.legU + QP.legL + QP.bodyR * 2 + QP.headR) * sp.scale * u.sizeMul;
   if (sp.kind === 'bird') return 20 * sp.scale + (u.z || 0);
-  if (sp.plan) return sp.r * sp.scale * (u.sizeMul || 1) * (sp.plan === 'fly' || sp.plan === 'overlord' ? 3 : sp.plan === 'nexus' ? 3.2 : 1.8);
+  if (sp.plan) return sp.r * sp.scale * (u.sizeMul || 1) * (sp.topMul || (sp.plan === 'fly' || sp.plan === 'overlord' ? 3 : sp.plan === 'nexus' ? 3.2 : 1.8));
   return 16 * sp.scale;
 }
 
@@ -8047,6 +8050,7 @@ function dealDamage(att, tgt, dmg, o = {}) {
   if ((tgt.fac === 'fl' || tgt.fac === 'nm') && dmg > 0) dmg = xOnHit(tgt, att, dmg, o); // シールド/骨殻/切断
   if (tgt.fac === 'pg' && dmg > 0) dmg = pgOnHit(tgt, att, dmg); // 鎧/背中の弱点/盾/サドラーの眼
   if (att && att.cutMul && dmg > 0) dmg *= att.cutMul;
+  dmg = tvOnHit(att, tgt, dmg, o); // 発火・毒・死の前兆
   if (att && att.dmgMul && dmg > 0) dmg *= att.dmgMul; // 黒チェンソーマンの成長など // 腕を切断されたネクロモーフは弱る
   if (dmg > 0) { if (tgt.lastHitT == null || G.time - tgt.lastHitT > .6) tgt.dmgGhost = Math.min(1, tgt.hp / tgt.mhp); tgt.lastHitT = G.time; }
   tgt.hp -= dmg;
@@ -8270,7 +8274,7 @@ function killUnit(att, u, o = {}) {
     interrupt(u); u.atk = null; u.grab = null;
     u.state = 'transform'; u.st = 0; u.transDur = 1.5; u.transTo = null; u.formKeep = true;
     u.down = 0; u.stun = 0; u.kvx = 0; u.kvy = 0;
-    addLog(f.log, 't', true);
+    addLog(f.log, u.fac === 'tv' || u.fac === 'cs' || u.fac === 'sh' ? u.fac : 't', true);
     Sfx.play('morph', u.x, u.y); Sfx.play('roar', u.x, u.y);
     addShake(10); setFocus(u.x, u.y);
     addBlood(u.x, u.y, unitTopY(u) * .4, 14, u.pal && u.pal.blood);
@@ -8357,6 +8361,7 @@ function killUnit(att, u, o = {}) {
 
   if (xDeathHook(att, u, o)) return; // フラッド戦闘体化 / ネクロモーフ再起動
   if (srpDeathHook(att, u, o)) return; // SRP: 同化種として蘇生 / 肉塊化
+  if (virusMonsterRise(att, u, o)) return; // t/G/T-ベロニカで倒された化け物は同種の変異体として蘇る
   const capT = countFac('T'), capX = countFac('X');
   // 死体と蘇生の判定
   if (isInfectHost(u)) {
@@ -8376,6 +8381,7 @@ function killUnit(att, u, o = {}) {
     else if (att && att.fac === 'G') riseAs = rollGSpecies(); // G撃破は確定感染 — 必ず感染者として蘇る
     else if (att && att.fac === 'pv' && att.key !== 'pvZomboss') riseAs = rpick(['pvZombie','pvCone','pvBucket','pvPole','pvPaper','pvScreen','pvFoot','pvCatapult','pvJack']);
     else if (att && att.fac === 'mz' && att.sp.convert) riseAs = att.sp.convert;
+    else if (att && (att.fac === 'tv' || att.virusFac === 'tv' || (u.tvInfV || 0) > .3) && facOn('tv')) riseAs = 'tvZombie';
     else if (att && att.fac === 'T') riseAs = rollZombieSpecies(u);
     else if ((u.infG || 0) > .5) riseAs = rollGSpecies();     // 濃厚感染していた場合はGフルーで蘇る
     else if (u.inf > 0.15) riseAs = rollZombieSpecies(u);
@@ -8383,6 +8389,7 @@ function killUnit(att, u, o = {}) {
       if (countFac('G') < G.capG) { makeCorpse(u, { riseT: 3 + rnd(0, 2), riseAs, decap: o.decap, gib: o.gib }); return; }
       riseAs = null;
     }
+    if (riseAs === 'tvZombie') { if (countFac('tv') < 70) makeCorpse(u, { riseT: 3 + rnd(0, 2), riseAs, decap: o.decap }); else makeCorpse(u, { decap: o.decap }); return; }
     if (riseAs && SP[riseAs] && SP[riseAs].fac === 'pv' && countFac('pv') < (G.capPv || 48)) {
       makeCorpse(u, { riseT: 3 + rnd(0, 1.2), riseAs, decap: o.decap }); return;
     }
@@ -8447,7 +8454,8 @@ function releaseGrab(u) {
 function riseFromCorpse(c) {
   if (!c.riseAs || !SP[c.riseAs]) { c.riseAs = null; return; }
   const sp = SP[c.riseAs];
-  const spawn = spawnUnit(c.riseAs, c.x, c.y, { rise: true, sizeMul: c.riseSize || 1, tint: c.tint, name: undefined, silent: false });
+  const spawn = spawnUnit(c.riseAs, c.x, c.y, { force: !!c.virusFac, rise: true, sizeMul: c.riseSize || 1, tint: c.tint, name: undefined, silent: false });
+  if (spawn && c.virusFac) { virusConvert(spawn, c.virusFac); Sfx.play('sting', c.x, c.y); return; }
   if (spawn) {
     birthLog(spawn);
     Sfx.play('sting', c.x, c.y);
@@ -8575,7 +8583,7 @@ function checkForm(u) {
     u.atkList = u.sp.formAtks[u.form];
     interrupt(u); u.atk = null;
     u.state = 'transform'; u.st = 0; u.transDur = 1.5; u.transTo = null; u.formKeep = true;
-    addLog(f.log, 't', true);
+    addLog(f.log, u.fac === 'tv' || u.fac === 'cs' || u.fac === 'sh' ? u.fac : 't', true);
     Sfx.play('morph', u.x, u.y); Sfx.play('roar', u.x, u.y);
     addShake(8); setFocus(u.x, u.y);
     addDust(u.x, u.y, 16);
@@ -8710,6 +8718,8 @@ function directMove(u, tx, ty, spd, dt) {
 function hostileTo(u, o) {
   if (!u || !o) return false;
   if (u === o) return false;
+  if (u.steveSane) return o.fac !== 'N' && !o.steveSane; // 正気に戻ったスティーブは怪物だけと戦う
+  if (o.steveSane) return u.fac !== 'N';
   if (u.inTv || o.inTv) return false;
   if (u.healMode || o.healMode) return false;
   if (u.fac === 'pg') return o.fac !== 'pg';
@@ -8722,6 +8732,10 @@ function hostileTo(u, o) {
   if (u.fac === 'pv') return o.fac !== 'pv';
   if (u.fac === 'srp') return o.fac !== 'srp';
   if (o.fac === 'srp') return true;
+  if (u.fac === 'tv') return o.fac !== 'tv';
+  if (o.fac === 'tv') return true;
+  if (u.fac === 'sh') return o.fac !== 'sh';
+  if (o.fac === 'sh') return true;
   if (u.fac === 'mk') return o.fac !== 'mk';
   if (o.fac === 'mk') return true;
   if (u.fac === 'cs') return o.fac !== 'cs';
@@ -8939,6 +8953,7 @@ function updateAttack(u, dt) {
 }
 function fireAttack(u, d, a) {
   const tgt = a.tgt;
+  if (d.custom && TV_CUSTOM[d.custom]) { TV_CUSTOM[d.custom](u, d, a); return; } // T-ベロニカ/サイレンヘッドの固有攻撃
   switch (d.type) {
     case 'melee': {
       if (d.multi) { a.nextHit = d.windup + .001; a.hitCount = 0; }
@@ -12852,6 +12867,7 @@ function stepSim(dt) {
   updateFloodNecro(dt);
   updatePlagaExtra(dt);
   updateChainsawFacs(dt);
+  updateTvSh(dt);
   if (G.quicks) {
     for (let i = G.quicks.length - 1; i >= 0; i--) {
       const q = G.quicks[i]; q.t -= dt;
@@ -13475,7 +13491,7 @@ function startGame(cfg) {
   spawnUnit('fen', randWalkIn(fenR).x, randWalkIn(fenR).y, { silent: true, force: true });
   addLog('🖐️ 金髪の巨大な「フェン」が館を歩き始めた', '5', true);
   spawnMike(); dropMoreWeapons();
-  const gated = [['6', spawnLocust], ['8', spawnVerity], ['0', spawnSlender], ['jk', spawnJoker], ['hg', spawnHorga], ['pg', spawnPlaga], ['bk', spawnBarakoa], ['nt', spawnNita], ['mp', spawnMrP], ['mz', spawnMcZombies], ['gd', spawnGuardians], ['sp', spawnSpiders], ['pv', spawnZomboss], ['srp', spawnSRP], ['fl', spawnFlood], ['nm', spawnNecro], ['mk', spawnMakima], ['cs', spawnChainsawMan]];
+  const gated = [['6', spawnLocust], ['8', spawnVerity], ['0', spawnSlender], ['jk', spawnJoker], ['hg', spawnHorga], ['pg', spawnPlaga], ['bk', spawnBarakoa], ['nt', spawnNita], ['mp', spawnMrP], ['mz', spawnMcZombies], ['gd', spawnGuardians], ['sp', spawnSpiders], ['pv', spawnZomboss], ['srp', spawnSRP], ['fl', spawnFlood], ['nm', spawnNecro], ['mk', spawnMakima], ['cs', spawnChainsawMan], ['tv', spawnTVeronica], ['sh', spawnSirenHead]];
   for (const [f, fn] of gated) if (facOn(f)) fn();
   const fRoom = rpick(G.map.preyRooms);
   spawnUnit('ghostface', randWalkIn(fRoom).x, randWalkIn(fRoom).y, { silent: true, force: true });
@@ -15827,16 +15843,19 @@ const FACTION_DEFS = [
   { f: 'O', name: 'スライム', icon: '🟢', col: '#5cb85c', group: 'ドラクエ', panel: 'panelO' },
   { f: 'mk', name: 'マキマ', icon: '⛓️', col: '#e0503a', group: 'チェンソーマン', panel: 'panelMk', win: '館の全てがマキマの犬になった' },
   { f: 'cs', name: 'チェンソーマン', icon: '🪚', col: '#f08a3a', group: 'チェンソーマン', panel: 'panelCs', win: 'チェンソーの音だけが館に響く' },
+  { f: 'tv', name: 'T-ベロニカ', icon: '🌹', col: '#c04a6a', group: 'バイオハザード', panel: 'panelTv', win: '館はアレクシアの巣と化した' },
+  { f: 'sh', name: 'サイレンヘッド', icon: '📢', col: '#b0a080', group: 'クリーピーパスタ', panel: 'panelSh', win: '静まり返った館に、サイレンだけが鳴り続ける' },
   { f: 'pv', name: 'ゾンボス', icon: '🧟‍♂️', col: '#6aaa50', group: 'PvZ', panel: 'panelPv' },
 ];
 const FAC_BY = {}; for (const d of FACTION_DEFS) FAC_BY[d.f] = d;
 const FAC_PRESETS = {
   classic: FACTION_DEFS.filter(d => d.classic).map(d => d.f),
-  parasite: ['T', 'X', 'H', 'G', 'C', 'pg', 'fl', 'nm', 'srp'],
+  parasite: ['T', 'X', 'H', 'G', 'C', 'pg', 'fl', 'nm', 'srp', 'tv'],
   all: FACTION_DEFS.map(d => d.f),
 };
 let FAC_SEL = new Set(FAC_PRESETS.all);
 try { const s = JSON.parse(localStorage.getItem('mw_facsel') || 'null'); if (Array.isArray(s) && s.length >= 2) FAC_SEL = new Set(s.filter(f => FAC_BY[f])); } catch (e) { }
+try { const kn = JSON.parse(localStorage.getItem('mw_facknown') || 'null'), fresh = kn ? FAC_PRESETS.all.filter(f => kn.indexOf(f) < 0) : ['mk', 'cs', 'tv', 'sh']; for (const f of fresh) FAC_SEL.add(f); localStorage.setItem('mw_facknown', JSON.stringify(FAC_PRESETS.all)); } catch (e) { } // 新しく追加された陣営は既定で有効
 function facOn(f) { return !G.facOff || !G.facOff[f]; }
 /* ログのクラス (例 't', 'pg') → 陣営コード */
 function logFac(cls) {
@@ -16298,6 +16317,579 @@ function drawHubPlan(u, S, x, gy, T) {
   ctx.fillStyle = '#e8c040'; ctx.beginPath(); ctx.arc(x + S * 1.2, y - S * .9, S * .22, Math.PI, TAU); ctx.fill(); ctx.fillRect(x + S * 1.2 - S * .28, y - S * .9, S * .56, S * .08); // 呼び鈴
 }
 
+
+/* ══════════════════════════════════════════════════════════
+   T-ベロニカ陣営 (バイオハザード CODE:Veronica)
+   アレクシア(3形態)/ノスフェラトゥ/スティーブ変異体/ベロニカ生態系/アルビノイド
+   ══════════════════════════════════════════════════════════ */
+const TV_PAL = {
+  alexia: { skin: '#dcd4cc', skinD: '#a09890', skinL: '#f4eee8', cloth: '#d0c8c0', clothD: '#908880', clothL: '#ece6e0', acc: '#c02020', eye: '#e8d8a0', blood: '#d83a10' },
+  nosf: { skin: '#9aa4a8', skinD: '#5a6468', skinL: '#c4ccd0', cloth: '#d8d0c0', clothD: '#8a8270', clothL: '#f0e8d8', acc: '#6a1010', eye: '#e8f0f8', blood: '#5a0a10' },
+  steve: { skin: '#5a8a4a', skinD: '#2e5226', skinL: '#80b070', cloth: '#3a4a60', clothD: '#1e2838', clothL: '#5a6a80', acc: '#8a8a90', eye: '#e8e040', blood: '#6a1010' },
+  zomb: { skin: '#8a9a78', skinD: '#50604a', skinL: '#aabb98', cloth: '#6a5a4a', clothD: '#3a3028', clothL: '#8a7a68', acc: '#3a7a2a', eye: '#d8e0a0', blood: '#5a1a10' },
+  plant: { skin: '#3e6a2a', skinD: '#20401a', skinL: '#6a9a48', cloth: '#6a2a3a', clothD: '#3a1020', clothL: '#a04a60', acc: '#c83a5a', eye: '#f0e0a0', blood: '#4a6a20' },
+  worm: { skin: '#b07a78', skinD: '#6a4040', skinL: '#d8a0a0', cloth: '#b07a78', clothD: '#6a4040', clothL: '#d8a0a0', acc: '#e8c0b0', eye: '#2a0a0a', blood: '#6a2020' },
+  bee: { skin: '#d8a020', skinD: '#6a4a10', skinL: '#f0c848', cloth: '#1a1410', clothD: '#0a0806', clothL: '#3a3020', acc: '#c83a5a', eye: '#300808', blood: '#a0c040' },
+  ant: { skin: '#5a1a18', skinD: '#2a0a0a', skinL: '#8a3a30', cloth: '#5a1a18', clothD: '#2a0a0a', clothL: '#8a3a30', acc: '#c83a5a', eye: '#100', blood: '#a0c040' },
+  alb: { skin: '#e8e0e4', skinD: '#b0a0a8', skinL: '#fff8fc', cloth: '#e8e0e4', clothD: '#b0a0a8', clothL: '#fff', acc: '#f0a0b0', eye: '#d02030', blood: '#c83040' },
+  baby: { skin: '#e8d8c8', skinD: '#a08070', skinL: '#fff0e0', cloth: '#e8d8c8', clothD: '#a08070', clothL: '#fff0e0', acc: '#e05020', eye: '#f0c040', blood: '#e05020' },
+};
+const tvPlanSp = (name, ic, plan, hp, r, sc, walk, run, pal, atks, extra) => Object.assign(SRPC(name, ic, null, plan, hp, r, sc, walk, run, pal, atks), { fac: 'tv', srp: undefined }, extra || {});
+
+SP.alexia = {
+  name: 'アレクシア・アッシュフォード', ic: '🌹', fac: 'tv', kind: 'biped', head: 'human', ai: 'srp', unique: 1, superArmor: 1, mkImmune: 1, bloodFire: 1, tvCarrier: 1,
+  r: 9, scale: 1.08, hp: 700, walk: 40, run: 86, mass: 2.2,
+  pal: Object.assign({}, TV_PAL.alexia), pp: {}, fx: { tv: 'alexia1', wounds: 1 }, hair: '#ecd890',
+  gait: { amp: .38, freq: .75, armSwing: .25, bob: .25 }, pose0: { armS: .15, armE: .25, lean: -.04, crouch: 0, headP: -.05 },
+  forms: [
+    { hpm: 0, spdMul: .2, scale: 1.9, log: '🌹 アレクシアの肉体が裂け、巨大な植物体へと変貌した —— 第2形態！', pal: { skin: '#b8a898', cloth: '#6a2a3a', acc: '#c83a5a' }, fx: { tv: 'alexia2' }, walk: 6, run: 10 },
+    { hpm: 0, spdMul: 6, scale: 1.45, log: '🦋 蛹を破り、翼を持つ女王が羽化した —— アレクシア第3形態！', pal: { skin: '#c8a888', cloth: '#8a3a20', acc: '#f06a20', eye: '#ff4020' }, fx: { tv: 'alexia3', claws: 1 }, walk: 70, run: 170 },
+  ],
+  formAtks: [[
+    AT({ n: '炎の血', dmg: 22, reach: 0, windup: .5, active: .08, rec: .5, cd: 2, type: 'proj', projKind: 'bullet', minR: 40, maxR: 420, anim: 'spit', snd: 'whoosh', projStyle: 'fireball' }),
+    AT({ n: '血の発火', dmg: 26, reach: 0, windup: .6, active: .14, rec: .6, cd: 4.5, type: 'aoe', aoeR: 70, custom: 'bloodFlare', anim: 'palmWave', snd: 'whoosh' }),
+    AT({ n: '燃える血飛沫', dmg: 16, reach: 0, windup: .4, active: .3, rec: .5, cd: 3.4, type: 'cone', coneR: 110, arc: 1, col: 'rgba(255,120,40,.5)', anim: 'gasSpray', snd: 'whoosh' }),
+    AT({ n: '平手打ち', dmg: 14, reach: 16, windup: .26, active: .12, rec: .34, cd: .8, anim: 'hook', knock: 180, snd: 'hit' }),
+  ], [
+    AT({ n: '触手の薙ぎ払い', dmg: 30, reach: 80, arc: 3, windup: .5, active: .2, rec: .5, cd: 1.6, anim: 'sweep', knock: 320, snd: 'thud' }),
+    AT({ n: '蔓の捕縛', dmg: 22, reach: 110, windup: .45, active: .14, rec: .5, cd: 3.2, anim: 'tongue', pull: 260, snd: 'squelch' }),
+    AT({ n: '炎の雨', dmg: 18, reach: 0, windup: .7, active: .1, rec: .6, cd: 3.6, type: 'proj', projKind: 'bullet', minR: 60, maxR: 460, volley: 5, spread: .22, anim: 'roar', snd: 'whoosh', projStyle: 'fireball' }),
+    AT({ n: '血炎の奔流', dmg: 20, reach: 0, windup: .5, active: .3, rec: .5, cd: 4.2, type: 'cone', coneR: 150, arc: 1.2, col: 'rgba(255,110,30,.55)', anim: 'gasSpray', snd: 'whoosh' }),
+    AT({ n: '幼体の産み落とし', dmg: 0, reach: 0, windup: .6, active: .1, rec: .6, cd: 9, type: 'summon', summon: 'alexiaBaby', minR: 50, maxR: 320, anim: 'roar', cond: () => countKey('alexiaBaby') < 8 }),
+  ], [
+    AT({ n: '女王の爪', dmg: 26, reach: 20, arc: 2, windup: .22, active: .12, rec: .3, cd: .8, anim: 'clawFrenzy', snd: 'slash' }),
+    AT({ n: '翼の突進', dmg: 34, reach: 22, windup: .3, active: .34, rec: .4, cd: 3, type: 'dash', dash: 280, anim: 'charge', knock: 360, snd: 'whoosh' }),
+    AT({ n: '急降下', dmg: 38, reach: 22, windup: .3, active: .34, rec: .4, cd: 4, type: 'leap', leap: 320, anim: 'pounce', down: 1, snd: 'thud' }),
+    AT({ n: '炎の散弾', dmg: 16, reach: 0, windup: .45, active: .1, rec: .5, cd: 2.6, type: 'proj', projKind: 'bullet', minR: 40, maxR: 480, volley: 7, spread: .14, anim: 'palmWave', snd: 'whoosh', projStyle: 'fireball' }),
+    AT({ n: '血の大爆炎', dmg: 34, reach: 0, windup: .7, active: .16, rec: .6, cd: 6, type: 'aoe', aoeR: 120, custom: 'bloodFlare', anim: 'roar', snd: 'boom' }),
+  ]],
+  desc: 'T-ベロニカに完全適合したアレクシア。血が空気に触れると発火する。倒すと巨大な植物体(第2形態)、さらに翼を持つ女王(第3形態)へと変貌する。'
+};
+SP.alexia.atks = SP.alexia.formAtks[0];
+SP.nosferatu = {
+  name: 'ノスフェラトゥ', ic: '🧊', fac: 'tv', kind: 'biped', head: 'human', ai: 'srp', unique: 1, superArmor: 1, tvCarrier: 1,
+  r: 12, scale: 1.4, hp: 820, walk: 36, run: 70, mass: 4,
+  pal: Object.assign({}, TV_PAL.nosf), pp: { shoulder: 5.4, torsoW: 6.6, armU: 10, armL: 10 }, fx: { tv: 'nosf', heart: 1, tentacle: 1, noEyes: 1 },
+  gait: { amp: .4, freq: .65, armSwing: .2, bob: .4 }, pose0: { armS: .1, armE: .2, lean: .25, crouch: .12, headP: .2 },
+  atks: [
+    AT({ n: '毒ガス噴射', dmg: 8, reach: 0, windup: .5, active: .4, rec: .5, cd: 3.4, type: 'cone', coneR: 130, arc: 1.1, custom: 'gasCone', anim: 'gasSpray', snd: 'whoosh' }),
+    AT({ n: '触腕の鞭', dmg: 26, reach: 76, arc: 1.4, windup: .38, active: .14, rec: .45, cd: 1.5, anim: 'tailwhip', pull: 180, snd: 'slash' }),
+    AT({ n: '毒霧の吐息', dmg: 6, reach: 0, windup: .6, active: .2, rec: .6, cd: 7, type: 'aoe', aoeR: 90, custom: 'gasCloud', anim: 'roar', snd: 'whoosh' }),
+    AT({ n: '跳躍', dmg: 30, reach: 20, windup: .36, active: .34, rec: .5, cd: 4, type: 'leap', leap: 260, anim: 'pounce', down: 1, snd: 'thud' }),
+    AT({ n: '爪の一撃', dmg: 20, reach: 18, windup: .3, active: .12, rec: .4, cd: 1, anim: 'slash', snd: 'slash' }),
+  ],
+  desc: 'アレクサンダー・アッシュフォードのなれの果て。T-ベロニカに適合できず、ベロニカ毒素を吐く異形となり15年間拘束されていた。露出した心臓が弱点。'
+};
+SP.steveMon = {
+  name: 'スティーブ(変異体)', ic: '🪓', fac: 'tv', kind: 'biped', head: 'tyrant', ai: 'srp', unique: 1, superArmor: 1, held: 'axe', tvCarrier: 1,
+  r: 13, scale: 1.55, hp: 760, walk: 46, run: 120, mass: 4.5,
+  pal: Object.assign({}, TV_PAL.steve), pp: { shoulder: 6, torsoW: 7.4, armU: 10.6, armL: 10.4 }, fx: { tv: 'steve', bareTorso: 1, muscle: 1, rage: 1 },
+  gait: { amp: .5, freq: .7, armSwing: .45, bob: .55 }, pose0: { armS: .3, armE: .3, lean: .15, crouch: .08, headP: .1 },
+  atks: [
+    AT({ n: '大斧の振り下ろし', dmg: 40, reach: 26, windup: .5, active: .14, rec: .6, cd: 1.6, anim: 'overhead', knock: 300, down: 1, snd: 'thud' }),
+    AT({ n: '斧の大旋回', dmg: 30, reach: 0, windup: .5, active: .18, rec: .6, cd: 4, type: 'aoe', aoeR: 70, anim: 'bigSpin', knock: 300, snd: 'slash' }),
+    AT({ n: '猛進', dmg: 30, reach: 22, windup: .3, active: .36, rec: .5, cd: 3.4, type: 'dash', dash: 240, anim: 'charge', knock: 380, snd: 'thud' }),
+    AT({ n: '掴み上げ', dmg: 28, reach: 22, windup: .3, active: .14, rec: .45, cd: 5, type: 'grab', hold: 'slam', anim: 'grab', snd: 'thud', cond: (u, t) => t.sp.mass < 5 }),
+  ],
+  desc: 'アレクシアにT-ベロニカを注入されたスティーブ。緑の巨体で大斧を振るう。追い詰められると正気を取り戻すことがある。'
+};
+SP.tvZombie = {
+  name: 'T-ベロニカ感染者', ic: '🌿', fac: 'tv', kind: 'biped', head: 'zombie', ai: 'srp', tvCarrier: 1,
+  r: 8, scale: 1, hp: 90, walk: 26, run: 58, mass: 1,
+  pal: Object.assign({}, TV_PAL.zomb), pp: {}, fx: { tv: 'vine', wounds: 1 },
+  gait: { amp: .5, freq: .7, armSwing: .2, bob: .4 }, pose0: { armS: .9, armE: .2, lean: .2, crouch: .05, headP: .2 },
+  atks: [
+    AT({ n: '噛みつき', dmg: 12, reach: 12, windup: .4, active: .12, rec: .5, cd: 1, anim: 'bite', snd: 'squelch' }),
+    AT({ n: '蔓の鞭', dmg: 10, reach: 44, windup: .4, active: .12, rec: .5, cd: 2.2, anim: 'slash', pull: 120, snd: 'slash' }),
+  ],
+  desc: 'T-ベロニカの花粉・体液で感染した人間。体から蔓が伸び、死ぬと花粉を撒き散らす。'
+};
+SP.vPlant = tvPlanSp('ベロニカ・プラント', '🌺', 'vplant', 260, 14, 1.2, 0, 0, TV_PAL.plant, [
+  AT({ n: '蔓の鞭', dmg: 16, reach: 110, arc: 3, windup: .4, active: .14, rec: .5, cd: 1.3, anim: 'slash', pull: 160, snd: 'slash' }),
+  AT({ n: '花粉散布', dmg: 0, reach: 0, windup: .6, active: .2, rec: .6, cd: 8, type: 'aoe', aoeR: 100, custom: 'pollen', anim: 'roar', snd: 'whoosh' }),
+], { ai: 'xStatic', mass: 30, tvCarrier: 1, desc: 'アレクシアが張り巡らせた巨大植物。蔓で薙ぎ払い、花粉で周囲の生態系を感染させ、根を伸ばして増殖する。' });
+SP.vWorm = tvPlanSp('ベロニカ・ワーム', '🪱', 'worm', 150, 11, 1.25, 36, 90, TV_PAL.worm, [
+  AT({ n: '地中突き上げ', dmg: 26, reach: 0, windup: .5, active: .14, rec: .5, cd: 3, type: 'aoe', aoeR: 56, anim: 'h_leap', toss: 1, snd: 'thud' }),
+  AT({ n: '丸呑み噛みつき', dmg: 18, reach: 16, windup: .3, active: .12, rec: .4, cd: .9, anim: 'bite', snd: 'squelch' }),
+], { segs: 8, tvBurrow: 1, desc: '汚染土壌で巨大化したミミズ。地中を進み、足元から奇襲する。' });
+SP.vBee = tvPlanSp('ベロニカ・ハチ', '🐝', 'vbee', 26, 5, .8, 64, 170, TV_PAL.bee, [
+  AT({ n: '毒針', dmg: 7, reach: 12, windup: .2, active: .1, rec: .3, cd: .6, anim: 'b_dive', snd: 'xroach' }),
+  AT({ n: '毒針射出', dmg: 6, reach: 0, windup: .3, active: .06, rec: .4, cd: 2.6, type: 'proj', projKind: 'bullet', minR: 40, maxR: 260, anim: 'spit', projStyle: 'needle' }),
+], { tvPoisonHit: 1, desc: 'ウイルスの素体となったハチが二次感染・巨大化したもの。毒針で刺す。' });
+SP.vAnt = tvPlanSp('ベロニカ・アリ', '🐜', 'vant', 60, 8, 1, 48, 120, TV_PAL.ant, [
+  AT({ n: '大顎', dmg: 12, reach: 14, windup: .26, active: .12, rec: .34, cd: .8, anim: 'bite', snd: 'squelch' }),
+  AT({ n: '蟻酸', dmg: 9, reach: 0, windup: .4, active: .06, rec: .4, cd: 3, type: 'proj', projKind: 'acid', minR: 40, maxR: 220, anim: 'spit', projStyle: 'acidglob' }),
+], { desc: '女王アリの遺伝子を持つ巨大アリ。女王アレクシアに仕え、大顎と蟻酸で巣を守る。' });
+SP.albinoidJ = tvPlanSp('アルビノイド(幼体)', '🦎', 'albinoid', 44, 7, .8, 40, 110, TV_PAL.alb, [
+  AT({ n: '噛みつき', dmg: 7, reach: 12, windup: .24, active: .1, rec: .3, cd: .7, anim: 'bite', snd: 'squelch' }),
+  AT({ n: '放電', dmg: 8, reach: 0, windup: .4, active: .12, rec: .5, cd: 3.4, type: 'aoe', aoeR: 46, custom: 'shock', anim: 'roar', snd: 'blip' }),
+], { tvGrow: 1, desc: 'T-ベロニカの遺伝子組み換えで生まれた水棲生物の幼体。成長すると強力な放電器官を持つ。' });
+SP.albinoidA = tvPlanSp('アルビノイド(成体)', '⚡', 'albinoid', 280, 14, 1.4, 42, 120, TV_PAL.alb, [
+  AT({ n: '噛み砕き', dmg: 22, reach: 18, windup: .3, active: .12, rec: .4, cd: .9, anim: 'bite', snd: 'squelch' }),
+  AT({ n: '大放電', dmg: 24, reach: 0, windup: .6, active: .14, rec: .6, cd: 4, type: 'aoe', aoeR: 120, custom: 'shock', anim: 'roar', snd: 'blip' }),
+  AT({ n: '電撃突進', dmg: 22, reach: 18, windup: .3, active: .3, rec: .4, cd: 3.6, type: 'dash', dash: 220, anim: 'charge', knock: 240, snd: 'whoosh' }),
+], { desc: '成長したアルビノイド。全身から強烈な電撃を放ち、周囲の者を痺れさせる。' });
+SP.alexiaBaby = tvPlanSp('アレクシアの幼体', '🔥', 'vant', 26, 6, .7, 50, 130, TV_PAL.baby, [
+  AT({ n: '自爆発火', dmg: 22, reach: 14, windup: .45, active: .1, rec: .2, cd: 1, type: 'aoe', aoeR: 54, custom: 'babyBoom', anim: 'roar', snd: 'boom' }),
+], { tvBaby: 1, desc: 'アレクシア第2形態が産み落とす幼体。敵に張り付くと体液が発火し爆発する。' });
+const TV_ORDER = ['alexia', 'nosferatu', 'steveMon', 'tvZombie', 'vPlant', 'vWorm', 'vBee', 'vAnt', 'albinoidJ', 'albinoidA', 'alexiaBaby'];
+
+/* ══════════════════════════════════════════════════════════
+   サイレンヘッド陣営 (Trevor Henderson の未確認生物)
+   ══════════════════════════════════════════════════════════ */
+SP.sirenHead = Object.assign(SRPC('サイレンヘッド', '📢', null, 'siren', 1500, 14, 1, 34, 150, { skin: '#7a6a58', skinD: '#3e342a', skinL: '#a8947a', cloth: '#5a5048', clothD: '#2a2420', clothL: '#8a8070', acc: '#9a9a9a', eye: '#f0e0b0', blood: '#4a1a10' }, [
+  AT({ n: 'サイレン', dmg: 18, reach: 0, windup: .9, active: .3, rec: .8, cd: 9, type: 'aoe', aoeR: 300, custom: 'siren', anim: 'roar', snd: 'roar' }),
+  AT({ n: '長腕の叩きつけ', dmg: 36, reach: 56, arc: 1.6, windup: .5, active: .14, rec: .5, cd: 1.5, anim: 'slash', knock: 340, down: 1, snd: 'thud' }),
+  AT({ n: '掴み上げ', dmg: 34, reach: 40, windup: .45, active: .14, rec: .5, cd: 4.5, type: 'grab', hold: 'maul', anim: 'grab', snd: 'rip', cond: (u, t) => t.sp.mass < 6 }),
+  AT({ n: '踏み潰し', dmg: 30, reach: 0, windup: .5, active: .14, rec: .5, cd: 3.4, type: 'aoe', aoeR: 64, anim: 'stomp', down: 1, snd: 'thud' }),
+  AT({ n: '声真似', dmg: 0, reach: 0, windup: .5, active: .2, rec: .5, cd: 14, type: 'aoe', aoeR: 1, custom: 'mimic', anim: 'roar', snd: 'blip' }),
+  AT({ n: '長い脚の疾走', dmg: 32, reach: 30, arc: 2, windup: .14, active: .4, rec: .4, cd: 4, type: 'run', anim: 'runTackle', knock: 400, down: 1, snd: 'thud' }),
+]), { fac: 'sh', srp: undefined, ai: 'srp', unique: 1, superArmor: 1, mass: 12, topMul: 9, mkImmune: 1, desc: '頭部が2基のサイレンになった、高さ12mの細長い怪物。サイレンを鳴らす度に館中へ轟音が響き、近くの者は耳をやられ動けなくなる。ラジオの声を真似て獲物を誘い、じっとしていると電柱や枯れ木に紛れる。' });
+SP.longHorse = Object.assign(SRPC('ロングホース', '🐴', null, 'lhorse', 620, 13, 1, 30, 110, { skin: '#2a2622', skinD: '#100e0c', skinL: '#4a4440', cloth: '#2a2622', clothD: '#100e0c', clothL: '#4a4440', acc: '#d8d0c0', eye: '#f0f0f0', blood: '#3a1010' }, [
+  AT({ n: '首の叩きつけ', dmg: 30, reach: 70, arc: 1.4, windup: .5, active: .14, rec: .5, cd: 1.6, anim: 'slash', knock: 300, snd: 'thud' }),
+  AT({ n: '踏み潰し', dmg: 26, reach: 0, windup: .45, active: .14, rec: .5, cd: 3, type: 'aoe', aoeR: 60, anim: 'stomp', down: 1, snd: 'thud' }),
+  AT({ n: '長い首の噛みつき', dmg: 22, reach: 60, windup: .35, active: .12, rec: .4, cd: 2, anim: 'bite', snd: 'squelch' }),
+]), { fac: 'sh', srp: undefined, ai: 'srp', unique: 1, superArmor: 1, mass: 10, topMul: 6.5, mkImmune: 1, desc: '死の前触れとされる、長大な首と脚を持つ骨ばった馬。周囲の敵には「死の前兆」が付き、受けるダメージが増える。' });
+SP.cartoonCat = Object.assign(SRPC('カートゥーン・キャット', '🐈‍⬛', null, 'ccat', 480, 10, 1, 60, 190, { skin: '#141414', skinD: '#000', skinL: '#3a3a3a', cloth: '#f4f4f0', clothD: '#b0b0a8', clothL: '#fff', acc: '#f4f4f0', eye: '#fff', blood: '#3a1010' }, [
+  AT({ n: '伸びる腕', dmg: 20, reach: 96, arc: 1.2, windup: .34, active: .14, rec: .4, cd: 1.4, anim: 'slash', pull: 220, snd: 'whoosh' }),
+  AT({ n: '引きずり込み', dmg: 26, reach: 24, windup: .3, active: .14, rec: .4, cd: 4, type: 'grab', hold: 'maul', anim: 'grab', snd: 'rip', cond: (u, t) => t.sp.mass < 5 }),
+  AT({ n: '笑う声', dmg: 0, reach: 0, windup: .4, active: .2, rec: .4, cd: 16, type: 'aoe', aoeR: 1, custom: 'mimic', anim: 'roar', snd: 'blip' }),
+  AT({ n: 'ゴム足ダッシュ', dmg: 22, reach: 24, arc: 2, windup: .12, active: .36, rec: .3, cd: 3, type: 'run', anim: 'runPunch', knock: 280, snd: 'hit' }),
+]), { fac: 'sh', srp: undefined, ai: 'srp', unique: 1, superArmor: 1, mass: 5, topMul: 5.6, mkImmune: 1, desc: '1930年代のアニメのような白黒の猫。ゴムのように腕を伸ばし、声を真似て獲物を誘う。' });
+const SH_ORDER = ['sirenHead', 'longHorse', 'cartoonCat'];
+
+/* ── 状態異常: 発火(血の炎) / ベロニカ毒 / 感電 / 死の前兆 ── */
+function tvOnHit(att, tgt, dmg, o) {
+  if (tgt.shDoom > 0 && dmg > 0) dmg *= 1.25; // ロングホースの死の前兆
+  if (!att || att === tgt || dmg <= 0) return dmg;
+  if (att.sp.bloodFire && att.fac !== tgt.fac) tgt.tvBurn = Math.max(tgt.tvBurn || 0, 3); // アレクシアの攻撃は全て発火する
+  if (att.sp.tvPoisonHit) tgt.tvPoison = Math.max(tgt.tvPoison || 0, 3);
+  if (tgt.sp.bloodFire && dist(att.x, att.y, tgt.x, tgt.y) < 70 && rchance(.5)) { // 返り血が空気に触れて発火
+    att.tvBurn = Math.max(att.tvBurn || 0, 2.5);
+    for (let i = 0; i < 3; i++) addFire(tgt.x + rnd(-8, 8), tgt.y + rnd(-6, 6), unitTopY(tgt) * .5, 2);
+  }
+  if ((att.sp.tvCarrier || att.virusFac === 'tv' || att.fac === 'tv') && tgt.fac === 'N' && isInfectHost(tgt)) tgt.tvInfV = Math.min(1, (tgt.tvInfV || 0) + .14);
+  if (att.virusFac && att.virusFac !== 'tv' && tgt.fac === 'N' && isInfectHost(tgt)) { if (att.virusFac === 'G') tgt.infG = Math.min(1, (tgt.infG || 0) + .12); else tgt.inf = Math.min(1, (tgt.inf || 0) + .12); }
+  return dmg;
+}
+function tvHostileHit(u, o, dmg, extra) { if (o === u || o.gone || o.dead || !hostileTo(u, o)) return false; dealDamage(u, o, dmg, extra || { kdir: angTo(u.x, u.y, o.x, o.y) }); return true; }
+function tvAddCloud(x, y, r, kind, src, life) { (G.tvClouds = G.tvClouds || []).push({ x, y, r, kind, src, t: 0, life: life || 6, tick: 0 }); if (G.tvClouds.length > 30) G.tvClouds.shift(); }
+const TV_CUSTOM = {
+  bloodFlare(u, d, a) { // 血が空気に触れて燃え上がる: 標的の足元から火柱
+    const c = a.tgt && !a.tgt.gone ? a.tgt : u;
+    for (let i = 0; i < 5; i++) { const px = c.x + rnd(-d.aoeR * .6, d.aoeR * .6), py = c.y + rnd(-d.aoeR * .4, d.aoeR * .4); addFire(px, py, 6, 8); addBlood(px, py, 10, 2, '#d83a10'); }
+    addDecal('scorch', c.x, c.y, d.aoeR * .6); addShock(c.x, c.y, 10, d.aoeR, 'rgba(255,120,40,.6)'); addFlash(c.x, c.y, d.aoeR * 2, '255,140,60', .9, .3); addShake(6); Sfx.play('whoosh', c.x, c.y);
+    Spatial.query(c.x, c.y, d.aoeR + 20, _q);
+    for (const o of _q.slice()) if (dist(c.x, c.y, o.x, o.y) < d.aoeR + o.r && tvHostileHit(u, o, d.dmg)) o.tvBurn = Math.max(o.tvBurn || 0, 4);
+  },
+  babyBoom(u, d, a) {
+    addFire(u.x, u.y, 6, 16); addDecal('scorch', u.x, u.y, 30); addShock(u.x, u.y, 8, d.aoeR, 'rgba(255,140,40,.7)'); addFlash(u.x, u.y, 120, '255,150,60', 1, .25); Sfx.play('boom', u.x, u.y); addShake(5);
+    Spatial.query(u.x, u.y, d.aoeR + 20, _q);
+    for (const o of _q.slice()) if (dist(u.x, u.y, o.x, o.y) < d.aoeR + o.r && tvHostileHit(u, o, d.dmg)) o.tvBurn = Math.max(o.tvBurn || 0, 3);
+    u.hp = 0; killUnit(null, u, { gib: 1, noRise: 1 });
+  },
+  pollen(u, d, a) { tvAddCloud(u.x, u.y, d.aoeR, 'pollen', u, 7); Sfx.play('whoosh', u.x, u.y); },
+  gasCloud(u, d, a) { tvAddCloud(u.x, u.y, d.aoeR, 'gas', u, 6); Sfx.play('whoosh', u.x, u.y); },
+  gasCone(u, d, a) {
+    for (let i = 1; i <= 3; i++) tvAddCloud(u.x + Math.cos(u.faceA) * i * 38, u.y + Math.sin(u.faceA) * i * 38, 34 + i * 8, 'gas', u, 5);
+    Sfx.play('whoosh', u.x, u.y);
+    Spatial.query(u.x, u.y, d.coneR + 30, _q);
+    for (const o of _q.slice()) { const dd = dist(u.x, u.y, o.x, o.y); if (dd < d.coneR + o.r && Math.abs(angDiff(u.faceA, angTo(u.x, u.y, o.x, o.y))) < d.arc / 2 + .35 && tvHostileHit(u, o, d.dmg)) o.tvPoison = Math.max(o.tvPoison || 0, 5); }
+  },
+  shock(u, d, a) { // アルビノイドの放電: 周囲の敵へ稲妻が走り痺れさせる
+    const hits = [];
+    Spatial.query(u.x, u.y, d.aoeR + 20, _q);
+    for (const o of _q.slice()) if (dist(u.x, u.y, o.x, o.y) < d.aoeR + o.r && tvHostileHit(u, o, d.dmg)) { o.stunT = Math.max(o.stunT || 0, u.key === 'albinoidA' ? 1.4 : .7); hits.push(o); }
+    (G.tvBolts = G.tvBolts || []).push({ x: u.x, y: u.y, z: unitTopY(u) * .5, tg: hits.map(o => ({ x: o.x, y: o.y, z: unitTopY(o) * .5 })), r: d.aoeR, t: 0 });
+    addFlash(u.x, u.y, d.aoeR * 2, '170,210,255', .9, .2); addShock(u.x, u.y, 6, d.aoeR, 'rgba(170,210,255,.6)'); Sfx.play('blip', u.x, u.y); Sfx.play('keen', u.x, u.y);
+  },
+  siren(u, d, a) { sirenBlast(u, d); },
+  mimic(u, d, a) { shMimic(u); },
+};
+
+/* ── サイレン: 鳴らす度に館中へ轟音 ── */
+function playSirenSound(big) {
+  const S = Sfx; if (!S.on || !S.ctx) return;
+  try {
+    const c = S.ctx, t0 = c.currentTime, dur = big ? 3.4 : 2.4, vol = big ? 1.1 : .8;
+    const g = c.createGain(); g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + .3); g.gain.setValueAtTime(vol, t0 + dur - .6); g.gain.exponentialRampToValueAtTime(.0001, t0 + dur); g.connect(S.master);
+    for (const [f, det, ty] of [[380, 0, 'sawtooth'], [384, 7, 'sawtooth'], [570, -5, 'square'], [190, 0, 'sawtooth']]) {
+      const o = c.createOscillator(); o.type = ty; o.detune.value = det;
+      o.frequency.setValueAtTime(f * .62, t0); o.frequency.linearRampToValueAtTime(f * 1.2, t0 + dur * .38); o.frequency.setValueAtTime(f * 1.2, t0 + dur * .6); o.frequency.linearRampToValueAtTime(f * .7, t0 + dur);
+      const og = c.createGain(); og.gain.value = ty === 'square' ? .12 : .26; o.connect(og); og.connect(g); o.start(t0); o.stop(t0 + dur + .05);
+    }
+    S.noise(dur * .8, .3, 'bandpass', 2400, 700); // 電波の雑音
+  } catch (e) { }
+}
+function sirenBlast(u, d) {
+  const big = u.hp < u.mhp * .5 || rchance(.3);
+  playSirenSound(big);
+  addNoise(u.x, u.y, 3000, u.fac);
+  for (let i = 0; i < 4; i++) addShock(u.x, u.y, 12 + i * 30, d.aoeR * (.7 + i * .45), `rgba(255,236,200,${.55 - i * .1})`);
+  addShake(big ? 18 : 12); setFocus(u.x, u.y);
+  (G.shWaves = G.shWaves || []).push({ id: u.id, t: 0, big });
+  let lured = 0;
+  for (const o of G.units) {
+    if (o === u || o.gone || o.dead) continue;
+    const dd = dist(u.x, u.y, o.x, o.y);
+    if (dd < d.aoeR && hostileTo(u, o)) { // 至近距離: 鼓膜を破る衝撃
+      const f = 1 - dd / d.aoeR;
+      dealDamage(u, o, d.dmg * (.5 + f), { kdir: angTo(u.x, u.y, o.x, o.y) });
+      o.stunT = Math.max(o.stunT || 0, .6 + f * 1.8); o.deafT = 6;
+      if (f > .5 && o.sp.mass < 4) { interrupt(o); o.state = 'stagger'; o.st = 0; }
+    }
+    if (o.fac === 'N') { o.threat = true; o.panicT = Math.max(o.panicT || 0, 4); o.stamina = Math.min(1, (o.stamina || 0) + .3); continue; }
+    if (o.fac !== u.fac && dd < 1600 && dd > 120 && !o.tgt && lured < 24 && o.sp.walk > 0 && rchance(.55)) { setDest(o, u.x + rnd(-60, 60), u.y + rnd(-40, 40)); lured++; } // 轟音に引き寄せられる
+  }
+  addLog(big ? '📢 サイレンヘッドのサイレンが館を揺るがした —— 「ウウウウゥゥゥーーーーーッ！！」' : '📢 サイレンが鳴り響いた —— 「ウゥゥーーーッ」', 'sh', big);
+}
+const SH_VOICES = ['📻 ザザッ…「…たすけて…こっちよ…」', '📻 「…ママ…？ ママなの…？」', '📻 ザ…ザザ…「こちら救助隊…生存者はこちらへ…」', '📻 「…ここは安全だ…来い…」', '📻 ザザッ「緊急放送…直ちに…避難…」ザザ', '📻 「…ねえ、あそぼ…」'];
+function shMimic(u) {
+  addLog(`${rpick(SH_VOICES)} —— ${u.sp.name}が声を真似ている`, 'sh', false);
+  if (Sfx.on && Sfx.ctx) { Sfx.noise(.9, .25, 'bandpass', 1400, 900); Sfx.osc('sine', 330, 260, .6, .12); }
+  for (const o of G.units) {
+    if (o.gone || o.dead || o === u) continue;
+    const dd = dist(u.x, u.y, o.x, o.y); if (dd > 900 || dd < 80) continue;
+    if (o.fac === 'N' && o.sp.mortal && rchance(.45)) { o.panicT = 0; setDest(o, u.x + rnd(-40, 40), u.y + rnd(-30, 30)); o.shLured = 4; }
+    else if (o.fac !== u.fac && !o.tgt && o.sp.walk > 0 && rchance(.3)) setDest(o, u.x + rnd(-50, 50), u.y + rnd(-40, 40));
+  }
+}
+
+/* ── ウイルス撃破感染: t/G/T-ベロニカ で倒された化け物は同種のまま蘇る ── */
+const VIRUS_NAME = { T: 't-ウイルス', G: 'G-ウイルス', tv: 'T-ベロニカ' };
+const VIRUS_COL = { T: '200,40,40', G: '150,90,200', tv: '90,190,70' };
+function virusOf(att) { if (!att) return null; if (att.virusFac) return att.virusFac; return att.fac === 'T' || att.fac === 'G' || att.fac === 'tv' ? att.fac : null; }
+function virusMonsterRise(att, u, o) {
+  const v = virusOf(att);
+  if (!v || u.fac === v || u.fac === 'N' || u.fac === 'pg' || o.gib || o.noRise || o.selfBoom) return false;
+  if (u.sp.ai === 'xStatic' || u.sp.tvBaby || u.sp.plan === 'hub' || u.key === 'makima' || u.key === 'denji') return false;
+  const cap = v === 'T' ? G.capT : v === 'G' ? G.capG : 60;
+  if (countFac(v) >= (cap || 60) + 10) return false;
+  if (!rchance(.8)) return false;
+  makeCorpse(u, { riseT: 4 + rnd(0, 3), riseAs: u.key, riseSize: u.sizeMul || 1, virusFac: v, decap: o.decap });
+  if (rchance(.5) || u.sp.unique) addLog(`☣️ ${u.sp.name}の死骸に${VIRUS_NAME[v]}が回っていく…`, v === 'tv' ? 'tv' : v === 'G' ? 'g' : 't', !!u.sp.unique);
+  return true;
+}
+function virusConvert(o, v) {
+  if (o.grab) releaseGrab(o); interrupt(o);
+  o.fac = v; o.team = v; o.virusFac = v; o.mkCtrl = 0; o.tgt = null; o.aggro = null;
+  o.mhp = Math.round(o.mhp * 1.15); o.hp = o.mhp; o.dmgMul = (o.dmgMul || 1) * 1.1;
+  if (v === 'T') o.regen = Math.max(o.regen || 0, 1.5);
+  addLog(`🧟 ${VIRUS_NAME[v]}で${o.sp.name}が変異体として蘇った！`, v === 'tv' ? 'tv' : v === 'G' ? 'g' : 't', !!o.sp.unique);
+}
+function drawVirusMark(u) {
+  const c = VIRUS_COL[u.virusFac] || '200,40,40', y = u.y * SQ, T = G.time + u.id;
+  ctx.fillStyle = `rgba(${c},${.16 + Math.sin(T * 3) * .05})`; ctx.beginPath(); ctx.ellipse(u.x, y, u.r * 1.5, u.r * .7, 0, 0, TAU); ctx.fill();
+  ctx.strokeStyle = `rgba(${c},.55)`; ctx.lineWidth = .8;
+  for (let i = 0; i < 5; i++) { const a = i * 1.26 + T * .3; ctx.beginPath(); ctx.moveTo(u.x + Math.cos(a) * u.r * .4, y + Math.sin(a) * u.r * .2); ctx.quadraticCurveTo(u.x + Math.cos(a + .4) * u.r, y + Math.sin(a + .4) * u.r * .5, u.x + Math.cos(a) * u.r * 1.5, y + Math.sin(a) * u.r * .7); ctx.stroke(); }
+}
+
+/* ── 陣営の毎フレーム処理 ── */
+function updateTvSh(dt) {
+  if (G.tvClouds) for (let i = G.tvClouds.length - 1; i >= 0; i--) {
+    const c = G.tvClouds[i]; c.t += dt; c.tick -= dt;
+    if (c.t >= c.life) { G.tvClouds.splice(i, 1); continue; }
+    if (rchance(.35)) addPart({ k: 'smoke', x: c.x + rnd(-c.r, c.r) * .7, y: c.y + rnd(-c.r, c.r) * .5, z: 4, vx: rnd(-6, 6), vy: rnd(-4, 4), vz: rnd(3, 8), life: 1.4, t: 0, s: rnd(4, 8), col: c.kind === 'pollen' ? '#e8d060' : '#8aa040' });
+    if (c.tick > 0) continue; c.tick = .5;
+    Spatial.query(c.x, c.y, c.r + 10, _q);
+    for (const o of _q) {
+      if (o.gone || o.dead || o.fac === 'tv' || dist(c.x, c.y, o.x, o.y) > c.r) continue;
+      if (c.kind === 'pollen') { // 花粉: 生態系への二次感染
+        if (o.fac === 'N' && isInfectHost(o)) o.tvInfV = Math.min(1, (o.tvInfV || 0) + .08);
+        else if (o.fac !== 'N') o.tvPoison = Math.max(o.tvPoison || 0, 1.5);
+      } else { o.tvPoison = Math.max(o.tvPoison || 0, 2.5); o.slowT = Math.max(o.slowT || 0, 1); }
+    }
+  }
+  if (G.tvBolts) for (let i = G.tvBolts.length - 1; i >= 0; i--) { G.tvBolts[i].t += dt; if (G.tvBolts[i].t > .35) G.tvBolts.splice(i, 1); }
+  if (G.shWaves) for (let i = G.shWaves.length - 1; i >= 0; i--) { G.shWaves[i].t += dt; if (G.shWaves[i].t > 2.6) G.shWaves.splice(i, 1); }
+  const hasTv = facOn('tv');
+  G.tvT = (G.tvT || 0) + dt;
+  for (const u of G.units) {
+    if (u.gone || u.dead) continue;
+    if (u.tvBurn > 0) { // 燃焼
+      u.tvBurn -= dt; u.tvBurnTick = (u.tvBurnTick || 0) - dt;
+      if (rchance(.4)) addFire(u.x + rnd(-5, 5), u.y + rnd(-4, 4), unitTopY(u) * rnd(.2, .8), 1);
+      if (u.tvBurnTick <= 0) { u.tvBurnTick = .5; if (u.fac !== 'tv' || u.key !== 'alexia') dealDamage(null, u, u.sp.mass > 4 ? 6 : 4, { burnTick: 1 }); }
+      if (u.gone || u.dead) continue;
+    }
+    if (u.tvPoison > 0) {
+      u.tvPoison -= dt; u.tvPoisonTick = (u.tvPoisonTick || 0) - dt;
+      if (rchance(.15)) addPart({ k: 'smoke', x: u.x, y: u.y, z: unitTopY(u) * .8, vx: rnd(-3, 3), vy: 0, vz: 6, life: .8, t: 0, s: 2, col: '#9ac040' });
+      if (u.tvPoisonTick <= 0) { u.tvPoisonTick = .6; dealDamage(null, u, 3, {}); }
+      if (u.gone || u.dead) continue;
+    }
+    if (u.shDoom > 0) u.shDoom -= dt;
+    if (u.deafT > 0) u.deafT -= dt;
+    if (u.regen && u.virusFac && u.hp < u.mhp) u.hp = Math.min(u.mhp, u.hp + u.regen * dt);
+    // T-ベロニカ感染の進行 → 感染者化
+    if (u.tvInfV > 0 && u.fac === 'N') {
+      u.tvInfV += dt * .018;
+      if (u.tvInfV >= 1 && hasTv && countFac('tv') < 70) {
+        addLog('🌿 T-ベロニカに侵された避難民の体から蔓が突き破った', 'tv');
+        makeCorpse(u, { riseT: 1.5, riseAs: 'tvZombie' }); u.gone = true; if (G.sel === u) G.sel = null; continue;
+      }
+    }
+    const k = u.key;
+    if ((k === 'alexia' && u.form !== 1 || k === 'alexiaBaby') && rchance(dt * 5)) addFire(u.x + rnd(-4, 4), u.y + rnd(-3, 3), unitTopY(u) * rnd(.2, .7), 1); // 体表で燃える血
+    if (k === 'nosferatu' && u.chainT > 0) { // 15年間の拘束: 鎖が切れるまでその場から動けない
+      u.chainT -= dt; u.stunT = Math.max(u.stunT || 0, .15);
+      if (u.hp < u.mhp * .92 || u.chainT <= 0) { u.chainT = 0; u.stunT = 0; addShake(6); Sfx.play('roar', u.x, u.y); addLog('⛓️ ノスフェラトゥが拘束の鎖を引きちぎった！', 'tv', true); }
+      if (rchance(dt * .3)) tvAddCloud(u.x, u.y, 60, 'gas', u, 3);
+    }
+    if (k === 'nosferatu' && rchance(dt * .25)) tvAddCloud(u.x + rnd(-10, 10), u.y + rnd(-8, 8), 44, 'gas', u, 3);
+    if (k === 'steveMon' && !u.steveSane && u.hp < u.mhp * .22 && !u.steveRoll) { // 土壇場で正気を取り戻す
+      u.steveRoll = 1;
+      if (rchance(.5)) { u.steveSane = 1; u.tgt = null; u.bleed = 1; interrupt(u); addLog('💔 スティーブが正気を取り戻した —— 「クレア…逃げろ…！」 彼は怪物たちへ斧を向けた', 'tv', true); }
+    }
+    if (u.steveSane) { u.hp -= dt * 4; if (u.hp <= 0) { killUnit(null, u, { noRise: 1 }); continue; } }
+    if (k === 'vPlant') { // 根を伸ばして増殖
+      u.tvSpreadT = (u.tvSpreadT == null ? rnd(18, 30) : u.tvSpreadT) - dt;
+      if (u.hp < u.mhp) u.hp = Math.min(u.mhp, u.hp + dt * 1.5);
+      if (u.tvSpreadT <= 0) {
+        u.tvSpreadT = rnd(26, 40);
+        if (countKey('vPlant') < 9 && countFac('tv') < 70) { const a = Math.random() * TAU, dd = rnd(80, 160), px = u.x + Math.cos(a) * dd, py = u.y + Math.sin(a) * dd * .8;
+          if (walkAtPx(px, py)) { const n = spawnUnit('vPlant', px, py, { silent: true }); if (n) { n.sizeMul = .6; n.r *= .6; n.tvGrowP = 1; addDecal('blood', px, py, 16, '#2a4a1a'); if (rchance(.4)) addLog('🌺 ベロニカ・プラントの根が伸び、新たな株が芽吹いた', 'tv'); } } }
+        if (rchance(.35) && countKey('vBee') < 10 && countFac('tv') < 70) { const b = spawnUnit(rpick(['vBee', 'vAnt']), u.x + rnd(-20, 20), u.y + rnd(-16, 16), { silent: true }); }
+      }
+      if (u.tvGrowP && u.sizeMul < 1) { u.sizeMul = Math.min(1, u.sizeMul + dt * .01); u.r = u.sp.r * u.sp.scale * u.sizeMul; }
+    }
+    if (k === 'albinoidJ') { // 成長 → 成体
+      u.tvGrowT = (u.tvGrowT || 0) + dt * (1 + (u.kills || 0) * .5);
+      if (u.tvGrowT > 75 && u.state !== 'attack') { const n = spawnUnit('albinoidA', u.x, u.y, { silent: true, force: true }); if (n) { u.gone = true; addShock(u.x, u.y, 6, 60, 'rgba(170,210,255,.6)'); addLog('⚡ アルビノイドの幼体が成体へと成長した', 'tv'); continue; } }
+    }
+    if (u.sp.tvBurrow && u.tgt && !u.tgt.gone && u.state !== 'attack' && (u.burCd || 0) <= G.time && dist(u.x, u.y, u.tgt.x, u.tgt.y) > 100) { // 地中から奇襲
+      const t = u.tgt; if (walkAtPx(t.x + 12, t.y)) { u.burCd = G.time + 6; addDust(u.x, u.y, 12, '#6a5030'); u.x = t.x + 12; u.y = t.y; addDust(u.x, u.y, 14, '#6a5030'); addShake(3); Sfx.play('thud', u.x, u.y); }
+    }
+    if (k === 'alexia' && u.form === 1 && (u.tvBeeT = (u.tvBeeT || 12) - dt) <= 0) { u.tvBeeT = 14; if (countKey('vBee') < 12) for (let i = 0; i < 2; i++) spawnUnit('vBee', u.x + rnd(-30, 30), u.y + rnd(-20, 20), { silent: true }); } // 女王の生態系: 蜂を呼ぶ
+    // サイレンヘッド: 擬態と奇襲
+    if (k === 'sirenHead') {
+      if (!u.tgt && (u.moveSpd || 0) < 3 && u.state !== 'attack') { u.shStillT = (u.shStillT || 0) + dt; if (u.shStillT > 4 && !u.shDisguise) u.shDisguise = 1; }
+      else { u.shStillT = 0; if (u.shDisguise) { u.shDisguise = 0; addLog('📢 電柱だと思っていたものが動き出した —— サイレンヘッドだ！', 'sh', true); } }
+    }
+    if (k === 'longHorse') { Spatial.query(u.x, u.y, 170, _q); for (const o of _q) if (o !== u && !o.gone && hostileTo(u, o)) { o.shDoom = .6; if (o.fac === 'N') o.panicT = Math.max(o.panicT || 0, 1); } }
+  }
+  // アレクシアがスティーブにT-ベロニカを注入する
+  if (hasTv && G.tvSteve === 0 && G.tvT > 55) {
+    const a = G.units.find(v => !v.gone && !v.dead && v.key === 'alexia');
+    G.tvSteve = 1;
+    if (a) { const n = spawnUnit('steveMon', a.x + 30, a.y + 10, { silent: true, force: true }); if (n) { addShock(n.x, n.y, 8, 70, 'rgba(120,200,90,.6)'); addLog('💉 アレクシアがスティーブにT-ベロニカを注入した —— 緑の巨体が大斧を掴む', 'tv', true); } }
+  }
+}
+function drawTvWorld() {
+  if (G.tvClouds) for (const c of G.tvClouds) {
+    const f = Math.min(1, c.t / .5) * Math.min(1, (c.life - c.t) / 1.2), y = c.y * SQ, col = c.kind === 'pollen' ? '232,210,96' : '138,168,64';
+    const g = ctx.createRadialGradient(c.x, y - 6, 0, c.x, y - 6, c.r); g.addColorStop(0, `rgba(${col},${.32 * f})`); g.addColorStop(1, `rgba(${col},0)`);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(c.x, y - 6, c.r, c.r * .7, 0, 0, TAU); ctx.fill();
+  }
+  if (G.tvBolts) for (const b of G.tvBolts) {
+    const f = 1 - b.t / .35; ctx.strokeStyle = `rgba(200,230,255,${f})`; ctx.lineWidth = 1.6; ctx.shadowColor = '#8ac8ff'; ctx.shadowBlur = 8;
+    const tg = b.tg.length ? b.tg : [0, 1, 2, 3].map(i => ({ x: b.x + Math.cos(i * 1.6 + b.t * 9) * b.r * .6, y: b.y + Math.sin(i * 1.6) * b.r * .4, z: 0 }));
+    for (const t of tg) { ctx.beginPath(); let px = b.x, py = b.y * SQ - b.z; ctx.moveTo(px, py); const ex = t.x, ey = t.y * SQ - t.z; for (let s = 1; s <= 6; s++) { const k = s / 6; ctx.lineTo(px + (ex - px) * k + (s < 6 ? rnd(-7, 7) : 0), py + (ey - py) * k + (s < 6 ? rnd(-7, 7) : 0)); } ctx.stroke(); }
+    ctx.shadowBlur = 0;
+  }
+  if (G.shWaves) for (const w of G.shWaves) { // サイレンの音波
+    const u = G.units.find(v => v.id === w.id); if (!u || u.gone) continue;
+    const hy = u.y * SQ - unitTopY(u) * .96;
+    for (let i = 0; i < 5; i++) { const f = (w.t * 1.6 + i * .2) % 1, R = 20 + f * (w.big ? 420 : 300); ctx.strokeStyle = `rgba(255,240,210,${(1 - f) * .45})`; ctx.lineWidth = 3 * (1 - f) + .5;
+      for (const sd of [-1, 1]) { ctx.beginPath(); ctx.arc(u.x + sd * 8, hy, R, sd > 0 ? -.7 : Math.PI - .7, sd > 0 ? .7 : Math.PI + .7); ctx.stroke(); } }
+    if (w.t < 1.8) { ctx.fillStyle = `rgba(255,240,210,${1 - w.t / 1.8})`; ctx.font = `bold ${w.big ? 18 : 13}px sans-serif`; ctx.textAlign = 'center'; ctx.fillText(w.big ? 'ウウウゥゥゥーーーーッ！！' : 'ウゥゥーーーッ', u.x, hy - 20 - w.t * 20); }
+  }
+}
+
+/* ── 描画: 人型の追加パーツ ── */
+function drawTvExtras(u, pose) {
+  const fx = u.fx || u.sp.fx; if (!fx.tv) return;
+  const sk = solveBiped(u, pose), P = sk.P, d = sk.dir, h = sk.head, T = G.time + (u.id || 0);
+  const vine = (x0, y0, L, a, w, col) => { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x0, y0); let px = x0, py = y0; for (let i = 1; i <= 5; i++) { const aa = a + Math.sin(T * 2 + i + x0) * .35; px += Math.cos(aa) * L / 5; py += Math.sin(aa) * L / 5; ctx.lineTo(px, py); } ctx.stroke(); return [px, py]; };
+  if (fx.tv === 'alexia1' || fx.tv === 'alexia3') {
+    ctx.fillStyle = u.pal.eye === '#ff4020' ? '#c8a060' : '#ecd890'; // 結い上げた金髪
+    ctx.beginPath(); ctx.ellipse(h.x - d * P.headR * .2, h.y - P.headR * .5, P.headR * 1.02, P.headR * .7, 0, Math.PI, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(h.x - d * P.headR * .9, h.y - P.headR * .6, P.headR * .5, 0, TAU); ctx.fill();
+    ctx.strokeStyle = 'rgba(200,40,30,.6)'; ctx.lineWidth = .6; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(sk.s1.x + (i - 1.5) * 2, sk.s1.y); ctx.lineTo(sk.s2.x + (i - 1.5) * 2.4 + Math.sin(T + i) * 1, sk.s2.y); ctx.stroke(); } // 浮き出た血管
+  }
+  if (fx.tv === 'alexia3') { // 第3形態: 背中の昆虫の翅
+    const bx = sk.s2.x - d * 2, by = sk.s2.y, fl = Math.sin(T * 14) * .3;
+    for (const [sx, ln] of [[1, 1], [-1, .8]]) { ctx.fillStyle = 'rgba(230,120,60,.45)'; ctx.strokeStyle = 'rgba(140,40,20,.8)'; ctx.lineWidth = .8;
+      ctx.beginPath(); ctx.moveTo(bx, by); ctx.quadraticCurveTo(bx - d * 24 * ln, by - 26 * ln - fl * 10 * sx, bx - d * 30 * ln, by - 4 + fl * 6); ctx.quadraticCurveTo(bx - d * 14 * ln, by + 6, bx, by + 2); ctx.fill(); ctx.stroke(); }
+  }
+  if (fx.tv === 'alexia2') { // 第2形態: 巨大な植物体に埋まった上半身と蠢く触手
+    const gy = u.y * SQ, S = u.r;
+    ctx.fillStyle = '#3e5a2a'; ctx.beginPath(); ctx.ellipse(u.x, gy - S * .3, S * 2.6, S * 1.1, 0, Math.PI, TAU); ctx.fill();
+    ctx.fillStyle = '#6a2a3a'; for (let i = 0; i < 6; i++) { const a = Math.PI + i * .55 + .2; ctx.beginPath(); ctx.ellipse(u.x + Math.cos(a) * S * 2, gy - S * .3 + Math.sin(a) * S * .8, S * .5, S * .28, a, 0, TAU); ctx.fill(); }
+    const st = u.state === 'attack' ? 1.6 : 1;
+    for (let i = 0; i < 6; i++) { const a = -Math.PI / 2 + (i - 2.5) * .45; vine(u.x + Math.cos(a) * S * 1.5, gy - S * .6, S * 3 * st, a + Math.sin(T + i) * .5, 2.6, i % 2 ? '#4a7a30' : '#7a3a4a'); }
+    ctx.fillStyle = '#c83a5a'; ctx.beginPath(); ctx.arc(u.x - d * S * 1.4, gy - S * 1.2, S * .5, 0, TAU); ctx.fill();
+  }
+  if (fx.tv === 'nosf') { // 拘束衣のベルト・凍った頭・拘束の鎖
+    ctx.strokeStyle = '#6a5a40'; ctx.lineWidth = 1.4; for (let i = 0; i < 3; i++) { const y = sk.s1.y + (sk.s2.y - sk.s1.y) * (.2 + i * .3); ctx.beginPath(); ctx.moveTo(sk.s1.x - P.torsoW, y); ctx.lineTo(sk.s1.x + P.torsoW, y); ctx.stroke(); }
+    ctx.fillStyle = 'rgba(210,235,250,.55)'; ctx.beginPath(); ctx.arc(h.x, h.y - P.headR * .3, P.headR * .95, Math.PI, TAU); ctx.fill();
+    ctx.fillStyle = '#e8f4ff'; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(h.x + (i - 1.5) * P.headR * .45 - 1, h.y + P.headR * .5); ctx.lineTo(h.x + (i - 1.5) * P.headR * .45, h.y + P.headR * (1.1 + (i % 2) * .4)); ctx.lineTo(h.x + (i - 1.5) * P.headR * .45 + 1, h.y + P.headR * .5); ctx.fill(); } // つらら
+    if (u.chainT > 0) { ctx.strokeStyle = '#8a8a90'; ctx.lineWidth = 1.2; ctx.setLineDash([2, 1.5]); for (const [hx, hy] of [[sk.armL.ha.x, sk.armL.ha.y], [sk.armR.ha.x, sk.armR.ha.y], [sk.pel.x, sk.pel.y]]) { ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx + (hx - u.x) * 2.5 + 20 * Math.sign(hx - u.x || 1), u.y * SQ + 8); ctx.stroke(); } ctx.setLineDash([]); }
+  }
+  if (fx.tv === 'steve') { // 緑の巨体に浮かぶ血管と燃えるような眼
+    ctx.strokeStyle = 'rgba(30,70,20,.7)'; ctx.lineWidth = .8; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(sk.s2.x + (i - 2) * 2.4, sk.s2.y); ctx.quadraticCurveTo(sk.s1.x + (i - 2) * 3 + 2, (sk.s1.y + sk.s2.y) / 2, sk.s1.x + (i - 2) * 2, sk.s1.y); ctx.stroke(); }
+    if (u.steveSane) { ctx.fillStyle = 'rgba(120,180,255,.35)'; ctx.beginPath(); ctx.arc(h.x, h.y, P.headR * 1.6, 0, TAU); ctx.fill(); }
+  }
+  if (fx.tv === 'vine') { vine(sk.s2.x, sk.s2.y, P.torsoW * 2.4, -Math.PI / 2 - d * .8, 1.2, '#3a7a2a'); vine(sk.armR.el.x, sk.armR.el.y, P.torsoW * 2, Math.PI / 2 + d * .5, 1, '#4a8a30'); ctx.fillStyle = '#c83a5a'; ctx.beginPath(); ctx.arc(h.x - d * P.headR * .5, h.y - P.headR * .7, P.headR * .35, 0, TAU); ctx.fill(); }
+}
+
+/* ── 描画: 独自体型 ── */
+function drawTvPlan(u, pose, S, x, gy, T, strike, mv, ph, pal, dir) {
+  const sp = u.sp;
+  switch (sp.plan) {
+    case 'vplant': { // ベロニカ・プラント: 根の塊から伸びる蔓と赤い花
+      ctx.fillStyle = 'rgba(20,40,10,.35)'; ctx.beginPath(); ctx.ellipse(x, gy, S * 1.8, S * .6, 0, 0, TAU); ctx.fill();
+      ctx.strokeStyle = '#2e4a1e'; ctx.lineWidth = S * .12; for (let i = 0; i < 7; i++) { const a = i * .9 + u.id; ctx.beginPath(); ctx.moveTo(x, gy - S * .2); ctx.quadraticCurveTo(x + Math.cos(a) * S, gy + Math.sin(a) * S * .3, x + Math.cos(a) * S * 1.9, gy + Math.sin(a) * S * .55); ctx.stroke(); }
+      const reach = u.state === 'attack' ? 1 + strike * 2.6 : 1;
+      for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + (i - 2) * .5 + Math.sin(T * 1.4 + i) * .25, L = S * (1.6 + (i % 2) * .6) * (i === 2 ? reach : 1);
+        ctx.strokeStyle = i % 2 ? '#4a7a30' : '#3a6a26'; ctx.lineWidth = S * .16; ctx.beginPath(); ctx.moveTo(x, gy - S * .4); let px = x, py = gy - S * .4; for (let k = 1; k <= 5; k++) { const aa = a + Math.sin(T * 2 + k + i) * .3; px += Math.cos(aa) * L / 5; py += Math.sin(aa) * L / 5; ctx.lineTo(px, py); } ctx.stroke();
+        ctx.fillStyle = '#6a8a3a'; ctx.beginPath(); ctx.ellipse(px, py, S * .22, S * .1, a, 0, TAU); ctx.fill(); }
+      blob(x, gy - S * .5, S * .9, S * .6, pal.skin, 'rgba(200,255,160,.15)');
+      const bl = 1 + Math.sin(T * 1.2) * .08; // 花
+      for (let i = 0; i < 6; i++) { const a = i * TAU / 6 + T * .1; ctx.fillStyle = i % 2 ? '#c83a5a' : '#a02a48'; ctx.beginPath(); ctx.ellipse(x + Math.cos(a) * S * .45 * bl, gy - S * 1.2 + Math.sin(a) * S * .3 * bl, S * .38, S * .2, a, 0, TAU); ctx.fill(); }
+      ctx.fillStyle = '#f0d060'; ctx.beginPath(); ctx.arc(x, gy - S * 1.2, S * .22, 0, TAU); ctx.fill();
+      return true;
+    }
+    case 'vbee': { // 巨大バチ: 縞の腹・透明な翅・毒針
+      const cy = gy - S * 1.8 - Math.sin(T * 3) * S * .2 + strike * S * .5;
+      ctx.fillStyle = 'rgba(0,0,0,.2)'; ctx.beginPath(); ctx.ellipse(x, gy, S * .8, S * .25, 0, 0, TAU); ctx.fill();
+      for (const sd of [-1, 1]) { const fl = Math.sin(T * 40) * .6; ctx.fillStyle = 'rgba(220,235,255,.45)'; ctx.strokeStyle = 'rgba(80,80,100,.5)'; ctx.lineWidth = .6; ctx.beginPath(); ctx.ellipse(x - dir * S * .1, cy - S * .5, S * 1, S * .35, -sd * (.6 + fl), 0, TAU); ctx.fill(); ctx.stroke(); }
+      const ax = x - dir * S * .9, ay = cy + S * .15;
+      ctx.fillStyle = pal.skin; ctx.beginPath(); ctx.ellipse(ax, ay, S * .75, S * .5, dir * .3, 0, TAU); ctx.fill();
+      ctx.fillStyle = '#1a1410'; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.ellipse(ax + dir * (i - 1) * S * .38, ay, S * .1, S * .48, dir * .3, 0, TAU); ctx.fill(); }
+      ctx.fillStyle = '#1a1410'; ctx.beginPath(); ctx.moveTo(ax - dir * S * .7, ay); ctx.lineTo(ax - dir * S * (1.15 + strike * .3), ay + S * .3); ctx.lineTo(ax - dir * S * .6, ay + S * .15); ctx.fill();
+      blob(x, cy, S * .45, S * .4, '#3a2a14', null); blob(x + dir * S * .55, cy - S * .05, S * .35, S * .32, '#2a1a10', null);
+      ctx.fillStyle = pal.acc; ctx.beginPath(); ctx.arc(x + dir * S * .72, cy - S * .12, S * .16, 0, TAU); ctx.fill();
+      ctx.strokeStyle = '#1a1410'; ctx.lineWidth = .8; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(x + (i - 1) * S * .25, cy + S * .3); ctx.lineTo(x + (i - 1) * S * .35 - dir * S * .1, cy + S * .8); ctx.stroke(); }
+      return true;
+    }
+    case 'vant': { // 巨大アリ / アレクシアの幼体
+      ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(x, gy, S * 1.4, S * .4, 0, 0, TAU); ctx.fill();
+      const cy = gy - S * .6 - (mv ? Math.abs(Math.sin(ph * 2)) * S * .05 : 0), baby = sp.tvBaby;
+      ctx.strokeStyle = shade(pal.skin, -.4); ctx.lineWidth = S * .1; ctx.lineCap = 'round';
+      for (let i = 0; i < 6; i++) { const sd = i % 2 ? 1 : -1, row = (i >> 1) - 1, sw = mv ? Math.sin(ph * 2 + i) * S * .25 : 0; const bx = x + row * S * .35; ctx.beginPath(); ctx.moveTo(bx, cy); ctx.lineTo(bx + row * S * .3 + sw, cy - S * .35 * sd * .3 - S * .1); ctx.lineTo(bx + row * S * .6 + sw * 1.4, gy + sd * S * .12); ctx.stroke(); }
+      blob(x - dir * S * .8, cy - S * .05, S * .62, S * .48, baby ? pal.skin : pal.skinD, 'rgba(255,255,255,.12)');
+      blob(x, cy, S * .36, S * .3, pal.skin, null);
+      blob(x + dir * S * .6, cy - S * .1, S * .38, S * .34, pal.skin, 'rgba(255,255,255,.12)');
+      if (baby) { const gl = .6 + Math.sin(T * 8) * .3; ctx.fillStyle = `rgba(255,120,40,${gl})`; ctx.beginPath(); ctx.arc(x - dir * S * .8, cy, S * .3, 0, TAU); ctx.fill(); }
+      ctx.strokeStyle = shade(pal.skin, -.5); ctx.lineWidth = S * .08; const mo = .3 + strike * .5; for (const sd of [-1, 1]) { ctx.beginPath(); ctx.moveTo(x + dir * S * .85, cy); ctx.quadraticCurveTo(x + dir * S * 1.2, cy + sd * S * mo * .5, x + dir * S * 1.1, cy + sd * S * .05); ctx.stroke(); }
+      ctx.lineWidth = .6; for (const sd of [-1, 1]) { ctx.beginPath(); ctx.moveTo(x + dir * S * .7, cy - S * .35); ctx.quadraticCurveTo(x + dir * S * 1, cy - S * .9, x + dir * S * 1.25, cy - S * (.7 + sd * .1)); ctx.stroke(); }
+      ctx.fillStyle = pal.eye; ctx.beginPath(); ctx.arc(x + dir * S * .75, cy - S * .18, S * .09, 0, TAU); ctx.fill();
+      return true;
+    }
+    case 'albinoid': { // アルビノイド: 白いサンショウウオ、背の放電器官
+      ctx.fillStyle = 'rgba(80,120,160,.25)'; ctx.beginPath(); ctx.ellipse(x, gy, S * 1.8, S * .55, 0, 0, TAU); ctx.fill();
+      const cy = gy - S * .45, sw = mv ? Math.sin(ph * 2) * .3 : Math.sin(T * 2) * .1;
+      ctx.strokeStyle = pal.skin; ctx.lineCap = 'round';
+      let px = x - dir * S * .7, py = cy; ctx.lineWidth = S * .4; ctx.beginPath(); ctx.moveTo(px, py); for (let i = 1; i <= 4; i++) { px -= dir * S * .35; py += Math.sin(T * 3 + i + sw * 4) * S * .1; ctx.lineWidth = S * .4 * (1 - i / 5); ctx.lineTo(px, py); } ctx.stroke();
+      ctx.lineWidth = S * .12; for (let i = 0; i < 4; i++) { const lx = x + (i < 2 ? dir * S * .45 : -dir * S * .45), sd = i % 2 ? 1 : -1; ctx.beginPath(); ctx.moveTo(lx, cy); ctx.lineTo(lx + dir * (sw * S * .5) * sd, gy + sd * S * .1); ctx.stroke(); }
+      blob(x, cy, S * .95, S * .45, pal.skin, 'rgba(255,255,255,.3)');
+      blob(x + dir * S * .95, cy - S * .05, S * .45, S * .35, pal.skinL, null);
+      ctx.fillStyle = '#f0a0b0'; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.ellipse(x + dir * S * (.7 - i * .1), cy - S * .35 - i * S * .05, S * .08, S * .22, dir * (.5 + i * .3), 0, TAU); ctx.fill(); } // 外鰓
+      ctx.fillStyle = pal.eye; ctx.beginPath(); ctx.arc(x + dir * S * 1.15, cy - S * .15, S * .08, 0, TAU); ctx.fill();
+      const ch = u.state === 'attack' && u.atk && u.atk.def.custom === 'shock' ? 1 : .25 + Math.sin(T * 5) * .15; // 背の発電器官
+      ctx.fillStyle = `rgba(160,210,255,${ch * .8})`; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc(x - dir * S * (.5 - i * .3), cy - S * .4, S * .1, 0, TAU); ctx.fill(); }
+      if (ch > .8 && Math.random() < .5) { ctx.strokeStyle = 'rgba(210,235,255,.9)'; ctx.lineWidth = .8; ctx.beginPath(); ctx.moveTo(x, cy - S * .4); for (let i = 0; i < 4; i++) ctx.lineTo(x + rnd(-S, S), cy - S * .4 + rnd(-S * .8, S * .3)); ctx.stroke(); }
+      return true;
+    }
+    case 'siren': return drawSirenHead(u, S, x, gy, T, strike, mv, ph, pal, dir);
+    case 'lhorse': { // ロングホース: 骨ばった長大な脚と首
+      const L = S * 3.4, bodyY = gy - L, st = mv ? ph * 1.2 : 0;
+      ctx.fillStyle = 'rgba(0,0,0,.28)'; ctx.beginPath(); ctx.ellipse(x, gy, S * 2.2, S * .5, 0, 0, TAU); ctx.fill();
+      ctx.strokeStyle = pal.skin; ctx.lineCap = 'round'; ctx.lineWidth = S * .16;
+      for (let i = 0; i < 4; i++) { const bx = x + (i < 2 ? dir : -dir) * S * .9 + (i % 2 ? S * .15 : -S * .15), sw = Math.sin(st + i * 1.6) * S * .6, kx = bx + sw * .5 + dir * S * .2, ky = bodyY + L * .5; ctx.beginPath(); ctx.moveTo(bx, bodyY); ctx.lineTo(kx, ky); ctx.lineTo(bx + sw, gy - (mv ? Math.max(0, Math.sin(st + i * 1.6)) * S * .3 : 0)); ctx.stroke(); }
+      blob(x, bodyY, S * 1.3, S * .5, pal.skin, null);
+      ctx.strokeStyle = pal.skinL; ctx.lineWidth = .8; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.arc(x - dir * S * .6 + dir * i * S * .3, bodyY, S * .42, Math.PI * .1, Math.PI * .9); ctx.stroke(); } // 肋骨
+      const na = -1.1 + (u.state === 'attack' ? strike * 1.3 : Math.sin(T * .7) * .1), NL = S * 3.2; let hx = x + dir * S * 1.1, hy = bodyY - S * .2;
+      ctx.strokeStyle = pal.skin; ctx.lineWidth = S * .22; ctx.beginPath(); ctx.moveTo(hx, hy); for (let i = 1; i <= 6; i++) { const aa = na + i * .08; hx += dir * Math.cos(aa) * NL / 6; hy += Math.sin(aa) * NL / 6; ctx.lineTo(hx, hy); } ctx.stroke();
+      ctx.fillStyle = pal.acc; ctx.beginPath(); ctx.ellipse(hx + dir * S * .35, hy + S * .15, S * .55, S * .22, dir * .5, 0, TAU); ctx.fill(); // 馬の頭骨
+      ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(hx + dir * S * .15, hy + S * .05, S * .09, 0, TAU); ctx.fill();
+      return true;
+    }
+    case 'ccat': { // カートゥーン・キャット: ゴムホース手足・白手袋・裂けた笑み
+      const H = S * 5, sw = mv ? Math.sin(ph * 1.6) : 0, hipY = gy - H * .42, shY = gy - H * .78;
+      ctx.fillStyle = 'rgba(0,0,0,.28)'; ctx.beginPath(); ctx.ellipse(x, gy, S * 1.2, S * .35, 0, 0, TAU); ctx.fill();
+      ctx.strokeStyle = '#111'; ctx.lineCap = 'round'; ctx.lineWidth = S * .22;
+      for (const sd of [-1, 1]) { ctx.beginPath(); ctx.moveTo(x + sd * S * .2, hipY); ctx.quadraticCurveTo(x + sd * S * .5 + sw * sd * S * .6, gy - H * .2, x + sw * sd * S * .7, gy - S * .1); ctx.stroke(); ctx.fillStyle = '#111'; ctx.beginPath(); ctx.ellipse(x + sw * sd * S * .7 + dir * S * .2, gy - S * .1, S * .35, S * .16, 0, 0, TAU); ctx.fill(); }
+      blob(x, (hipY + shY) / 2, S * .55, H * .22, '#141414', null);
+      ctx.fillStyle = '#f4f4f0'; ctx.beginPath(); ctx.ellipse(x + dir * S * .15, (hipY + shY) / 2 + S * .2, S * .32, H * .12, 0, 0, TAU); ctx.fill();
+      const reach = u.state === 'attack' ? 1 + strike * 3.2 : 1; // 伸びる腕
+      for (const sd of [-1, 1]) { const ex = x + dir * S * (1.2 * (sd > 0 ? reach : 1)) + (sd < 0 ? -dir * S * .6 : 0), ey = shY + S * (sd > 0 ? .6 : 1.3) + Math.sin(T * 2 + sd) * S * .2;
+        ctx.strokeStyle = '#111'; ctx.lineWidth = S * .18; ctx.beginPath(); ctx.moveTo(x + sd * S * .3, shY); ctx.quadraticCurveTo((x + ex) / 2, shY - S * .5, ex, ey); ctx.stroke();
+        ctx.fillStyle = '#fafaf6'; ctx.strokeStyle = '#111'; ctx.lineWidth = .7; ctx.beginPath(); ctx.arc(ex, ey, S * .3, 0, TAU); ctx.fill(); ctx.stroke(); }
+      const hx = x + dir * S * .1, hy = shY - S * .9, hr = S * .85;
+      ctx.fillStyle = '#141414'; ctx.beginPath(); ctx.arc(hx, hy, hr, 0, TAU); ctx.fill();
+      for (const sd of [-1, 1]) { ctx.beginPath(); ctx.moveTo(hx + sd * hr * .8, hy - hr * .3); ctx.lineTo(hx + sd * hr * .9, hy - hr * 1.5); ctx.lineTo(hx + sd * hr * .2, hy - hr * .8); ctx.fill(); }
+      ctx.fillStyle = '#f4f4f0'; ctx.beginPath(); ctx.ellipse(hx + dir * hr * .15, hy + hr * .15, hr * .8, hr * .55, 0, 0, TAU); ctx.fill(); // 顔の白い部分
+      for (const sd of [-1, 1]) { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(hx + dir * hr * .15 + sd * hr * .3, hy - hr * .15, hr * .22, hr * .3, 0, 0, TAU); ctx.fill(); ctx.fillStyle = '#000'; ctx.beginPath(); ctx.ellipse(hx + dir * hr * .22 + sd * hr * .3, hy - hr * .1, hr * .09, hr * .17, 0, 0, TAU); ctx.fill(); }
+      const gr = .4 + strike * .5; ctx.fillStyle = '#1a0606'; ctx.beginPath(); ctx.moveTo(hx - hr * .75 + dir * hr * .15, hy + hr * .15); ctx.quadraticCurveTo(hx + dir * hr * .15, hy + hr * (.5 + gr), hx + hr * .75 + dir * hr * .15, hy + hr * .15); ctx.quadraticCurveTo(hx + dir * hr * .15, hy + hr * .45, hx - hr * .75 + dir * hr * .15, hy + hr * .15); ctx.fill(); // 裂けた笑み
+      ctx.fillStyle = '#fff'; for (let i = 0; i < 9; i++) { const tx = hx - hr * .65 + dir * hr * .15 + i * hr * .15; ctx.fillRect(tx, hy + hr * .22 + Math.sin(i / 8 * Math.PI) * hr * .12, hr * .08, hr * .12); }
+      ctx.fillStyle = '#000'; ctx.beginPath(); ctx.ellipse(hx + dir * hr * .2, hy + hr * .08, hr * .1, hr * .07, 0, 0, TAU); ctx.fill();
+      return true;
+    }
+  }
+  return false;
+}
+function drawSirenHead(u, S, x, gy, T, strike, mv, ph, pal, dir) {
+  const H = S * 8.6, hidden = u.shDisguise, sw = mv ? Math.sin(ph * .9) : 0;
+  const hipY = gy - H * .42, shY = gy - H * .82, sx = x + (hidden ? 0 : dir * S * .15);
+  ctx.fillStyle = 'rgba(0,0,0,.32)'; ctx.beginPath(); ctx.ellipse(x, gy, S * 1.6, S * .45, 0, 0, TAU); ctx.fill();
+  if (!hidden) { ctx.fillStyle = 'rgba(0,0,0,.12)'; ctx.beginPath(); ctx.ellipse(x + S * 3, gy + S * .4, S * 4, S * .4, .1, 0, TAU); ctx.fill(); }
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  const limb = (pts, w) => { ctx.strokeStyle = pal.skinD; ctx.lineWidth = w + 1; ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]); ctx.stroke(); ctx.strokeStyle = pal.skin; ctx.lineWidth = w; ctx.stroke(); };
+  for (const sd of [-1, 1]) { // 細長い脚
+    const s2 = hidden ? 0 : sw * sd, kx = x + sd * S * .25 + s2 * S * .9 + dir * S * .3, ky = gy - H * .22, fx = x + sd * S * .3 + s2 * S * 1.8, fy = gy - (mv ? Math.max(0, -s2) * S * .5 : 0);
+    limb([[x + sd * S * .15, hipY], [kx, ky], [fx, fy]], S * .22);
+  }
+  // 痩せこけた胴 (肋骨が浮く)
+  ctx.strokeStyle = pal.skinD; ctx.lineWidth = S * .5; ctx.beginPath(); ctx.moveTo(x, hipY); ctx.quadraticCurveTo(x - dir * S * .2, (hipY + shY) / 2, sx, shY); ctx.stroke();
+  ctx.strokeStyle = pal.skin; ctx.lineWidth = S * .42; ctx.stroke();
+  ctx.strokeStyle = pal.skinD; ctx.lineWidth = .7; for (let i = 0; i < 6; i++) { const y = shY + (hipY - shY) * (.1 + i * .08); ctx.beginPath(); ctx.moveTo(x - S * .2, y); ctx.lineTo(x + S * .2, y + 2); ctx.stroke(); }
+  // 長い腕: 擬態中は枝のように真上へ、攻撃時は振り下ろす
+  for (const sd of [-1, 1]) {
+    let ex, ey, hx2, hy2;
+    if (hidden) { ex = sx + sd * S * .7; ey = shY - H * .1; hx2 = sx + sd * S * 1.2; hy2 = shY - H * .2; }
+    else {
+      const atk = sd > 0 && u.state === 'attack' ? strike : 0, hang = Math.sin(T * 1.3 + sd) * S * .2;
+      ex = sx + sd * S * .5 + dir * S * atk * 1.5; ey = shY + H * .25 - atk * H * .1; hx2 = sx + sd * S * .4 + dir * S * (.6 + atk * 4.5) + hang; hy2 = shY + H * .56 - atk * H * .25;
+    }
+    limb([[sx + sd * S * .25, shY], [ex, ey], [hx2, hy2]], S * .17);
+    ctx.strokeStyle = pal.skin; ctx.lineWidth = S * .06; for (let k = -1; k <= 1; k++) { ctx.beginPath(); ctx.moveTo(hx2, hy2); ctx.lineTo(hx2 + k * S * .2 + (hidden ? 0 : dir * S * .1), hy2 + (hidden ? -S * .5 : S * .6)); ctx.stroke(); } // 長い指
+  }
+  // 首の支柱と2基のサイレン
+  const nx = sx, ny = shY - H * .12, blast = G.shWaves && G.shWaves.some(w => w.id === u.id && w.t < 2.2);
+  ctx.strokeStyle = '#5a5046'; ctx.lineWidth = S * .28; ctx.beginPath(); ctx.moveTo(sx, shY); ctx.lineTo(nx, ny); ctx.stroke();
+  ctx.fillStyle = '#6a6a6a'; ctx.fillRect(nx - S * 1.1, ny - S * .12, S * 2.2, S * .24);
+  for (const sd of [-1, 1]) {
+    const cx = nx + sd * S * .95, cy = ny - S * .35 + (blast ? Math.sin(T * 60) * S * .04 : 0), vib = blast ? 1.08 : 1;
+    ctx.fillStyle = '#8a8a8a'; ctx.strokeStyle = '#3a3a3a'; ctx.lineWidth = .8;
+    ctx.beginPath(); ctx.moveTo(cx - sd * S * .15, cy - S * .35); ctx.lineTo(cx + sd * S * .75 * vib, cy - S * .7 * vib); ctx.lineTo(cx + sd * S * .75 * vib, cy + S * .7 * vib); ctx.lineTo(cx - sd * S * .15, cy + S * .35); ctx.closePath(); ctx.fill(); ctx.stroke(); // ホーン
+    ctx.fillStyle = blast ? '#1a1410' : '#2a2622'; ctx.beginPath(); ctx.ellipse(cx + sd * S * .75 * vib, cy, S * .16, S * .66 * vib, 0, 0, TAU); ctx.fill();
+    ctx.strokeStyle = '#555'; ctx.lineWidth = .5; for (let k = -2; k <= 2; k++) { ctx.beginPath(); ctx.moveTo(cx + sd * S * .72 * vib, cy + k * S * .22); ctx.lineTo(cx + sd * S * .78 * vib, cy + k * S * .22); ctx.stroke(); }
+    if (blast) { ctx.fillStyle = 'rgba(255,240,200,.25)'; ctx.beginPath(); ctx.ellipse(cx + sd * S * 1.2, cy, S * .6, S * .9, 0, 0, TAU); ctx.fill(); }
+  }
+  return true;
+}
+
+/* ── 出現 ── */
+function spawnTVeronica() {
+  G.tvT = 0; G.tvSteve = 0; G.tvClouds = []; G.tvBolts = [];
+  const rs = pickLinkedRooms(2).map(i => G.map.rooms[i]), r = rs[0], r2 = rs[1] || r, c = { x: (r.cx + .5) * TILE, y: (r.cy + .5) * TILE };
+  spawnUnit('alexia', c.x, c.y, { silent: true, force: true });
+  for (let i = 0; i < 2; i++) { const p = randWalkIn(r); spawnUnit('vPlant', p.x, p.y, { silent: true, force: true }); }
+  for (const k of ['vAnt', 'vAnt', 'vBee', 'vBee', 'vBee']) { const p = randWalkIn(r); spawnUnit(k, p.x, p.y, { silent: true, force: true }); }
+  const q = randWalkIn(r2), n = spawnUnit('nosferatu', q.x, q.y, { silent: true, force: true }); if (n) n.chainT = 40;
+  for (const k of ['vWorm', 'albinoidJ', 'albinoidJ', 'vPlant']) { const p = randWalkIn(r2); spawnUnit(k, p.x, p.y, { silent: true, force: true }); }
+  addLog('🌹 15年のコールドスリープからアレクシア・アッシュフォードが目覚めた —— T-ベロニカの生態系が館を侵食し始める', 'tv', true);
+}
+function spawnSirenHead() {
+  const rs = pickLinkedRooms(2).map(i => G.map.rooms[i]), r = rs[0], r2 = rs[1] || r;
+  spawnUnit('sirenHead', (r.cx + .5) * TILE, (r.cy + .5) * TILE, { silent: true, force: true });
+  const p = randWalkIn(r2); spawnUnit('longHorse', p.x, p.y, { silent: true, force: true });
+  const r3 = spawnRoom(), p3 = randWalkIn(r3); spawnUnit('cartoonCat', p3.x, p3.y, { silent: true, force: true });
+  addLog('📢 遠くで壊れたサイレンが鳴った気がした…… 館の中に「電柱」が一本、増えている', 'sh', true);
+}
+
 /* ── 原作にある(ありそうな)攻撃の追加 ── */
 (function () {
   const add = (k, ...a) => { if (SP[k] && SP[k].atks) for (const x of a) SP[k].atks.push(AT(x)); };
@@ -16441,7 +17033,7 @@ function drawSRP(u, pose) {
   const dead = u.state === 'dead';
   ctx.save();
   if (dead) { ctx.translate(x, gy); ctx.scale(1, .45); ctx.translate(-x, -gy); ctx.globalAlpha *= .85; }
-  if (drawXPlan(u, pose, S, x, gy, T, strike, mv, ph, pal, dir) || drawPgPlan(u, pose, S, x, gy, T, strike, mv, ph, pal, dir)) { ctx.restore(); return; }
+  if (drawXPlan(u, pose, S, x, gy, T, strike, mv, ph, pal, dir) || drawTvPlan(u, pose, S, x, gy, T, strike, mv, ph, pal, dir) || drawPgPlan(u, pose, S, x, gy, T, strike, mv, ph, pal, dir)) { ctx.restore(); return; }
   switch (sp.plan) {
     case 'bug': {
       const cy = gy - S * .7 - (mv ? Math.abs(Math.sin(ph)) * S * .08 : 0);
@@ -16957,8 +17549,8 @@ function ensureFacDock() {
 }
 function layoutPanels() {
   const dock = ensureFacDock();
-  const ids = ['panelT','panelX','panelD','panelH','panelG','panelC','panelW','panelA','panelS','panelJ','panelF','panelK','panelM','panelY','panelQ','panelB','panelP','panelR','panelI','panel3','panel4','panelU','panelL','panelO','panelV','panelE','panel5','panel6','panel8','panel0','panelJk','panelHg','panelPg','panelBk','panelNt','panelMp','panelMz','panelGd','panelSp','panelPv','panelSrp','panelFl','panelNm','panelMk','panelCs','preyPanel'];
-  const borders = { panelT:'#d43a3a', panelMk:'#e0503a', panelCs:'#f08a3a', panelSrp:'#d04050', panelFl:'#c8b870', panelNm:'#e05030', panelX:'#3fd6b0', panelD:'#a98fd0', panelH:'#c07830', panelG:'#6fa83a', panelC:'#c8963a', panelW:'#e8e8f2', panelA:'#c8a24a', panelS:'#c45a5a', panelJ:'#e8e8e8', panelF:'#888', panelK:'#e8c040', panelM:'#4ad0e8', panelY:'#e8c040', panelQ:'#c83028', panelB:'#40c0e8', panelP:'#e8c040', panelR:'#8a3030', panelI:'#e8e4dc', panelU:'#888', panelL:'#444', panelO:'#5cb85c', preyPanel:'#c8b070' };
+  const ids = ['panelT','panelX','panelD','panelH','panelG','panelC','panelW','panelA','panelS','panelJ','panelF','panelK','panelM','panelY','panelQ','panelB','panelP','panelR','panelI','panel3','panel4','panelU','panelL','panelO','panelV','panelE','panel5','panel6','panel8','panel0','panelJk','panelHg','panelPg','panelBk','panelNt','panelMp','panelMz','panelGd','panelSp','panelPv','panelSrp','panelFl','panelNm','panelMk','panelCs','panelTv','panelSh','preyPanel'];
+  const borders = { panelT:'#d43a3a', panelMk:'#e0503a', panelCs:'#f08a3a', panelTv:'#c04a6a', panelSh:'#b0a080', panelSrp:'#d04050', panelFl:'#c8b870', panelNm:'#e05030', panelX:'#3fd6b0', panelD:'#a98fd0', panelH:'#c07830', panelG:'#6fa83a', panelC:'#c8963a', panelW:'#e8e8f2', panelA:'#c8a24a', panelS:'#c45a5a', panelJ:'#e8e8e8', panelF:'#888', panelK:'#e8c040', panelM:'#4ad0e8', panelY:'#e8c040', panelQ:'#c83028', panelB:'#40c0e8', panelP:'#e8c040', panelR:'#8a3030', panelI:'#e8e4dc', panelU:'#888', panelL:'#444', panelO:'#5cb85c', preyPanel:'#c8b070' };
   for (const id of ids) {
     const el = $(id); if (!el) continue;
     if (el.parentElement !== dock) dock.appendChild(el);
@@ -17126,6 +17718,8 @@ function updatePanels() {
     ['srp', 'panelSrp', '☣️ SRP寄生体', '#d04050', SRP_ORDER],
     ['mk', 'panelMk', '⛓️ マキマ', '#e0503a', ['makima']],
     ['cs', 'panelCs', '🪚 チェンソーマン', '#f08a3a', ['denji']],
+    ['tv', 'panelTv', '🌹 T-ベロニカ', '#c04a6a', TV_ORDER],
+    ['sh', 'panelSh', '📢 サイレンヘッド', '#b0a080', SH_ORDER],
     ['fl', 'panelFl', '🦠 フラッド', '#c8b870', FL_ORDER],
     ['nm', 'panelNm', '🧬 ネクロモーフ', '#e05030', NM_ORDER],
     ['pv', 'panelPv', '🧟‍♂️ ゾンボス', '#6aaa50', ['pvZomboss','pvZombie','pvCone','pvBucket','pvPole','pvPaper','pvScreen','pvFoot','pvCatapult','pvJack','pvZomboni','pvGarg','pvBungee']],
@@ -17195,6 +17789,10 @@ function updateInspector() {
   }
   const tags = [];
   if (u.form > 0) tags.push(`<span class="tag hot">第${u.form + 1}形態</span>`);
+  if (u.fac === 'N' && u.tvInfV > 0) tags.push(`<span class="tag hot">T-ベロニカ 感染 ${Math.round(u.tvInfV * 100)}%</span>`);
+  if (u.virusFac) tags.push(`<span class="tag hot">${VIRUS_NAME[u.virusFac]} 変異体</span>`);
+  if (u.tvBurn > 0) tags.push('<span class="tag hot">燃焼</span>');
+  if (u.shDisguise) tags.push('<span class="tag">擬態中</span>');
   if (u.fac === 'N' && u.inf > 0) tags.push(`<span class="tag hot">t-ウイルス 感染 ${Math.round(u.inf * 100)}%</span>`);
   if (u.fac === 'N' && u.infG > 0) tags.push(`<span class="tag hot" style="background:#3a4a1a;color:#b8e86a">🧟‍🦠 Gフルー 感染 ${Math.round(u.infG * 100)}%</span>`);
   if (u.fac === 'N' && u.infC > 0) tags.push(`<span class="tag hot" style="background:#4a3a1a;color:#e8c878">🍄 冬虫夏草 感染 ${Math.round(u.infC * 100)}%</span>`);
