@@ -7,6 +7,6 @@
 	"authors": ["sei10824game"],
 	"license": "MIT",
 	"environment": "*",
-	"entrypoints": { "main": ["jp.yakata.YakataMod"] },
+	"entrypoints": { "main": ["jp.yakata.YakataMod"], "client": ["jp.yakata.world.client.SuperflatDefault"] },
 	"depends": { "fabricloader": ">=0.19.5", "minecraft": "~26.3", "java": ">=25", "fabric-api": "*" }
 }
