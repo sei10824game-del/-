@@ -6,7 +6,10 @@ export const ACTOR_KINDS = ['zombie', 'headcrab', 'human'];
 const NAMES = { zombie: 'ヘッドクラブゾンビ', headcrab: 'ヘッドクラブ', human: '生存者' };
 const STATS = { zombie: { hp: 140, walk: 1.0, run: 1.9, dmg: 14, reach: 1.25 }, headcrab: { hp: 40, walk: 1.6, run: 3.2, dmg: 6, reach: .6 }, human: { hp: 100, walk: 1.4, run: 3.8, dmg: 0, reach: 0 } };
 
+const GLB = { zombie: ['assets/zombie.glb', 1.85, .4], headcrab: ['assets/headcrab.glb', .35, .25], human: ['assets/human.glb', 1.75, .32] };
 async function loadModel(kind, seed) {
+  const g = GLB[kind];
+  if (g && !new URLSearchParams(location.search).has('nolglb')) { try { const m = await import('./glbmodel.js'); if (await m.glbExists(g[0])) return await m.createGLBModel(g[0], { height: g[1], radius: g[2] }); } catch (e) { console.warn('GLB load failed, using procedural', kind, e.message); } }
   try {
     if (kind === 'zombie') { const m = await import('./characters/zombie.js'); return m.createHeadcrabZombie({ seed }); }
     if (kind === 'headcrab') { const m = await import('./characters/headcrab.js'); return m.createHeadcrab({ seed }); }
