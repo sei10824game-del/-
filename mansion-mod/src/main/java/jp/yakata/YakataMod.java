@@ -12,6 +12,6 @@ public class YakataMod implements ModInitializer {
 	public void onInitialize() {
 		LOGGER.info("洋館の黙示録 loaded");
 		jp.yakata.world.WorldInit.init();
-		// 各モジュールの初期化 (実装後に有効化): jp.yakata.faction.FactionInit.init();
+		jp.yakata.faction.FactionInit.init();
 	}
 }

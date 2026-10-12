@@ -1,0 +1,23 @@
+{
+	"entity.yakata.t_zombie": "T-Virus Zombie",
+	"entity.yakata.crimson_head": "Crimson Head",
+	"entity.yakata.licker": "Licker",
+	"entity.yakata.tyrant": "Tyrant",
+	"entity.yakata.g_birkin": "G-Mutant (Birkin)",
+	"entity.yakata.g_adult": "G-Adult",
+	"entity.yakata.g_embryo": "G-Embryo",
+	"entity.yakata.cordyceps_runner": "Runner",
+	"entity.yakata.cordyceps_clicker": "Clicker",
+	"entity.yakata.cordyceps_bloater": "Bloater",
+	"entity.yakata.xeno_facehugger": "Facehugger",
+	"entity.yakata.xeno_drone": "Xenomorph Drone",
+	"entity.yakata.xeno_warrior": "Xenomorph Warrior",
+	"entity.yakata.parasite_swarmer": "Parasite Swarmer",
+	"entity.yakata.parasite_crawler": "Parasite Crawler",
+	"entity.yakata.parasite_assimilated": "Assimilated Human",
+	"faction.yakata.tvirus": "T-Virus",
+	"faction.yakata.gvirus": "G-Virus",
+	"faction.yakata.cordyceps": "Cordyceps",
+	"faction.yakata.xeno": "Xenomorph",
+	"faction.yakata.parasite": "Parasite"
+}

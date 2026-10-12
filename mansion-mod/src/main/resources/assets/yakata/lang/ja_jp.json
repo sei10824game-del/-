@@ -1,0 +1,23 @@
+{
+	"entity.yakata.t_zombie": "t-ウイルスゾンビ",
+	"entity.yakata.crimson_head": "クリムゾンヘッド",
+	"entity.yakata.licker": "リッカー",
+	"entity.yakata.tyrant": "タイラント",
+	"entity.yakata.g_birkin": "G-変異体 (バーキン)",
+	"entity.yakata.g_adult": "G-成体",
+	"entity.yakata.g_embryo": "G-胚",
+	"entity.yakata.cordyceps_runner": "ランナー",
+	"entity.yakata.cordyceps_clicker": "クリッカー",
+	"entity.yakata.cordyceps_bloater": "ブローター",
+	"entity.yakata.xeno_facehugger": "フェイスハガー",
+	"entity.yakata.xeno_drone": "ゼノモーフ・ドローン",
+	"entity.yakata.xeno_warrior": "ゼノモーフ・ウォーリアー",
+	"entity.yakata.parasite_swarmer": "群体虫",
+	"entity.yakata.parasite_crawler": "寄生クローラー",
+	"entity.yakata.parasite_assimilated": "同化された人間",
+	"faction.yakata.tvirus": "t-ウイルス",
+	"faction.yakata.gvirus": "G-ウイルス",
+	"faction.yakata.cordyceps": "冬虫夏草",
+	"faction.yakata.xeno": "ゼノモーフ",
+	"faction.yakata.parasite": "寄生体"
+}
