@@ -1,0 +1,12 @@
+{
+	"schemaVersion": 1,
+	"id": "yakata",
+	"version": "${version}",
+	"name": "洋館の黙示録",
+	"description": "スーパーフラットの出生地に洋館が建ち、感染者の陣営同士が殺し合う。",
+	"authors": ["sei10824game"],
+	"license": "MIT",
+	"environment": "*",
+	"entrypoints": { "main": ["jp.yakata.YakataMod"] },
+	"depends": { "fabricloader": ">=0.19.5", "minecraft": "~26.3", "java": ">=25", "fabric-api": "*" }
+}
