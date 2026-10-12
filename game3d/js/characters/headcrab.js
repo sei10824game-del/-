@@ -90,27 +90,27 @@ const PAINTERS = {
   // wrinkled tan / orange-brown headcrab hide
   crab: () => buildTex(512, (u, v, o) => {
     const n = fbm(u, v, 4, 4, 5, 11);
-    const cell = Math.pow(ridge(fbm(u, v, 7, 7, 4, 23)), 7);
-    const fine = Math.pow(ridge(fbm(u, v, 22, 30, 3, 37)), 9);
+    const cell = Math.pow(ridge(fbm(u, v, 7, 7, 4, 23)), 10);
+    const fine = Math.pow(ridge(fbm(u, v, 22, 30, 3, 37)), 14);
     const blot = sstep(0.5, 0.72, fbm(u, v, 3, 3, 4, 41));
     const pore = sstep(0.82, 0.9, vn2(u * 160, v * 160, 160, 160, 5));
-    let r = mix(0.78, 0.6, n), g = mix(0.6, 0.38, n), b = mix(0.44, 0.24, n);
+    let r = mix(0.82, 0.62, n), g = mix(0.64, 0.42, n), b = mix(0.5, 0.29, n);
     r = mix(r, 0.8, blot * 0.5); g = mix(g, 0.46, blot * 0.5); b = mix(b, 0.4, blot * 0.5);
-    const dark = 1 - 0.55 * cell - 0.3 * fine - 0.25 * pore;
+    const dark = 1 - 0.38 * cell - 0.18 * fine - 0.15 * pore;
     setRGB(o, r * dark, g * dark * 0.97, b * dark * 0.95);
     o[4] = 0.55 + 0.3 * n - 0.45 * cell - 0.2 * fine - 0.1 * pore;
     o[5] = 0.38 + 0.35 * cell + 0.15 * fine - 0.1 * blot;
-  }, 2.2),
+  }, 1.4),
   // wet exposed muscle / viscera
   flesh: () => buildTex(512, (u, v, o) => {
     const str = fbm(u, v, 40, 4, 3, 51);
     const blob = fbm(u, v, 6, 6, 4, 53);
-    const fat = sstep(0.6, 0.7, fbm(u, v, 9, 9, 3, 57));
+    const fat = sstep(0.66, 0.76, fbm(u, v, 9, 9, 3, 57)) * 0.7;
     const clot = sstep(0.6, 0.75, fbm(u, v, 5, 5, 4, 59));
     const vein = Math.pow(ridge(fbm(u, v, 5, 5, 4, 61)), 14);
     const t = str * 0.65 + blob * 0.35;
-    let r = mix(0.32, 0.82, t), g = mix(0.03, 0.2, t * t), b = mix(0.03, 0.12, t * t);
-    r = mix(r, 0.9, fat * 0.8); g = mix(g, 0.66, fat * 0.8); b = mix(b, 0.36, fat * 0.8);
+    let r = mix(0.26, 0.78, t * t), g = mix(0.02, 0.16, t * t * t), b = mix(0.025, 0.1, t * t * t);
+    r = mix(r, 0.86, fat * 0.8); g = mix(g, 0.58, fat * 0.8); b = mix(b, 0.42, fat * 0.8);
     r = mix(r, 0.12, clot * 0.75); g = mix(g, 0.01, clot * 0.75); b = mix(b, 0.015, clot * 0.75);
     r = mix(r, 0.35, vein * 0.6); g = mix(g, 0.04, vein * 0.6); b = mix(b, 0.16, vein * 0.6);
     setRGB(o, r, g, b);
@@ -122,7 +122,7 @@ const PAINTERS = {
     const vein = Math.pow(ridge(fbm(u, v, 6, 6, 4, 73)), 16);
     const mott = fbm(u, v, 12, 12, 3, 75);
     const blood = sstep(0.55, 0.72, fbm(u, v, 3, 5, 4, 77));
-    let r = mix(0.6, 0.48, n), g = mix(0.55, 0.47, n), b = mix(0.48, 0.42, n);
+    let r = mix(0.5, 0.38, n), g = mix(0.46, 0.37, n), b = mix(0.41, 0.34, n);
     g += (mott - 0.5) * 0.05; r += (0.5 - mott) * 0.04;
     r = mix(r, 0.3, vein * 0.5); g = mix(g, 0.22, vein * 0.5); b = mix(b, 0.32, vein * 0.5);
     r = mix(r, 0.36, blood); g = mix(g, 0.04, blood); b = mix(b, 0.03, blood);
@@ -144,7 +144,7 @@ const PAINTERS = {
 // woven, dirty, blood-soaked cloth with alpha tatters. mode: 0 jacket (open front + hem), 1 sleeve/pants (end at v=0)
 function clothPainter(mode, base, seed) {
   return () => buildTex(512, (u, v, o) => {
-    const weave = 0.5 + 0.5 * Math.sin((u * 256 + v * 256) * Math.PI) * Math.sin((u * 256 - v * 256) * Math.PI * 0.5);
+    const weave = fbm(u, v, 128, 128, 1, seed + 1);
     const dirt = fbm(u, v, 6, 6, 5, seed);
     const grime = fbm(u, v, 2, 3, 3, seed + 3);
     const edge = mode === 0 ? Math.max(sstep(0.22, 0.0, u), sstep(0.78, 1.0, u)) : sstep(0.35, 0.0, v);
@@ -162,9 +162,9 @@ function clothPainter(mode, base, seed) {
       if (fbm(u, v, 7, 5, 3, seed + 13) > 0.73) a = 0; // holes
     } else if (v < 0.025 + 0.14 * tn * tn2 * 1.4) a = 0;
     o[3] = a;
-    o[4] = weave * 0.25 + dirt * 0.5 + bl * 0.15;
+    o[4] = weave * 0.12 + dirt * 0.3 + grime * 0.3 + bl * 0.1;
     o[5] = 0.9 - bl * 0.45 + 0.05 * dirt;
-  }, 1.4);
+  }, 0.7);
 }
 PAINTERS.jacket = clothPainter(0, [0.12, 0.105, 0.09], 101);
 PAINTERS.sleeve = clothPainter(1, [0.12, 0.105, 0.09], 121);
@@ -186,9 +186,9 @@ const MAT_PRESET = {
   shirt: { roughness: 1, sheen: 0.8, sheenRoughness: 0.7, sheenColor: 0x888070, alphaTest: 0.5, side: THREE.DoubleSide },
 };
 export function makeMat(kind, extra = {}) {
-  const t = getTex(kind), p = MAT_PRESET[kind] || {};
+  const t = getTex(kind), { normalScale: ns = 1, ...p } = MAT_PRESET[kind] || {};
   const m = new THREE.MeshPhysicalMaterial({ map: t.map, normalMap: t.normalMap, roughnessMap: t.roughnessMap, ...p, ...extra });
-  if (p.normalScale) m.normalScale.set(p.normalScale, p.normalScale);
+  m.normalScale.set(ns, ns);
   return m;
 }
 
@@ -293,6 +293,7 @@ function crabBodyGeo(seed) {
   return displace(g, 0.004, 28, seed);
 }
 
+const NO_STATE = Object.freeze({});
 export function createHeadcrab(opts = {}) {
   const seed = opts.seed ?? 1, clamped = !!opts.clamped;
   const R = rng(seed * 7919 + 13);
@@ -313,7 +314,7 @@ export function createHeadcrab(opts = {}) {
   meshOf(beakL, crabMat, body, [0.035, -0.012, 0.135], [0.3, 0.2, 0]);
   meshOf(beakL, crabMat, body, [-0.035, -0.012, 0.135], [0.3, -0.2, 0]);
   // dorsal ridge
-  const ridgeG = G(taperTube([[0, 0.07, 0.13], [0, 0.105, 0.04], [0, 0.11, -0.06], [0, 0.085, -0.15]], 24, 0.012, 0.006, 8, (t) => 0.006 + 0.008 * Math.sin(Math.PI * Math.min(1, t * 1.3))));
+  const ridgeG = G(taperTube([[0, 0.05, 0.12], [0, 0.096, 0.03], [0, 0.1, -0.05], [0, 0.07, -0.12]], 24, 0.012, 0.006, 8, (t) => 0.004 + 0.007 * Math.sin(Math.PI * Math.min(1, t * 1.3))));
   meshOf(ridgeG, crabMat, body);
   // ventral mouth: lip ring, throat, ring of teeth
   const mouth = joint(body, 0, -0.04, 0.05, 'mouth');
@@ -356,8 +357,9 @@ export function createHeadcrab(opts = {}) {
   });
   if (clamped) { // wrap down around a head
     for (const L of legs) {
-      L.lift0 = L.front ? -0.7 : -0.95; L.bend0 = L.front ? -1.25 : -1.0;
-      L.coxa.position.y -= 0.02;
+      L.lift0 = L.front ? -1.1 : -1.2; L.bend0 = L.front ? -1.4 : -0.6;
+      if (L.front) { L.yaw0 += 0.5 * L.side; L.coxa.rotation.y = L.yaw0; }
+      L.coxa.position.x *= 0.85; L.coxa.position.z *= 0.9; L.coxa.position.y -= 0.02;
     }
   }
   root.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
@@ -365,7 +367,7 @@ export function createHeadcrab(opts = {}) {
   let t = R() * 10, ph = 0;
   const api = {
     root, height: 0.35, radius: 0.25, body, legs,
-    update(dt, s = {}) {
+    update(dt, s = NO_STATE) {
       t += dt;
       const sp = s.speed || 0, at = s.attack || 0, hu = s.hurt || 0, de = s.dead || 0;
       ph += dt * (2 + 12 * sp);

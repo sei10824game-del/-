@@ -46,7 +46,7 @@ const film = new ShaderPass(filmShader); composer.addPass(film);
 // ---------- プレイヤー ----------
 const P = { pos: new THREE.Vector3(world.total / 2, 0, world.total - 2.2), vy: 0, yaw: 0, pitch: 0, hp: 100, ammo: 12, reserve: 120, onGround: true, r: .34, eye: 1.65, bob: 0, flash: true, reload: 0, kick: 0, shake: 0 };
 const keys = {}; let locked = false;
-const flashlight = new THREE.SpotLight(0xfff0d8, 70, 28, .5, .55, 1.5); flashlight.castShadow = Q !== 'low'; flashlight.shadow.mapSize.set(1024, 1024); flashlight.shadow.bias = -.0003; flashlight.shadow.camera.near = .1; flashlight.position.set(.15, -.1, 0); camera.add(flashlight, flashlight.target); flashlight.target.position.set(0, 0, -5);
+const flashlight = new THREE.SpotLight(0xfff0d8, 26, 28, .5, .55, 1.5); flashlight.castShadow = Q !== 'low'; flashlight.shadow.mapSize.set(1024, 1024); flashlight.shadow.bias = -.0003; flashlight.shadow.camera.near = .1; flashlight.position.set(.15, -.1, 0); camera.add(flashlight, flashlight.target); flashlight.target.position.set(0, 0, -5);
 const muzzle = new THREE.PointLight(0xffb060, 0, 9, 2); muzzle.position.set(.2, -.1, -.8); camera.add(muzzle);
 const gun = new THREE.Group(); { const m = new THREE.MeshStandardMaterial({ color: 0x1a1a1c, roughness: .35, metalness: .9 }); const slide = new THREE.Mesh(new THREE.BoxGeometry(.04, .05, .2), m), grip = new THREE.Mesh(new THREE.BoxGeometry(.036, .1, .05), new THREE.MeshStandardMaterial({ color: .1, roughness: .8 })); slide.position.set(0, 0, -.05); grip.position.set(0, -.085, .03); grip.rotation.x = .2; gun.add(slide, grip); slide.castShadow = grip.castShadow = false; gun.scale.setScalar(.7); gun.position.set(.16, -.16, -.34); camera.add(gun); }
 
@@ -167,7 +167,7 @@ function playerUpdate(dt) {
   const sh = P.shake * (Math.random() - .5) * .02; camera.rotation.order = 'YXZ'; camera.rotation.set(P.pitch + sh + P.kick * .02, P.yaw + sh, Math.sin(P.bob * .5) * (moving ? .004 : 0));
   P.kick = Math.max(0, P.kick - dt * 8); P.shake = Math.max(0, P.shake - dt * 4); muzzle.intensity = Math.max(0, muzzle.intensity - dt * 400);
   gun.position.set(.2 + Math.sin(P.bob * .5) * .006, -.2 + P.kick * .02 - Math.abs(Math.cos(P.bob)) * (moving ? .008 : 0), -.38 + P.kick * .06); gun.rotation.x = P.kick * .25;
-  flashlight.intensity = P.flash ? 70 : 0;
+  flashlight.intensity = P.flash ? 26 : 0;
   if (P.reload > 0) { P.reload -= dt; gun.rotation.x = -.6; if (P.reload <= 0) { const n = Math.min(12 - P.ammo, P.reserve); P.ammo += n; P.reserve -= n; } }
   if (P.hp <= 0) { P.hp = 100; P.pos.set(world.total / 2, 0, world.total - 2.2); say('倒れた… 玄関から再開'); }
 }
