@@ -1,6 +1,24 @@
 package jp.yakata.faction.entity;
 
+import jp.yakata.YakataMod;
 import jp.yakata.faction.Faction;
+import jp.yakata.faction.FactionDirector;
+import jp.yakata.faction.FactionStats;
+import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import jp.yakata.faction.FactionEntities;
+import jp.yakata.faction.FactionEntities.Ability;
+import jp.yakata.faction.FactionEntities.ModelKind;
+import jp.yakata.faction.FactionHooks;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.entity.MobCategory;
 import jp.yakata.faction.FactionMob;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -23,10 +41,62 @@ import org.jspecify.annotations.Nullable;
  * 体液は強酸: 斬りつけた相手に酸が飛び散り、倒されると周囲を酸で焼く。
  */
 public final class XenoMobs {
+	public static final Faction FACTION = Faction.builder("xeno").names("ゼノモーフ", "Xenomorph").color(ChatFormatting.DARK_GRAY)
+		.home("bedroom").cap(20)
+		.seed(() -> XenoMobs.FACEHUGGER, 3).seed(() -> XenoMobs.DRONE, 3).seed(() -> XenoMobs.WARRIOR, 1)
+		.conversion(() -> XenoMobs.DRONE, 1)
+		.hooks(new FactionHooks() {
+			@Override
+			public void tickSecond(ServerLevel level) {
+				tickHosts(level);
+			}
+		})
+		.register();
+
+	public static final EntityType<Facehugger> FACEHUGGER = FactionEntities.register("xeno_facehugger", FACTION, ModelKind.SILVERFISH,
+		EntityType.Builder.of(Facehugger::new, MobCategory.MONSTER).sized(0.5F, 0.35F).eyeHeight(0.15F),
+		Facehugger::createAttributes, 1, 5, 0);
+	public static final EntityType<Drone> DRONE = FactionEntities.register("xeno_drone", FACTION, ModelKind.SPIDER,
+		EntityType.Builder.of(Drone::new, MobCategory.MONSTER).sized(1.2F, 0.85F).eyeHeight(0.6F),
+		Drone::createAttributes, 1, 8, 0, false, Ability.ACID);
+	public static final EntityType<Warrior> WARRIOR = FactionEntities.register("xeno_warrior", FACTION, ModelKind.SPIDER,
+		EntityType.Builder.of(Warrior::new, MobCategory.MONSTER).sized(1.2F, 0.85F).eyeHeight(0.6F),
+		Warrior::createAttributes, 1, 3, 3, false, Ability.POISON);
+
 	/** フェイスハガーに寄生された宿主に付くタグ。一定時間後にドローンが胸を食い破る (FactionDirector)。 */
 	public static final String HOST_TAG = "yakata_xeno_host";
 
+	private static final int HOST_INCUBATION = 200;
+	private static final Map<UUID, Long> HOSTS = new HashMap<>();
+
 	private XenoMobs() {}
+
+	/** フェイスハガーに寄生された宿主は 10 秒後に胸を食い破られ、ドローンが生まれる。 */
+	static void tickHosts(ServerLevel level) {
+		long now = level.getGameTime();
+		List<LivingEntity> burst = new ArrayList<>();
+		for (Entity e : level.getAllEntities()) {
+			if (e instanceof LivingEntity living && living.isAlive() && e.entityTags().contains(HOST_TAG)) {
+				long since = HOSTS.computeIfAbsent(e.getUUID(), u -> now);
+				if (now - since >= HOST_INCUBATION || now < since) {
+					burst.add(living);
+				}
+			}
+		}
+		for (LivingEntity host : burst) {
+			HOSTS.remove(host.getUUID());
+			host.removeTag(HOST_TAG);
+			level.sendParticles(ParticleTypes.DAMAGE_INDICATOR, host.getX(), host.getY() + 1.0, host.getZ(), 15, 0.3, 0.3, 0.3, 0.2);
+			level.playSound(null, host.getX(), host.getY(), host.getZ(), SoundEvents.SLIME_SQUISH, SoundSource.HOSTILE, 1.5F, 0.5F);
+			BlockPos at = host.blockPosition();
+			host.kill(level);
+			if (FactionDirector.spawnAround(level, DRONE, at, level.getRandom(), EntitySpawnReason.CONVERSION) != null) {
+				FactionStats.recordConversion(FACTION);
+				YakataMod.LOGGER.info("[yakata] チェストバスター: 宿主からゼノモーフが誕生 ({})", at);
+			}
+		}
+		HOSTS.keySet().removeIf(uuid -> level.getEntity(uuid) == null);
+	}
 
 	/** 倒れたゼノの酸の血: 周囲の非ゼノにダメージ。 */
 	static void acidBurst(FactionMonster xeno, ServerLevel level, double radius, float damage) {
@@ -113,8 +183,8 @@ public final class XenoMobs {
 		}
 
 		@Override
-		public Faction getFaction() {
-			return Faction.XENO;
+		protected Faction baseFaction() {
+			return FACTION;
 		}
 	}
 
@@ -159,8 +229,8 @@ public final class XenoMobs {
 		}
 
 		@Override
-		public Faction getFaction() {
-			return Faction.XENO;
+		protected Faction baseFaction() {
+			return FACTION;
 		}
 	}
 
@@ -202,8 +272,8 @@ public final class XenoMobs {
 		}
 
 		@Override
-		public Faction getFaction() {
-			return Faction.XENO;
+		protected Faction baseFaction() {
+			return FACTION;
 		}
 	}
 }

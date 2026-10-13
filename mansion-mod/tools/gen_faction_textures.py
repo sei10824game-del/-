@@ -5,6 +5,8 @@
   - 人型 (ZombieModel / HumanoidModel.createMesh)   64x64
   - クモ (SpiderModel)                              64x32
   - シルバーフィッシュ (SilverfishModel)            64x32
+  - 馬 (AbstractEquineModel / 骨の馬の層)          64x64
+  - サイレンヘッド (専用 SirenHeadModel)           128x128
 出力: src/main/resources/assets/yakata/textures/entity/<name>.png
       tools/preview_factions.png (確認用の拡大一覧)
 
@@ -575,6 +577,631 @@ def licker():
     return t
 
 
+# ---- フラッド (Halo) ---------------------------------------------------------
+
+FLOOD = [hexc("#c8b878"), hexc("#b8a868"), hexc("#d4c488"), hexc("#a89858")]
+FLOOD_DARK = [hexc("#6a5a30"), hexc("#5a4a28"), hexc("#7a6a3a")]
+FLOOD_SAC = [hexc("#e0d090"), hexc("#d8c070"), hexc("#ead8a0")]
+
+
+def flood_growth(t, rect, density):
+    t.splotch(rect, FLOOD + FLOOD_DARK[:1], density, (1, 2))
+    t.drip(rect, hexc("#8a7a40"), max(1, density // 3))
+
+
+def flood_infector():
+    t = Tex(64, 32, 60)
+    for name, b in SILVERFISH.items():
+        fs = t.box(b, FLOOD_SAC if name.startswith("seg") else FLOOD, 12)
+        t.splotch(fs["top"], FLOOD_DARK, 2, (1, 1))
+        for rect in fs.values():
+            t.stripes(rect, hexc("#a08840"), 3, vertical=True)  # 触手の脚
+    return t
+
+
+def flood_combat():
+    skin = [hexc("#8a8a6a"), hexc("#7e7e5e")]
+    armor = [hexc("#4a5a3a"), hexc("#425234"), hexc("#526242")]  # 海兵隊の装甲の名残
+    pants = [hexc("#3a4430"), hexc("#323b2a")]
+
+    def extra(t, r):
+        for part in ("head", "body", "arm"):
+            for k, rect in r[part].items():
+                flood_growth(t, rect, 5 if part != "head" else 6)
+        # 左腕は丸ごと触手の鞭
+        for k in ("front", "back", "left", "right", "bottom"):
+            t.fill(r["arm"][k], FLOOD, 16)
+            t.stripes(r["arm"][k], hexc("#8a7a40"), 2)
+        hx, hy, _, _ = r["head"]["front"]
+        t.fill((hx + 1, hy + 2, 6, 3), FLOOD_DARK, 10)  # 崩れた顔
+        t.put(hx + 3, hy + 6, hexc("#2a2010"))
+        t.put(hx + 4, hy + 6, hexc("#2a2010"))
+    return humanoid("flood_combat", 61, skin, armor, pants, None, extra)
+
+
+def flood_carrier():
+    def extra(t, r):
+        for part in ("head", "body", "arm", "leg"):
+            for k, rect in r[part].items():
+                t.fill(rect, FLOOD_SAC if part == "body" else FLOOD, 14)
+                t.splotch(rect, FLOOD_DARK, 2, (1, 2))
+        # 胴の膨れた袋に透ける感染体の影
+        bx, by, bw, bh = r["body"]["front"]
+        for i in range(5):
+            x, y = bx + t.rnd.randrange(bw - 1), by + t.rnd.randrange(bh - 1)
+            t.put(x, y, hexc("#8a6a30"))
+            t.put(x + 1, y, hexc("#8a6a30"))
+        t.drip(r["body"]["front"], hexc("#b0a050"), 3)
+    return humanoid("flood_carrier", 62, FLOOD, FLOOD_SAC, FLOOD, None, extra)
+
+
+def flood_pure():
+    t = Tex(64, 32, 63)
+    pal = [hexc("#9a8a48"), hexc("#8a7a3a"), hexc("#aa9a58")]
+    for part, b in SPIDER.items():
+        fs = t.box(b, pal, 12)
+        for rect in fs.values():
+            t.splotch(rect, FLOOD_DARK, 2, (1, 1))
+        if part == "body":
+            ribbed(t, fs["top"], hexc("#c8b878"), 2)
+    hx, hy, _, _ = faces(*SPIDER["head"])["front"]
+    for x in range(hx + 1, hx + 7):
+        t.put(x, hy + 5, hexc("#2a2010"))
+    t.put(hx + 2, hy + 2, hexc("#e0e060"))
+    t.put(hx + 5, hy + 2, hexc("#e0e060"))
+    return t
+
+
+def flood_juggernaut():
+    hide = [hexc("#7a6a38"), hexc("#6a5a2e"), hexc("#8a7a44")]
+
+    def extra(t, r):
+        for part in ("head", "body", "arm", "leg"):
+            for k, rect in r[part].items():
+                t.fill(rect, hide, 14)
+                t.stripes(rect, hexc("#4a3e20"), 3)
+                t.splotch(rect, FLOOD_SAC, 2, (1, 2))
+        hx, hy, _, _ = r["head"]["front"]
+        for x in range(hx, hx + 8):  # 大きな顎
+            t.put(x, hy + 5, hexc("#e8dcb0") if x % 2 else hexc("#1a1408"))
+            t.put(x, hy + 6, hexc("#1a1408"))
+        t.put(hx + 2, hy + 2, hexc("#f0f040"))
+        t.put(hx + 5, hy + 2, hexc("#f0f040"))
+        # 腕の先の巨大な鉤爪
+        for k in ("front", "back", "left", "right"):
+            x, y, w, h = r["arm"][k]
+            t.fill((x, y + h - 3, w, 3), [hexc("#e0d4a8"), hexc("#c8bc90")], 8)
+    return humanoid("flood_juggernaut", 64, hide, hide, hide, None, extra)
+
+
+# ---- ネクロモーフ (Dead Space) -------------------------------------------------
+
+NECRO = [hexc("#9a6a58"), hexc("#8a5a4a"), hexc("#a87866"), hexc("#7a4e40")]
+NECRO_ROT = [hexc("#5a3a2e"), hexc("#4a2e24"), hexc("#6a4436")]
+NECRO_BONE = hexc("#e4d8c0")
+NECRO_GLOW = hexc("#ffb040")
+
+
+def necro_slasher():
+    def extra(t, r):
+        for part in ("head", "body", "leg"):
+            for k, rect in r[part].items():
+                t.splotch(rect, NECRO_ROT, 4, (1, 2))
+                t.drip(rect, hexc("#3a1a10"), 1)
+        # 腕は骨の刃 (下半分が白い刃)
+        for k in ("front", "back", "left", "right"):
+            x, y, w, h = r["arm"][k]
+            t.fill((x, y, w, h - 6), NECRO, 12)
+            t.fill((x, y + h - 6, w, 6), [NECRO_BONE, hexc("#d0c4aa")], 8)
+        t.fill(r["arm"]["bottom"], [NECRO_BONE], 6)
+        hx, hy, _, _ = r["head"]["front"]
+        for x in range(hx + 1, hx + 7):  # 裂けた顎
+            t.put(x, hy + 5, hexc("#2a0808"))
+            t.put(x, hy + 6, NECRO_BONE if x % 2 else hexc("#2a0808"))
+        blood(t, r, 1.0, "#4a0a0a")
+    return humanoid("necro_slasher", 70, NECRO, NECRO, NECRO_ROT, (hexc("#ffcc60"), NECRO_GLOW), extra)
+
+
+def necro_exploder():
+    def extra(t, r):
+        for part in ("head", "body", "leg"):
+            for k, rect in r[part].items():
+                t.splotch(rect, NECRO_ROT, 3, (1, 2))
+        # 腕の先の光る爆発嚢
+        for k in ("front", "back", "left", "right"):
+            x, y, w, h = r["arm"][k]
+            t.fill((x, y + 5, w, h - 5), [hexc("#ffb040"), hexc("#ffcc60"), hexc("#e89020")], 14)
+            t.splotch((x, y + 5, w, h - 5), [hexc("#ff7a10")], 3, (1, 1))
+        t.fill(r["arm"]["bottom"], [hexc("#ffb040")], 10)
+        blood(t, r, 0.8, "#4a0a0a")
+    return humanoid("necro_exploder", 71, NECRO, NECRO_ROT, NECRO_ROT, (hexc("#ffcc60"), NECRO_GLOW), extra)
+
+
+def necro_brute():
+    plate = [hexc("#5a4a3a"), hexc("#4e4032"), hexc("#665444")]
+
+    def extra(t, r):
+        for part in ("head", "body", "arm", "leg"):
+            for k, rect in r[part].items():
+                t.fill(rect, plate if k in ("front", "top") else NECRO, 12)
+                if k == "front":
+                    t.stripes(rect, hexc("#3a3026"), 3)  # 装甲の継ぎ目
+                if k == "back":
+                    t.splotch(rect, [hexc("#d06a50"), hexc("#e08060")], 4, (1, 2))  # 背中の弱点 (柔らかい肉)
+        hx, hy, _, _ = r["head"]["front"]
+        t.put(hx + 2, hy + 3, NECRO_GLOW)
+        t.put(hx + 5, hy + 3, NECRO_GLOW)
+        for x in range(hx + 1, hx + 7):
+            t.put(x, hy + 6, NECRO_BONE if x % 2 else hexc("#1a0a06"))
+    return humanoid("necro_brute", 72, plate, plate, plate, None, extra)
+
+
+def necro_leaper():
+    t = Tex(64, 32, 73)
+    for part, b in SPIDER.items():
+        fs = t.box(b, NECRO, 12)
+        for rect in fs.values():
+            t.splotch(rect, NECRO_ROT, 2, (1, 1))
+        if part == "leg":
+            lx, ly, lw, lh = fs["front"]
+            t.fill((lx + lw - 4, ly, 4, lh), [NECRO_BONE], 8)  # 鎌
+    hx, hy, _, _ = faces(*SPIDER["head"])["front"]
+    t.put(hx + 2, hy + 2, NECRO_GLOW)
+    t.put(hx + 5, hy + 2, NECRO_GLOW)
+    for x in range(hx + 1, hx + 7):
+        t.put(x, hy + 6, NECRO_BONE if x % 2 else hexc("#1a0a06"))
+    return t
+
+
+def necro_infector():
+    t = Tex(64, 32, 74)
+    pal = [hexc("#6a4a5a"), hexc("#5a3e4c"), hexc("#7a5868")]
+    for name, b in SILVERFISH.items():
+        fs = t.box(b, pal if name.startswith("seg") else NECRO_ROT, 12)
+        t.stripes(fs["top"], hexc("#a07888"), 2, vertical=True)  # 膜の翼
+    hx, hy, _, _ = faces(*SILVERFISH["seg0"])["front"]
+    t.put(hx + 1, hy, NECRO_BONE)  # 吻針
+    t.put(hx, hy + 1, NECRO_GLOW)
+    t.put(hx + 2, hy + 1, NECRO_GLOW)
+    return t
+
+
+# ---- プラーガ (RE4) -----------------------------------------------------------
+
+def plaga_ganado():
+    skin = [hexc("#c09878"), hexc("#b08868"), hexc("#c8a080")]
+    shirt = [hexc("#7a6a4a"), hexc("#6e5e40"), hexc("#86764e")]  # 粗末な農民の服
+    pants = [hexc("#4a3e30"), hexc("#40362a")]
+
+    def extra(t, r):
+        bx, by, bw, bh = r["body"]["front"]
+        t.fill((bx, by + 6, bw, 1), [hexc("#3a2a1a")], 4)  # 帯
+        t.splotch(r["body"]["front"], [hexc("#5a4a30")], 3, (1, 2))
+        hx, hy, _, _ = r["head"]["front"]
+        t.fill((hx, hy, 8, 2), [hexc("#3a2a1a"), hexc("#2e2216")], 6)  # 髪
+        t.put(hx + 2, hy + 4, hexc("#c02020"))  # 赤く光る目
+        t.put(hx + 5, hy + 4, hexc("#c02020"))
+        t.put(hx + 3, hy + 7, hexc("#5a1010"))
+
+    def cap(t, hat):
+        brim = [hexc("#5a4a32"), hexc("#4e402a")]
+        t.fill(hat["top"], brim, 6)
+        for k in ("front", "back", "left", "right"):
+            x, y, w, h = hat[k]
+            t.fill((x, y, w, 2), brim, 6)
+    return humanoid("plaga_ganado", 80, skin, shirt, pants, None, extra, cap)
+
+
+def plaga_garrador():
+    leather = [hexc("#3a3028"), hexc("#30281f"), hexc("#443a30")]
+    iron = [hexc("#7a7a80"), hexc("#6a6a70"), hexc("#8a8a90")]
+
+    def extra(t, r):
+        # 頭と目を覆う鉄の覆面 (盲目)
+        for k, rect in r["head"].items():
+            t.fill(rect, iron, 10)
+        hx, hy, _, _ = r["head"]["front"]
+        for x in range(hx + 1, hx + 7):
+            t.put(x, hy + 4, hexc("#3a3a40"))
+        t.fill(r["body"]["front"], iron, 10)  # 胸当て
+        t.stripes(r["body"]["front"], hexc("#5a5a60"), 3)
+        bx, by, bw, bh = r["body"]["back"]
+        t.fill((bx + 2, by + 2, 4, 5), [hexc("#d8a040"), hexc("#c89030")], 10)  # 背中のプラーガ (弱点)
+        t.put(bx + 3, by + 4, hexc("#5a2a10"))
+        for k in ("front", "back", "left", "right"):
+            x, y, w, h = r["arm"][k]
+            t.fill((x, y + h - 3, w, 3), [hexc("#d0d0d8"), hexc("#b0b0b8")], 6)  # 鉤爪
+    return humanoid("plaga_garrador", 81, leather, leather, leather, None, extra)
+
+
+def plaga_parasite():
+    t = Tex(64, 32, 82)
+    pal = [hexc("#c8a040"), hexc("#b89030"), hexc("#d8b050")]
+    for part, b in SPIDER.items():
+        fs = t.box(b, pal if part != "leg" else [hexc("#e0d0a0"), hexc("#d0c090")], 12)
+        if part == "body":
+            t.stripes(fs["top"], hexc("#8a6a20"), 2)
+    hx, hy, _, _ = faces(*SPIDER["head"])["front"]
+    for x in range(hx + 1, hx + 7):  # 大顎
+        t.put(x, hy + 4, hexc("#f0e8d0") if x % 2 else hexc("#3a2a10"))
+        t.put(x, hy + 5, hexc("#3a2a10"))
+    t.put(hx + 3, hy + 2, hexc("#ff4020"))
+    t.put(hx + 4, hy + 2, hexc("#ff4020"))
+    return t
+
+
+# ---- T-ベロニカ (CODE:Veronica) ---------------------------------------------
+
+TV_SKIN = [hexc("#e8dcd0"), hexc("#dcd0c4"), hexc("#f0e6dc")]
+TV_PLANT = [hexc("#3a6a2a"), hexc("#2e5a22"), hexc("#4a7a34")]
+TV_ROSE = [hexc("#c83a5a"), hexc("#b02e4a"), hexc("#d84a6a")]
+
+
+def tv_alexia(stage):
+    if stage == 1:
+        skin = TV_SKIN
+        dress = [hexc("#d8d0c4"), hexc("#ccc4b8"), hexc("#e4dcd0")]
+
+        def extra(t, r):
+            hx, hy, _, _ = r["head"]["front"]
+            # 金髪
+            t.fill(r["head"]["top"], [hexc("#ecd890"), hexc("#e0c878")], 8)
+            for k in ("back", "left", "right"):
+                t.fill(r["head"][k], [hexc("#ecd890"), hexc("#e0c878")], 8)
+            t.fill((hx, hy, 8, 2), [hexc("#ecd890")], 8)
+            # 燃える血の筋
+            for part in ("body", "arm"):
+                t.drip(r[part]["front"], hexc("#ff6020"), 2)
+            t.splotch(r["body"]["front"], [hexc("#ff7a30"), hexc("#ffa040")], 3, (1, 1))
+        return humanoid("tv_alexia_1", 90, skin, dress, dress, (hexc("#f0f0e0"), hexc("#ff4020")), extra)
+
+    def extra2(t, r):
+        for part in ("head", "body", "arm", "leg"):
+            for k, rect in r[part].items():
+                t.fill(rect, TV_PLANT, 14)
+                t.splotch(rect, TV_ROSE, 3, (1, 2))
+                t.drip(rect, hexc("#ff6a20"), 1)
+        hx, hy, _, _ = r["head"]["front"]
+        t.fill((hx + 1, hy + 1, 6, 6), TV_SKIN, 8)  # 植物から突き出た女王の顔
+        t.put(hx + 2, hy + 3, hexc("#ff4020"))
+        t.put(hx + 5, hy + 3, hexc("#ff4020"))
+
+    def petals(t, hat):
+        for k, rect in hat.items():
+            if k == "bottom":
+                continue
+            x0, y0, w, h = rect
+            for y in range(y0, y0 + h):
+                for x in range(x0, x0 + w):
+                    if t.rnd.random() < (0.6 if k == "top" else 0.35) and (k == "top" or y - y0 < 4):
+                        t.put(x, y, jitter(t.rnd.choice(TV_ROSE), t.rnd, 14))
+    return humanoid("tv_alexia_2", 91, TV_PLANT, TV_PLANT, TV_PLANT, None, extra2, petals)
+
+
+def tv_bee():
+    t = Tex(64, 32, 92)
+    for name, b in SILVERFISH.items():
+        fs = t.box(b, [hexc("#2a1a2a"), hexc("#3a223a")], 8)
+        for rect in fs.values():
+            t.stripes(rect, hexc("#c83a5a"), 2, vertical=True)
+        t.splotch(fs["top"], [hexc("#e8e0ff")], 1, (1, 1))  # 羽
+    hx, hy, _, _ = faces(*SILVERFISH["seg0"])["front"]
+    t.put(hx, hy, hexc("#ff3030"))
+    t.put(hx + 2, hy, hexc("#ff3030"))
+    return t
+
+
+def tv_albinoid():
+    t = Tex(64, 32, 93)
+    pal = [hexc("#f0ece8"), hexc("#e4e0dc"), hexc("#fafaf6")]
+    for name, b in SILVERFISH.items():
+        fs = t.box(b, pal, 6)
+        t.splotch(fs["top"], [hexc("#a0c8ff"), hexc("#c0dcff")], 2, (1, 1))  # 発電器官
+    hx, hy, _, _ = faces(*SILVERFISH["seg0"])["front"]
+    t.put(hx, hy, hexc("#ff6080"))
+    t.put(hx + 2, hy, hexc("#ff6080"))
+    return t
+
+
+def tv_nosferatu():
+    skin = [hexc("#8a9a7a"), hexc("#7a8a6a"), hexc("#9aaa8a")]
+    wrap = [hexc("#5a5040"), hexc("#4e4636"), hexc("#665c4a")]  # 拘束衣
+
+    def extra(t, r):
+        bx, by, bw, bh = r["body"]["front"]
+        t.fill((bx + 2, by + 2, 4, 4), [hexc("#a02030"), hexc("#c03040")], 10)  # 露出した心臓
+        t.put(bx + 3, by + 3, hexc("#ff6070"))
+        for yy in range(by, by + bh, 3):
+            for xx in range(bx, bx + bw):
+                t.put(xx, yy, hexc("#3a3428"))  # 鎖の跡
+        hx, hy, _, _ = r["head"]["front"]
+        for x in range(hx + 1, hx + 7):
+            t.put(x, hy + 5, hexc("#2a3a1a"))
+            t.put(x, hy + 6, hexc("#9ac040"))  # 毒ガスの漏れる口
+        t.drip(r["head"]["front"], hexc("#9ac040"), 2)
+    return humanoid("tv_nosferatu", 94, skin, wrap, wrap, (hexc("#c0d080"), hexc("#405020")), extra)
+
+
+def tv_zombie():
+    skin = [hexc("#a8a088"), hexc("#9a927a")]
+    shirt = [hexc("#6a5a5a"), hexc("#5e4e4e")]
+    pants = [hexc("#3a3a40"), hexc("#323238")]
+
+    def extra(t, r):
+        for part in ("body", "arm", "head", "leg"):
+            for k, rect in r[part].items():
+                t.splotch(rect, TV_PLANT, 3 if part != "leg" else 1, (1, 2))
+        t.splotch(r["body"]["front"], TV_ROSE, 2, (1, 1))
+        t.splotch(r["head"]["top"], TV_ROSE, 2, (1, 1))
+        blood(t, r, 0.6)
+    return humanoid("tv_zombie", 95, skin, shirt, pants, (hexc("#e0e0c0"), hexc("#4a8a2a")), extra)
+
+
+# ---- サイレンヘッド --------------------------------------------------------
+
+SIREN = {
+    "leg": (0, 0, 2, 60, 2),
+    "arm": (8, 0, 2, 68, 2),
+    "body": (16, 0, 6, 44, 3),
+    "neck": (34, 0, 1, 14, 1),
+    "bar": (40, 0, 16, 2, 2),
+    "siren": (40, 8, 5, 5, 8),
+}
+
+
+def siren_head():
+    """専用モデル (SirenHeadModel, 128x128)。乾いた皮と骨の体、電柱の首、灰色の金属のサイレン"""
+    t = Tex(128, 128, 100)
+    hide = [hexc("#7a6a58"), hexc("#6a5a4a"), hexc("#8a7a66"), hexc("#5e4e40")]
+    for part in ("leg", "arm", "body"):
+        fs = t.box(SIREN[part], hide, 14)
+        for rect in fs.values():
+            t.stripes(rect, hexc("#4a3e32"), 5)  # 皮のしわ / 骨の節
+            t.splotch(rect, [hexc("#3e342a")], 3, (1, 1))
+    bfs = faces(*SIREN["body"])
+    x, y, w, h = bfs["front"]
+    for yy in range(y + 4, y + 20, 3):  # 浮き出た肋骨
+        for xx in range(x, x + w):
+            t.put(xx, yy, hexc("#b8a88e"))
+    t.drip(bfs["front"], hexc("#4a1a10"), 2)
+    t.box(SIREN["neck"], [hexc("#5a4a3a"), hexc("#4e4032")], 8)  # 電柱のような首
+    t.box(SIREN["bar"], [hexc("#6a6a6a"), hexc("#5a5a5a")], 8)
+    sfs = t.box(SIREN["siren"], [hexc("#9a9a9a"), hexc("#8a8a8a"), hexc("#a8a8a8")], 10)
+    for k in ("top", "left", "right", "bottom", "back"):
+        t.splotch(sfs[k], [hexc("#7a5a3a"), hexc("#8a6a44")], 3, (1, 2))  # 錆
+    fx, fy, fw, fh = sfs["front"]  # ラッパの口: 黒い同心円
+    t.fill((fx, fy, fw, fh), [hexc("#2a2a2a")], 4)
+    t.fill((fx + 1, fy + 1, fw - 2, fh - 2), [hexc("#101010")], 2)
+    t.put(fx + fw // 2, fy + fh // 2, hexc("#3a3a3a"))
+    return t
+
+
+HORSE = {
+    "body": (0, 32, 10, 10, 22),
+    "neck": (0, 35, 4, 12, 7),
+    "head": (0, 13, 6, 5, 7),
+    "mane": (56, 36, 2, 16, 2),
+    "mouth": (0, 25, 4, 5, 5),
+    "leg": (48, 21, 4, 11, 4),
+    "tail": (42, 36, 3, 14, 4),
+    "ear": (19, 16, 2, 3, 1),
+}
+
+
+def siren_long_horse():
+    """バニラの骨の馬モデル (64x64)。黒くやせ細った皮と浮き出た骨"""
+    t = Tex(64, 64, 101)
+    hide = [hexc("#2a2622"), hexc("#221e1a"), hexc("#322c28")]
+    for part in ("neck", "head", "mouth", "leg", "tail", "ear", "mane", "body"):
+        fs = t.box(HORSE[part], hide, 8)
+        for rect in fs.values():
+            t.splotch(rect, [hexc("#d8d0c0"), hexc("#c0b8a8")], 2 if part != "body" else 6, (1, 1))
+    bfs = faces(*HORSE["body"])
+    for k in ("left", "right"):  # 浮き出た肋骨
+        x, y, w, h = bfs[k]
+        for xx in range(x + 3, x + w - 3, 3):
+            for yy in range(y + 1, y + h - 2):
+                t.put(xx, yy, hexc("#d8d0c0"))
+    hx, hy, _, _ = faces(*HORSE["head"])["front"]
+    t.put(hx + 1, hy + 2, hexc("#f0f0f0"))
+    t.put(hx + 4, hy + 2, hexc("#f0f0f0"))
+    mx, my, mw, mh = faces(*HORSE["mouth"])["front"]
+    for x in range(mx, mx + mw):  # 人間のような歯
+        t.put(x, my + mh - 2, hexc("#f0ece0"))
+    return t
+
+
+def siren_cartoon_cat():
+    black = [hexc("#141414"), hexc("#0c0c0c"), hexc("#1c1c1c")]
+
+    def extra(t, r):
+        hx, hy, _, _ = r["head"]["front"]
+        # 白い大きな目とニタニタ笑う口
+        for (ex, ey) in ((1, 2), (5, 2)):
+            for yy in range(2):
+                for xx in range(2):
+                    t.put(hx + ex + xx, hy + ey + yy, hexc("#f4f4f0"))
+        t.put(hx + 2, hy + 3, hexc("#000000"))
+        t.put(hx + 5, hy + 3, hexc("#000000"))
+        for x in range(hx, hx + 8):
+            t.put(x, hy + 6, hexc("#f4f4f0"))
+            if x % 2 == 0:
+                t.put(x, hy + 7, hexc("#f4f4f0"))
+        # 白い手袋
+        for k in ("front", "back", "left", "right"):
+            x, y, w, h = r["arm"][k]
+            t.fill((x, y + 8, w, 4), [hexc("#f4f4f0"), hexc("#e4e4e0")], 4)
+        t.fill(r["arm"]["bottom"], [hexc("#f4f4f0")], 4)
+
+    def ears(t, hat):
+        x, y, w, h = hat["front"]
+        for (ex, ew) in ((0, 2), (6, 2)):
+            for yy in range(y, y + 2):
+                for xx in range(x + ex, x + ex + ew):
+                    t.put(xx, yy, jitter(hexc("#141414"), t.rnd, 6))
+    return humanoid("siren_cartoon_cat", 102, black, black, black, None, extra, ears)
+
+
+# ---- マキマ / チェンソーマン ---------------------------------------------------
+
+def makima():
+    skin = [hexc("#f2dccb"), hexc("#ead2c0")]
+    shirt = [hexc("#f2f0ec"), hexc("#e8e6e2")]
+    pants = [hexc("#2a2a32"), hexc("#24242c")]
+
+    def extra(t, r):
+        bx, by, bw, bh = r["body"]["front"]
+        t.fill((bx + 3, by, 2, 7), [hexc("#1a1a22")], 4)  # 黒いネクタイ
+        for k in ("front", "back", "left", "right"):
+            x, y, w, h = r["arm"][k]
+            t.fill((x, y, w, h - 3), shirt, 4)
+        hair = [hexc("#b85a3a"), hexc("#a84e30"), hexc("#c86a48")]
+        t.fill(r["head"]["top"], hair, 8)
+        for k in ("back", "left", "right"):
+            t.fill(r["head"][k], hair, 8)
+        hx, hy, _, _ = r["head"]["front"]
+        t.fill((hx, hy, 8, 2), hair, 8)
+        t.put(hx, hy + 2, hair[0])
+        t.put(hx + 7, hy + 2, hair[0])
+        # 同心円の黄色い目
+        for ex in (1, 5):
+            t.put(hx + ex, hy + 4, hexc("#e8c040"))
+            t.put(hx + ex + 1, hy + 4, hexc("#a07820"))
+        t.put(hx + 3, hy + 6, hexc("#c08070"))
+        t.put(hx + 4, hy + 6, hexc("#c08070"))
+
+    def braid(t, hat):
+        x, y, w, h = hat["back"]
+        for yy in range(y + 2, y + h):
+            t.put(x + 3, yy, jitter(hexc("#b85a3a"), t.rnd, 10))
+            t.put(x + 4, yy, jitter(hexc("#a84e30"), t.rnd, 10))
+    return humanoid("makima_devil", 110, skin, shirt, pants, None, extra, braid)
+
+
+def makima_agent():
+    skin = [hexc("#e0c4a8"), hexc("#d4b89c")]
+    suit = [hexc("#1e1e26"), hexc("#18181f"), hexc("#24242c")]
+
+    def extra(t, r):
+        bx, by, bw, bh = r["body"]["front"]
+        t.fill((bx + 3, by, 2, 6), [hexc("#f2f0ec")], 4)  # 白いシャツ
+        t.put(bx + 3, by + 1, hexc("#3a3a6a"))  # ネクタイ
+        t.put(bx + 4, by + 2, hexc("#3a3a6a"))
+        hx, hy, _, _ = r["head"]["front"]
+        t.fill(r["head"]["top"], [hexc("#1a1a1a")], 6)
+        t.fill((hx, hy, 8, 2), [hexc("#1a1a1a")], 6)
+    return humanoid("makima_agent", 111, skin, suit, suit, (hexc("#f0f0f0"), hexc("#202020")), extra)
+
+
+def chainsaw_denji(stage):
+    if stage == 1:
+        skin = [hexc("#e8c8a8"), hexc("#dcbc9c")]
+        shirt = [hexc("#f0eeea"), hexc("#e4e2de")]
+        pants = [hexc("#1e1e24"), hexc("#18181e")]
+
+        def extra(t, r):
+            hx, hy, _, _ = r["head"]["front"]
+            # 頭から突き出たチェンソー (額の中央)
+            for y in range(hy, hy + 4):
+                t.put(hx + 3, y, hexc("#9aa0a8"))
+                t.put(hx + 4, y, hexc("#e05a20") if y % 2 else hexc("#6a6a70"))
+            t.put(hx + 1, hy + 5, hexc("#1a1a1a"))
+            t.put(hx + 6, hy + 5, hexc("#1a1a1a"))
+            for x in range(hx + 2, hx + 6):  # 鋭い歯
+                t.put(x, hy + 7, hexc("#f0f0f0") if x % 2 else hexc("#3a0a0a"))
+            # 腕の先のチェンソーの刃
+            for k in ("front", "back", "left", "right"):
+                x, y, w, h = r["arm"][k]
+                t.fill((x, y + 6, w, 6), [hexc("#9aa0a8"), hexc("#8a9098")], 6)
+                for yy in range(y + 6, y + 12, 2):
+                    t.put(x, yy, hexc("#e05a20"))
+            t.fill(r["arm"]["bottom"], [hexc("#9aa0a8")], 6)
+            t.fill(r["head"]["top"], [hexc("#e8c060"), hexc("#d8b050")], 8)
+            bx, by, bw, bh = r["body"]["front"]
+            t.put(bx + 3, by + 5, hexc("#e05a20"))  # 胸のスターター
+            t.put(bx + 4, by + 5, hexc("#e05a20"))
+            t.put(bx + 3, by + 6, hexc("#3a3a3a"))
+            blood(t, r, 1.0, "#9a1010")
+        return humanoid("chainsaw_denji_1", 120, skin, shirt, pants, None, extra)
+
+    black = [hexc("#141418"), hexc("#0c0c10"), hexc("#1c1c22")]
+
+    def extra2(t, r):
+        hx, hy, _, _ = r["head"]["front"]
+        for y in range(hy, hy + 5):
+            t.put(hx + 3, y, hexc("#d84a1a"))
+            t.put(hx + 4, y, hexc("#d84a1a"))
+        for x in range(hx + 1, hx + 7):  # 白く光る牙と目
+            t.put(x, hy + 6, hexc("#ffffff") if x % 2 else hexc("#000000"))
+        t.put(hx + 1, hy + 4, hexc("#ffffff"))
+        t.put(hx + 6, hy + 4, hexc("#ffffff"))
+        # 4 本腕: 腕の前後の面に別の腕と刃を描き込む
+        for k in ("front", "back", "left", "right"):
+            x, y, w, h = r["arm"][k]
+            t.fill((x, y + 4, w, 8), [hexc("#d84a1a"), hexc("#b83a10")], 10)
+            for yy in range(y + 4, y + 12, 2):
+                t.put(x + w - 1, yy, hexc("#e0e0e0"))
+        bx, by, bw, bh = r["body"]["left"]
+        t.fill((bx, by + 2, bw, 5), [hexc("#d84a1a")], 8)  # 胴の脇から生える 2 本目の腕
+        bx, by, bw, bh = r["body"]["right"]
+        t.fill((bx, by + 2, bw, 5), [hexc("#d84a1a")], 8)
+        bx, by, bw, bh = r["body"]["back"]
+        for yy in range(by, by + bh, 2):  # 背中のチェーン
+            t.put(bx + 3, yy, hexc("#9aa0a8"))
+            t.put(bx + 4, yy + 1, hexc("#9aa0a8"))
+    return humanoid("chainsaw_denji_2", 121, black, black, black, None, extra2)
+
+
+def chainsaw_power():
+    skin = [hexc("#f0d8c8"), hexc("#e8ccbc")]
+    shirt = [hexc("#f0eeea"), hexc("#e4e2de")]
+    pants = [hexc("#1e1e24"), hexc("#18181e")]
+
+    def extra(t, r):
+        hair = [hexc("#f0c0a0"), hexc("#e8b090"), hexc("#f8d0b0")]  # ピンクがかった金髪
+        t.fill(r["head"]["top"], hair, 8)
+        for k in ("back", "left", "right"):
+            t.fill(r["head"][k], hair, 8)
+        hx, hy, _, _ = r["head"]["front"]
+        t.fill((hx, hy, 8, 2), hair, 8)
+        t.put(hx + 2, hy + 4, hexc("#e8c040"))
+        t.put(hx + 5, hy + 4, hexc("#e8c040"))
+        t.put(hx + 3, hy + 6, hexc("#f0f0f0"))  # ギザ歯
+        t.put(hx + 4, hy + 6, hexc("#f0f0f0"))
+        for k in ("front", "back", "left", "right"):
+            x, y, w, h = r["arm"][k]
+            t.fill((x, y + 8, w, 4), [hexc("#a01010"), hexc("#c01818")], 8)  # 血の武器
+
+    def horns(t, hat):
+        x, y, w, h = hat["front"]
+        for (hx2) in (1, 6):
+            t.put(x + hx2, y, hexc("#c01818"))
+            t.put(x + hx2, y + 1, hexc("#c01818"))
+        x, y, w, h = hat["top"]
+        t.put(x + 1, y + 3, hexc("#c01818"))
+        t.put(x + 6, y + 3, hexc("#c01818"))
+    return humanoid("chainsaw_power", 122, skin, shirt, pants, None, extra, horns)
+
+
+def chainsaw_aki():
+    skin = [hexc("#e0c4a8"), hexc("#d4b89c")]
+    suit = [hexc("#1e1e26"), hexc("#18181f"), hexc("#24242c")]
+
+    def extra(t, r):
+        bx, by, bw, bh = r["body"]["front"]
+        t.fill((bx + 3, by, 2, 6), [hexc("#f2f0ec")], 4)
+        t.fill(r["head"]["top"], [hexc("#1a1a1a")], 6)
+        for k in ("back", "left", "right"):
+            t.fill(r["head"][k], [hexc("#1a1a1a")], 6)
+        hx, hy, _, _ = r["head"]["front"]
+        t.fill((hx, hy, 8, 1), [hexc("#1a1a1a")], 6)
+
+    def topknot(t, hat):
+        x, y, w, h = hat["top"]
+        t.fill((x + 3, y + 4, 2, 3), [hexc("#1a1a1a")], 4)  # ちょんまげ
+    return humanoid("chainsaw_aki", 123, skin, suit, suit, (hexc("#f0f0f0"), hexc("#30303a")), extra, topknot)
+
+
 # ---------------------------------------------------------------------------
 
 ALL = {
@@ -596,6 +1223,34 @@ ALL = {
     "parasite_swarmer": parasite_swarmer,
     "parasite_crawler": parasite_crawler,
     "parasite_assimilated": parasite_assimilated,
+    "flood_infector": flood_infector,
+    "flood_combat": flood_combat,
+    "flood_carrier": flood_carrier,
+    "flood_pure": flood_pure,
+    "flood_juggernaut": flood_juggernaut,
+    "necro_slasher": necro_slasher,
+    "necro_leaper": necro_leaper,
+    "necro_exploder": necro_exploder,
+    "necro_infector": necro_infector,
+    "necro_brute": necro_brute,
+    "plaga_ganado": plaga_ganado,
+    "plaga_garrador": plaga_garrador,
+    "plaga_parasite": plaga_parasite,
+    "tv_alexia_1": lambda: tv_alexia(1),
+    "tv_alexia_2": lambda: tv_alexia(2),
+    "tv_bee": tv_bee,
+    "tv_albinoid": tv_albinoid,
+    "tv_nosferatu": tv_nosferatu,
+    "tv_zombie": tv_zombie,
+    "siren_head": siren_head,
+    "siren_long_horse": siren_long_horse,
+    "siren_cartoon_cat": siren_cartoon_cat,
+    "makima_devil": makima,
+    "makima_agent": makima_agent,
+    "chainsaw_denji_1": lambda: chainsaw_denji(1),
+    "chainsaw_denji_2": lambda: chainsaw_denji(2),
+    "chainsaw_power": chainsaw_power,
+    "chainsaw_aki": chainsaw_aki,
 }
 
 
@@ -606,14 +1261,15 @@ def main():
         print("wrote", os.path.relpath(tex.save(name), ROOT))
         images.append((name, tex.img))
     # 確認用の一覧 (6 倍拡大)
-    scale, cols = 6, 3
+    scale, cols = 6, 6
     cell_w, cell_h = 64 * scale, 64 * scale + 14
     rows = (len(images) + cols - 1) // cols
     sheet = Image.new("RGBA", (cols * cell_w, rows * cell_h), (60, 60, 70, 255))
     draw = ImageDraw.Draw(sheet)
     for i, (name, img) in enumerate(images):
         x, y = (i % cols) * cell_w, (i // cols) * cell_h
-        big = img.resize((img.width * scale, img.height * scale), Image.NEAREST)
+        k = scale if max(img.width, img.height) <= 64 else scale * 64 // max(img.width, img.height)
+        big = img.resize((img.width * k, img.height * k), Image.NEAREST)
         sheet.alpha_composite(big, (x, y + 14))
         draw.text((x + 4, y + 1), name, fill=(255, 255, 255, 255))
     sheet.save(os.path.join(ROOT, "tools", "preview_factions.png"))

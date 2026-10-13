@@ -2,10 +2,10 @@ package jp.yakata.faction;
 
 import jp.yakata.YakataMod;
 import jp.yakata.faction.entity.FactionMonster;
-import jp.yakata.faction.entity.XenoMobs;
 import jp.yakata.world.MansionInfo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -16,67 +16,66 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
- * 陣営の配置と継続的な「ウェーブ」を管理する。
+ * 陣営の配置と継続的な「ウェーブ」を管理する (陣営ごとの差はすべて {@link Faction} のデータから決まる)。
  * <ol>
- *   <li>洋館 (MansionInfo.built) ができたら、各陣営を別々の部屋に初期配置 (一度だけ。SavedData で記録)。
+ *   <li>洋館 (MansionInfo.built) ができたら、各陣営を本拠地の部屋に初期配置 (一度だけ。SavedData で記録)。
+ *       部屋より陣営が多いので、宿敵同士を避けつつ部屋を共有させる (共有時は部屋の対角に分ける)。
+ *       "yard" を希望する陣営 (サイレンヘッド等の巨体) は洋館の前庭に配置。
  *       洋館が 60 秒たってもできなければ、ワールドスポーン周辺の円周上に配置する。</li>
- *   <li>30 秒ごとに最も数の少ない陣営 (と 5 体未満に減った陣営) を本拠地に補充 (陣営ごとの上限 {@value #CAP_PER_FACTION})。</li>
+ *   <li>30 秒ごとに最も数の少ない陣営 (と {@value #MIN_PRESENCE} 体未満に減った陣営) を本拠地に補充 (上限は陣営ごとの cap)。</li>
  *   <li>20 秒ごとに生存者 (村人) をロビーへ補充 (上限 {@value #SURVIVOR_CAP})。</li>
+ *   <li>遅延付きの感染蘇生 (ネクロモーフの再起動、ウイルスで倒れた化け物の蘇生など) を処理する。</li>
  * </ol>
  * バニラの自然スポーンには一切触れない。
  */
 public final class FactionDirector {
-	public static final int CAP_PER_FACTION = 30;
 	public static final int SURVIVOR_CAP = 8;
 	public static final String SURVIVOR_TAG = "yakata_survivor";
+	public static final String YARD = "yard";
 	private static final int WAVE_INTERVAL = 600;
 	private static final int SURVIVOR_INTERVAL = 400;
 	private static final int FALLBACK_DELAY = 1200;
-	private static final int HOST_INCUBATION = 200;
 	/** これ未満の陣営はウェーブで必ず補充する */
-	private static final int MIN_PRESENCE = 5;
-	/** 陣営ごとの本拠地の部屋 (MansionInfo.roomNames の名前) */
-	private static final Map<Faction, String> HOME_ROOMS = new EnumMap<>(Map.of(
-		Faction.TVIRUS, "library",
-		Faction.GVIRUS, "cellar",
-		Faction.CORDYCEPS, "kitchen",
-		Faction.XENO, "bedroom",
-		Faction.PARASITE, "gallery"));
-	private static final Map<Faction, Integer> HOME_FALLBACK_INDEX = new EnumMap<>(Map.of(
-		Faction.TVIRUS, 0, Faction.GVIRUS, 8, Faction.CORDYCEPS, 6, Faction.XENO, 2, Faction.PARASITE, 7));
+	private static final int MIN_PRESENCE = 4;
+	private static final int[][] SHARE_OFFSETS = {{-3, -3}, {3, 3}, {-3, 3}, {3, -3}};
 
 	public static boolean enabled = true;
 	private static long ticks;
 	private static @Nullable Anchors anchors;
 	private static Census lastCensus = new Census();
-	private static final Map<UUID, Long> HOSTS = new HashMap<>();
+	private static final List<PendingRise> RISES = new ArrayList<>();
 
-	/** 本拠地の座標一式 */
-	public record Anchors(Map<Faction, BlockPos> homes, BlockPos lobby, boolean mansion) {
+	/** 本拠地の座標一式。rooms は陣営 → 部屋名 */
+	public record Anchors(Map<Faction, BlockPos> homes, Map<Faction, String> rooms, BlockPos lobby, boolean mansion) {
+	}
+
+	/** 遅延蘇生の予約 */
+	private record PendingRise(long due, Vec3 pos, EntityType<? extends FactionMonster> type, Faction faction, String reason,
+							   @Nullable Component name, FactionMonster.@Nullable RiseSetup setup) {
 	}
 
 	/** 1 秒ごとの頭数調査 */
 	public static final class Census {
-		public final int[] perFaction = new int[Faction.values().length];
+		public final int[] perFaction = new int[Faction.count()];
 		public final Map<EntityType<?>, Integer> perType = new HashMap<>();
 		public int survivors;
 
 		public int of(Faction f) {
-			return this.perFaction[f.ordinal()];
+			return f.ordinal() < this.perFaction.length ? this.perFaction[f.ordinal()] : 0;
 		}
 
 		public int total() {
@@ -93,7 +92,8 @@ public final class FactionDirector {
 	public static void onServerStarted(MinecraftServer server) {
 		ticks = 0;
 		anchors = null;
-		HOSTS.clear();
+		RISES.clear();
+		Corpses.clear();
 		FactionStats.reset();
 	}
 
@@ -104,10 +104,18 @@ public final class FactionDirector {
 		}
 		ServerLevel level = server.overworld();
 		lastCensus = census(level);
-		tickHosts(level);
+		tickRises(level);
+		Corpses.expire(level.getGameTime());
+		for (Faction f : Faction.values()) {
+			f.hooks.tickSecond(level);
+		}
 		FactionSidebar.update(server, lastCensus);
 
-		anchors = resolveAnchors(level);
+		Anchors resolved = resolveAnchors(level);
+		if (resolved != null && (anchors == null || !anchors.homes().equals(resolved.homes()))) {
+			logAnchors(resolved);
+		}
+		anchors = resolved;
 		if (!enabled || anchors == null || level.getDifficulty() == Difficulty.PEACEFUL) {
 			return;
 		}
@@ -140,28 +148,89 @@ public final class FactionDirector {
 	// ---- 本拠地 ---------------------------------------------------------------
 
 	private static @Nullable Anchors resolveAnchors(ServerLevel level) {
+		List<Faction> all = Faction.values();
 		if (MansionInfo.built && MansionInfo.roomCenters.size() >= 9) {
-			Map<Faction, BlockPos> homes = new EnumMap<>(Faction.class);
-			for (Faction f : Faction.values()) {
-				homes.put(f, room(HOME_ROOMS.get(f), HOME_FALLBACK_INDEX.get(f)));
-			}
-			return new Anchors(homes, room("lobby", 4), true);
+			Map<Faction, String> rooms = new LinkedHashMap<>();
+			Map<Faction, BlockPos> homes = assignHomes(level, all, rooms);
+			return new Anchors(Map.copyOf(homes), Map.copyOf(rooms), room("lobby", 4), true);
 		}
 		if (ticks < FALLBACK_DELAY) {
 			return null; // 洋館の建設を待つ
 		}
 		// 洋館が無い: ワールドスポーンを中心に半径 20 の円周上へ各陣営を配置
 		BlockPos spawn = level.getRespawnData().pos();
-		Map<Faction, BlockPos> homes = new EnumMap<>(Faction.class);
-		Faction[] all = Faction.values();
-		for (int i = 0; i < all.length; i++) {
-			double a = Math.PI * 2 * i / all.length;
+		Map<Faction, BlockPos> homes = new LinkedHashMap<>();
+		Map<Faction, String> rooms = new LinkedHashMap<>();
+		for (int i = 0; i < all.size(); i++) {
+			double a = Math.PI * 2 * i / all.size();
 			int x = spawn.getX() + (int) Math.round(Math.cos(a) * 20);
 			int z = spawn.getZ() + (int) Math.round(Math.sin(a) * 20);
-			homes.put(all[i], new BlockPos(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z), z));
+			homes.put(all.get(i), new BlockPos(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z), z));
+			rooms.put(all.get(i), "circle" + i);
 		}
 		BlockPos lobby = new BlockPos(spawn.getX(), level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, spawn.getX(), spawn.getZ()), spawn.getZ());
-		return new Anchors(homes, lobby, false);
+		return new Anchors(homes, rooms, lobby, false);
+	}
+
+	/**
+	 * 部屋の割り当て: 希望順に、空いている部屋 → 宿敵のいない最も空いた部屋、の順で選ぶ。
+	 * 同じ部屋に入った陣営は部屋の対角 (±3) に本拠地をずらす。
+	 */
+	static Map<Faction, BlockPos> assignHomes(ServerLevel level, List<Faction> factions, Map<Faction, String> out) {
+		List<String> indoor = new ArrayList<>();
+		for (String name : MansionInfo.roomNames) {
+			if (!name.equals("lobby")) {
+				indoor.add(name);
+			}
+		}
+		Map<String, List<Faction>> occupants = new LinkedHashMap<>();
+		for (Faction f : factions) {
+			if (f.homeRooms.contains(YARD)) {
+				occupants.computeIfAbsent(YARD, k -> new ArrayList<>()).add(f);
+				out.put(f, YARD);
+				continue;
+			}
+			String best = null;
+			int bestScore = Integer.MAX_VALUE;
+			for (String r : indoor) {
+				List<Faction> occ = occupants.getOrDefault(r, List.of());
+				boolean rival = false;
+				for (Faction o : occ) {
+					rival |= o.isRival(f);
+				}
+				int pref = f.homeRooms.indexOf(r);
+				int score = occ.size() * 10 + (rival ? 1000 : 0) + (pref >= 0 ? pref : 5);
+				if (score < bestScore) {
+					bestScore = score;
+					best = r;
+				}
+			}
+			occupants.computeIfAbsent(best, k -> new ArrayList<>()).add(f);
+			out.put(f, best);
+		}
+		Map<Faction, BlockPos> homes = new LinkedHashMap<>();
+		for (Map.Entry<String, List<Faction>> e : occupants.entrySet()) {
+			List<Faction> occ = e.getValue();
+			BlockPos center = e.getKey().equals(YARD) ? yard(level) : room(e.getKey(), 0);
+			for (int i = 0; i < occ.size(); i++) {
+				BlockPos p = center;
+				if (occ.size() > 1) {
+					int[] off = SHARE_OFFSETS[i % SHARE_OFFSETS.length];
+					int spread = e.getKey().equals(YARD) ? 3 : 1;
+					p = center.offset(off[0] * spread, 0, off[1] * spread);
+				}
+				homes.put(occ.get(i), p);
+			}
+		}
+		return homes;
+	}
+
+	/** 洋館の前庭 (正面玄関の南、屋外)。天井に頭がつかえる巨体の陣営用 */
+	private static BlockPos yard(ServerLevel level) {
+		BlockPos lobby = room("lobby", 4);
+		int x = lobby.getX();
+		int z = MansionInfo.origin.getZ() + 37 + 10;
+		return new BlockPos(x, level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z), z);
 	}
 
 	private static BlockPos room(String name, int fallbackIndex) {
@@ -172,14 +241,22 @@ public final class FactionDirector {
 		return MansionInfo.roomCenters.get(idx);
 	}
 
+	private static void logAnchors(Anchors a) {
+		StringBuilder sb = new StringBuilder("[yakata] 本拠地の割り当て: ");
+		for (Faction f : Faction.values()) {
+			sb.append(f.id()).append('@').append(a.rooms().get(f)).append(' ');
+		}
+		YakataMod.LOGGER.info(sb.toString().trim());
+	}
+
 	/** 獲物を探して徘徊する Mob の目的地: 敵陣営の本拠地かロビー (生存者がいる)。 */
 	public static @Nullable BlockPos huntPoint(Faction self, RandomSource random) {
 		Anchors a = anchors;
 		if (a == null) {
 			return null;
 		}
-		int pick = random.nextInt(Faction.values().length);
-		Faction f = Faction.values()[pick];
+		List<Faction> all = Faction.values();
+		Faction f = all.get(random.nextInt(all.size()));
 		if (f == self) {
 			return a.lobby();
 		}
@@ -199,38 +276,27 @@ public final class FactionDirector {
 		}
 		RandomSource rnd = level.getRandom();
 		int total = 0;
-		total += spawnList(level, a.homes().get(Faction.TVIRUS), rnd,
-			FactionEntities.T_ZOMBIE, 5, FactionEntities.CRIMSON_HEAD, 2, FactionEntities.LICKER, 1, FactionEntities.TYRANT, 1);
-		total += spawnList(level, a.homes().get(Faction.GVIRUS), rnd,
-			FactionEntities.BIRKIN, 1, FactionEntities.G_ADULT, 2, FactionEntities.G_EMBRYO, 4);
-		total += spawnList(level, a.homes().get(Faction.CORDYCEPS), rnd,
-			FactionEntities.RUNNER, 5, FactionEntities.CLICKER, 2, FactionEntities.BLOATER, 1);
-		total += spawnList(level, a.homes().get(Faction.XENO), rnd,
-			FactionEntities.FACEHUGGER, 3, FactionEntities.DRONE, 3, FactionEntities.WARRIOR, 1);
-		total += spawnList(level, a.homes().get(Faction.PARASITE), rnd,
-			FactionEntities.SWARMER, 6, FactionEntities.CRAWLER, 2, FactionEntities.ASSIMILATED, 1);
+		StringBuilder per = new StringBuilder();
+		for (Faction f : Faction.values()) {
+			BlockPos home = a.homes().get(f);
+			int n = 0;
+			for (Faction.Seed seed : f.seeds) {
+				for (int c = 0; c < seed.count(); c++) {
+					if (spawnAround(level, seed.type().get(), home, rnd, EntitySpawnReason.EVENT) != null) {
+						n++;
+					}
+				}
+			}
+			total += n;
+			per.append(f.id()).append('=').append(n).append(' ');
+		}
 		int survivors = spawnSurvivors(level, a.lobby(), 6);
-		YakataMod.LOGGER.info("[yakata] 陣営を初期配置しました: 感染体 {} 体, 生存者 {} 人 ({})", total, survivors,
-			a.mansion() ? "洋館の各部屋" : "ワールドスポーン周辺 (洋館なし)");
+		YakataMod.LOGGER.info("[yakata] 陣営を初期配置しました: {} 陣営 / 感染体 {} 体, 生存者 {} 人 ({}) [{}]", Faction.count(), total, survivors,
+			a.mansion() ? "洋館の各部屋" : "ワールドスポーン周辺 (洋館なし)", per.toString().trim());
 		return true;
 	}
 
-	private static int spawnList(ServerLevel level, BlockPos home, RandomSource rnd, Object... typeAndCount) {
-		int n = 0;
-		for (int i = 0; i < typeAndCount.length; i += 2) {
-			@SuppressWarnings("unchecked")
-			EntityType<? extends Mob> type = (EntityType<? extends Mob>) typeAndCount[i];
-			int count = (Integer) typeAndCount[i + 1];
-			for (int c = 0; c < count; c++) {
-				if (spawnAround(level, type, home, rnd, EntitySpawnReason.EVENT) != null) {
-					n++;
-				}
-			}
-		}
-		return n;
-	}
-
-	/** 最も弱い陣営 (と 5 体未満に減った陣営) を補充して戦いを続けさせる。 */
+	/** 最も弱い陣営 (と全滅寸前の陣営) を補充して戦いを続けさせる。 */
 	private static void wave(ServerLevel level, Anchors a, Census census) {
 		RandomSource rnd = level.getRandom();
 		Faction weakest = null;
@@ -244,15 +310,15 @@ public final class FactionDirector {
 		targets.add(weakest);
 		for (Faction f : Faction.values()) {
 			if (census.of(f) < MIN_PRESENCE && f != weakest) {
-				targets.add(f); // 全滅寸前の陣営も補充して、5 陣営の乱戦が続くようにする
+				targets.add(f); // 全滅寸前の陣営も補充して、乱戦が続くようにする
 			}
 		}
 		for (Faction f : targets) {
 			BlockPos home = a.homes().get(f);
-			if (census.of(f) >= CAP_PER_FACTION || !level.isPositionEntityTicking(home)) {
+			if (home == null || census.of(f) >= f.cap || !level.isPositionEntityTicking(home)) {
 				continue;
 			}
-			int size = Math.min(CAP_PER_FACTION - census.of(f), 4 + rnd.nextInt(3));
+			int size = Math.min(f.cap - census.of(f), 3 + rnd.nextInt(3));
 			int spawned = spawnFaction(level, f, home, size, census, EntitySpawnReason.EVENT);
 			YakataMod.LOGGER.info("[yakata] ウェーブ: {} を {} 体補充 (現在 {} 体)", f.enName, spawned, census.of(f) + spawned);
 		}
@@ -269,7 +335,7 @@ public final class FactionDirector {
 			int totalWeight = 0;
 			for (FactionEntities.Entry e : entries) {
 				int alive = census.perType.getOrDefault(e.type(), 0) + extra.getOrDefault(e.type(), 0);
-				if (e.maxAlive() == 0 || alive < e.maxAlive()) {
+				if (e.weight() > 0 && (e.maxAlive() == 0 || alive < e.maxAlive())) {
 					allowed.add(e);
 					totalWeight += e.weight();
 				}
@@ -330,7 +396,75 @@ public final class FactionDirector {
 		return n;
 	}
 
-	// ---- 頭数調査・ゼノの宿主 --------------------------------------------------
+	// ---- 遅延蘇生 --------------------------------------------------------------
+
+	/** 予約済みで未出現の蘇生数 (陣営の上限判定に含める) */
+	public static int pendingRises(Faction f) {
+		int n = 0;
+		for (PendingRise r : RISES) {
+			if (r.faction() == f) {
+				n++;
+			}
+		}
+		return n;
+	}
+
+	/** 陣営がまだ増えられるか (現在数 + 蘇生予約 < cap) */
+	public static boolean hasRoom(ServerLevel level, Faction f) {
+		return lastCensus.of(f) + pendingRises(f) < f.cap;
+	}
+
+	/** delayTicks 後に pos で type を蘇らせる (死体から這い出す演出)。 */
+	public static void scheduleRise(ServerLevel level, Vec3 pos, EntityType<? extends FactionMonster> type, Faction faction, int delayTicks,
+									String reason, @Nullable Component name, FactionMonster.@Nullable RiseSetup setup) {
+		RISES.add(new PendingRise(level.getGameTime() + delayTicks, pos, type, faction, reason, name, setup));
+		level.sendParticles(ParticleTypes.SQUID_INK, pos.x, pos.y + 0.3, pos.z, 8, 0.3, 0.1, 0.3, 0.01);
+	}
+
+	private static void tickRises(ServerLevel level) {
+		long now = level.getGameTime();
+		Iterator<PendingRise> it = RISES.iterator();
+		List<PendingRise> due = new ArrayList<>();
+		while (it.hasNext()) {
+			PendingRise r = it.next();
+			if (r.due() <= now || r.due() - now > 20 * 60) {
+				due.add(r);
+				it.remove();
+			}
+		}
+		for (PendingRise r : due) {
+			BlockPos at = BlockPos.containing(r.pos());
+			if (!level.isPositionEntityTicking(at)) {
+				continue;
+			}
+			FactionMonster mob = r.type().create(level, EntitySpawnReason.CONVERSION);
+			if (mob == null) {
+				continue;
+			}
+			mob.snapTo(r.pos().x, r.pos().y, r.pos().z, level.getRandom().nextFloat() * 360.0F, 0.0F);
+			if (!level.noCollision(mob)) {
+				mob.snapTo(at.getX() + 0.5, at.getY() + 1, at.getZ() + 0.5, mob.getYRot(), 0.0F);
+			}
+			mob.finalizeSpawn(level, level.getCurrentDifficultyAt(at), EntitySpawnReason.CONVERSION, null);
+			mob.setPersistenceRequired();
+			if (r.name() != null) {
+				mob.setCustomName(r.name());
+			}
+			if (r.setup() != null) {
+				r.setup().apply(mob);
+			}
+			if (level.addFreshEntity(mob)) {
+				FactionStats.recordConversion(r.faction());
+				FactionStats.event("rise_" + r.faction().id());
+				level.sendParticles(ParticleTypes.SQUID_INK, r.pos().x, r.pos().y + 0.8, r.pos().z, 12, 0.3, 0.4, 0.3, 0.02);
+				level.playSound(null, r.pos().x, r.pos().y, r.pos().z, SoundEvents.ZOMBIE_INFECT, SoundSource.HOSTILE, 1.0F, 0.7F);
+				YakataMod.LOGGER.info("[yakata] 蘇生 ({}): {} が {} として立ち上がった ({})", r.reason(), r.faction().enName,
+					r.type().toShortString(), at.toShortString());
+			}
+		}
+	}
+
+	// ---- 頭数調査 --------------------------------------------------------------
 
 	public static Census census(ServerLevel level) {
 		Census c = new Census();
@@ -339,7 +473,10 @@ public final class FactionDirector {
 				continue;
 			}
 			if (e instanceof FactionMonster fm) {
-				c.perFaction[fm.getFaction().ordinal()]++;
+				int idx = fm.getFaction().ordinal();
+				if (idx < c.perFaction.length) {
+					c.perFaction[idx]++;
+				}
 				c.perType.merge(e.getType(), 1, Integer::sum);
 			} else if (e instanceof Villager && e.entityTags().contains(SURVIVOR_TAG)) {
 				c.survivors++;
@@ -348,42 +485,17 @@ public final class FactionDirector {
 		return c;
 	}
 
-	/** フェイスハガーに寄生された宿主は 10 秒後に胸を食い破られ、ドローンが生まれる。 */
-	private static void tickHosts(ServerLevel level) {
-		long now = level.getGameTime();
-		List<LivingEntity> burst = new ArrayList<>();
-		for (Entity e : level.getAllEntities()) {
-			if (e instanceof LivingEntity living && living.isAlive() && e.entityTags().contains(XenoMobs.HOST_TAG)) {
-				long since = HOSTS.computeIfAbsent(e.getUUID(), u -> now);
-				if (now - since >= HOST_INCUBATION) {
-					burst.add(living);
-				}
-			}
-		}
-		for (LivingEntity host : burst) {
-			HOSTS.remove(host.getUUID());
-			host.removeTag(XenoMobs.HOST_TAG);
-			level.sendParticles(ParticleTypes.DAMAGE_INDICATOR, host.getX(), host.getY() + 1.0, host.getZ(), 15, 0.3, 0.3, 0.3, 0.2);
-			level.playSound(null, host.getX(), host.getY(), host.getZ(), SoundEvents.SLIME_SQUISH, SoundSource.HOSTILE, 1.5F, 0.5F);
-			BlockPos at = host.blockPosition();
-			host.kill(level);
-			if (spawnAround(level, FactionEntities.DRONE, at, level.getRandom(), EntitySpawnReason.CONVERSION) != null) {
-				FactionStats.recordConversion(Faction.XENO);
-				YakataMod.LOGGER.info("[yakata] チェストバスター: 宿主からゼノモーフが誕生 ({})", at);
-			}
-		}
-		HOSTS.keySet().removeIf(uuid -> level.getEntity(uuid) == null);
-	}
-
 	private static void logSummary(Census c) {
 		StringBuilder sb = new StringBuilder("[yakata] 勢力: ");
 		for (Faction f : Faction.values()) {
-			sb.append(f.enName).append('=').append(c.of(f))
-				.append("(k").append(FactionStats.killsBy(f)).append("/d").append(FactionStats.killedByOthers(f)).append(") ");
+			sb.append(f.id()).append('=').append(c.of(f))
+				.append("(k").append(FactionStats.killsBy(f)).append("/d").append(FactionStats.killedByOthers(f))
+				.append("/c").append(FactionStats.conversions(f)).append(") ");
 		}
 		sb.append("survivors=").append(c.survivors)
 			.append(" factionKills=").append(FactionStats.totalFactionKills())
-			.append(" conversions=").append(FactionStats.totalConversions());
+			.append(" conversions=").append(FactionStats.totalConversions())
+			.append(" events=").append(FactionStats.events());
 		YakataMod.LOGGER.info(sb.toString());
 	}
 }

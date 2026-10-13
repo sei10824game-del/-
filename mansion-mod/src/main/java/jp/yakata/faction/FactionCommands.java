@@ -28,6 +28,9 @@ import java.util.List;
  * /yakata sidebar               サイドバー表示の切替
  * /yakata director &lt;on|off&gt;    ウェーブ管理の有効/無効
  * /yakata seed                  初期配置をやり直す
+ * /yakata homes                 陣営ごとの本拠地 (部屋)
+ * /yakata count &lt;faction&gt;     陣営の現在数 (戻り値)
+ * /yakata event &lt;name&gt;        特殊イベントの回数 (戻り値。siren, makima_control, flood_takeover, ...)
  */
 public final class FactionCommands {
 	private FactionCommands() {}
@@ -36,6 +39,14 @@ public final class FactionCommands {
 		dispatcher.register(Commands.literal("yakata")
 			.then(Commands.literal("factions").executes(FactionCommands::factions))
 			.then(Commands.literal("kills").executes(c -> (int) FactionStats.totalFactionKills()))
+			.then(Commands.literal("homes").executes(FactionCommands::homes))
+			.then(Commands.literal("count")
+				.then(Commands.argument("faction", StringArgumentType.word())
+					.suggests((c, b) -> SharedSuggestionProvider.suggest(factionIds(), b))
+					.executes(FactionCommands::count)))
+			.then(Commands.literal("event")
+				.then(Commands.argument("name", StringArgumentType.word())
+					.executes(c -> (int) FactionStats.eventCount(StringArgumentType.getString(c, "name")))))
 			.then(Commands.literal("spawn")
 				.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
 				.then(Commands.argument("faction", StringArgumentType.word())
@@ -69,6 +80,44 @@ public final class FactionCommands {
 				})));
 	}
 
+	private static List<String> factionIds() {
+		List<String> ids = new ArrayList<>();
+		for (Faction f : Faction.values()) {
+			ids.add(f.id());
+		}
+		return ids;
+	}
+
+	/** /yakata count <faction>: その陣営の現在数 (戻り値) と戦果 */
+	private static int count(CommandContext<CommandSourceStack> c) {
+		String id = StringArgumentType.getString(c, "faction");
+		Faction f = Faction.byId(id);
+		if (f == null) {
+			c.getSource().sendFailure(Component.literal("不明な陣営: " + id + " (候補: " + String.join(", ", factionIds()) + ")"));
+			return 0;
+		}
+		int n = FactionDirector.census(c.getSource().getServer().overworld()).of(f);
+		c.getSource().sendSuccess(() -> Component.empty().append(f.displayName()).append(String.format(": %d 体 / 撃破 %d / 被撃破 %d / 転化 %d",
+			n, FactionStats.killsBy(f), FactionStats.killedByOthers(f), FactionStats.conversions(f))), false);
+		return n;
+	}
+
+	/** /yakata homes: 陣営ごとの本拠地 (部屋と座標) */
+	private static int homes(CommandContext<CommandSourceStack> c) {
+		FactionDirector.Anchors a = FactionDirector.anchors();
+		if (a == null) {
+			c.getSource().sendFailure(Component.literal("本拠地はまだ決まっていません (洋館の建設待ち)"));
+			return 0;
+		}
+		for (Faction f : Faction.values()) {
+			BlockPos p = a.homes().get(f);
+			String room = a.rooms().get(f);
+			c.getSource().sendSuccess(() -> Component.empty().append(f.displayName())
+				.append(Component.literal(" → " + room + " " + (p == null ? "-" : p.toShortString())).withStyle(ChatFormatting.WHITE)), false);
+		}
+		return Faction.count();
+	}
+
 	private static List<String> spawnNames() {
 		List<String> names = new ArrayList<>();
 		for (Faction f : Faction.values()) {
@@ -92,19 +141,24 @@ public final class FactionCommands {
 					FactionStats.survivorsKilled(f), FactionStats.conversions(f))).withStyle(ChatFormatting.WHITE));
 			src.sendSuccess(() -> line, false);
 		}
-		StringBuilder matrix = new StringBuilder("キル表 (行=攻撃側): ");
+		src.sendSuccess(() -> Component.literal("キル表 (行=攻撃側, 0 は省略):").withStyle(ChatFormatting.GRAY), false);
 		for (Faction k : Faction.values()) {
-			matrix.append(k.enName).append('[');
+			StringBuilder row = new StringBuilder("  ").append(k.id()).append(" → ");
+			int cells = 0;
 			for (Faction v : Faction.values()) {
-				if (v != k) {
-					matrix.append(v.enName.charAt(0)).append(FactionStats.kills(k, v)).append(' ');
+				long n = FactionStats.kills(k, v);
+				if (v != k && n > 0) {
+					row.append(v.id()).append(':').append(n).append(' ');
+					cells++;
 				}
 			}
-			matrix.setLength(matrix.length() - 1);
-			matrix.append("] ");
+			if (cells > 0) {
+				String r = row.toString().trim();
+				src.sendSuccess(() -> Component.literal(r).withStyle(ChatFormatting.GRAY), false);
+			}
 		}
-		String m = matrix.toString();
-		src.sendSuccess(() -> Component.literal(m).withStyle(ChatFormatting.GRAY), false);
+		String ev = FactionStats.events().toString();
+		src.sendSuccess(() -> Component.literal("イベント: " + ev).withStyle(ChatFormatting.DARK_AQUA), false);
 		long total = FactionStats.totalFactionKills();
 		src.sendSuccess(() -> Component.literal(String.format("合計 %d 体 / 生存者 %d 人 / 陣営間キル %d / 感染転化 %d",
 			census.total(), census.survivors, total, FactionStats.totalConversions())).withStyle(ChatFormatting.YELLOW), false);

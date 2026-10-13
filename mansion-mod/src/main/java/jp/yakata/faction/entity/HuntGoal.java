@@ -24,7 +24,16 @@ public class HuntGoal extends Goal {
 
 	@Override
 	public boolean canUse() {
-		if (this.mob.getTarget() != null || this.mob.getRandom().nextInt(reducedTickDelay(160)) != 0) {
+		if (this.mob.getTarget() != null) {
+			return false;
+		}
+		BlockPos lure = this.mob.activeLure();
+		if (lure != null && lure.distSqr(this.mob.blockPosition()) > 4 * 4) {
+			// サイレンの轟音などに誘われて向かう
+			this.destination = lure.offset(this.mob.getRandom().nextInt(7) - 3, 0, this.mob.getRandom().nextInt(7) - 3);
+			return true;
+		}
+		if (this.mob.getRandom().nextInt(reducedTickDelay(160)) != 0) {
 			return false;
 		}
 		BlockPos p = FactionDirector.huntPoint(this.mob.getFaction(), this.mob.getRandom());

@@ -9,6 +9,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
@@ -23,10 +24,13 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.core.BlockPos;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * 全陣営 Mob の基底クラス。
@@ -37,9 +41,22 @@ import java.util.List;
  * </ul>
  */
 public abstract class FactionMonster extends Monster implements FactionMob {
+	/** 遅延蘇生で立ち上がった直後の調整 (大きさ・体力の引き継ぎなど) */
+	@FunctionalInterface
+	public interface RiseSetup {
+		void apply(FactionMonster mob);
+	}
+
 	/** 跳びかかり中の残り tick (この間に標的へ接触すると一撃) */
 	private int pounceTicks;
 	private @Nullable LivingEntity pounceTarget;
+	/** 陣営の上書き (マキマの支配など)。null なら本来の陣営 */
+	private @Nullable Faction factionOverride;
+	/** 従う相手 (マキマの支配下はマキマを守り、マキマの標的を狙う) */
+	private @Nullable UUID leaderId;
+	/** 誘引地点 (サイレンの轟音など)。獲物がいない間はここへ向かう */
+	private @Nullable BlockPos lurePos;
+	private long lureUntil;
 
 	protected FactionMonster(EntityType<? extends FactionMonster> type, Level level) {
 		super(type, level);
@@ -103,7 +120,102 @@ public abstract class FactionMonster extends Monster implements FactionMob {
 		this.tickPounce(level);
 		if ((this.tickCount + this.getId()) % 20 == 0) {
 			this.retargetCloser();
+			this.followLeader(level);
 		}
+	}
+
+	// ---- 陣営の上書き・従属・誘引 ---------------------------------------------
+
+	/** この Mob 種の本来の陣営 */
+	protected abstract Faction baseFaction();
+
+	/** 現在の陣営 (支配されていれば支配者の陣営) */
+	@Override
+	public final Faction getFaction() {
+		return this.factionOverride != null ? this.factionOverride : this.baseFaction();
+	}
+
+	public Faction nativeFaction() {
+		return this.baseFaction();
+	}
+
+	public boolean isControlled() {
+		return this.factionOverride != null && this.factionOverride != this.baseFaction();
+	}
+
+	/** 陣営を書き換える (マキマの支配)。今の標的は忘れる。 */
+	public void setFactionOverride(@Nullable Faction faction, @Nullable LivingEntity leader) {
+		this.factionOverride = faction;
+		this.leaderId = leader == null ? null : leader.getUUID();
+		this.setTarget(null);
+		this.setLastHurtByMob(null);
+		this.getNavigation().stop();
+	}
+
+	public @Nullable UUID leaderId() {
+		return this.leaderId;
+	}
+
+	/** 獲物がいなければ主に付き従い、主の標的を狙う。 */
+	private void followLeader(ServerLevel level) {
+		if (this.leaderId == null) {
+			return;
+		}
+		if (!(level.getEntity(this.leaderId) instanceof LivingEntity leader) || !leader.isAlive()) {
+			return;
+		}
+		LivingEntity current = this.getTarget();
+		if ((current == null || !current.isAlive()) && leader instanceof Mob m && m.getTarget() != null
+			&& m.getTarget().isAlive() && FactionMob.isPrey(this, m.getTarget())) {
+			this.setTarget(m.getTarget());
+		} else if (current == null && this.distanceToSqr(leader) > 10 * 10) {
+			this.getNavigation().moveTo(leader, 1.0);
+		}
+	}
+
+	/** pos へ ticks の間おびき寄せる (標的がいない間だけ HuntGoal が向かう)。 */
+	public void lure(BlockPos pos, int ticks) {
+		this.lurePos = pos.immutable();
+		this.lureUntil = this.level().getGameTime() + ticks;
+	}
+
+	public @Nullable BlockPos activeLure() {
+		if (this.lurePos != null && this.level().getGameTime() > this.lureUntil) {
+			this.lurePos = null;
+		}
+		return this.lurePos;
+	}
+
+	/**
+	 * 致命傷を受けたときに呼ばれる (死亡確定前)。true を返すと死なない (体力は実装側で戻す)。
+	 * 形態変化 (デンジ→黒いチェンソーマン、アレクシア第2形態)、ネクロモーフの四肢切断などに使う。
+	 */
+	public boolean tryCheatDeath(ServerLevel level, DamageSource source) {
+		return false;
+	}
+
+	@Override
+	protected void addAdditionalSaveData(ValueOutput output) {
+		super.addAdditionalSaveData(output);
+		if (this.factionOverride != null) {
+			output.putString("YakataFaction", this.factionOverride.id());
+		}
+		if (this.leaderId != null) {
+			output.putString("YakataLeader", this.leaderId.toString());
+		}
+	}
+
+	@Override
+	protected void readAdditionalSaveData(ValueInput input) {
+		super.readAdditionalSaveData(input);
+		this.factionOverride = input.getString("YakataFaction").map(Faction::byId).orElse(null);
+		this.leaderId = input.getString("YakataLeader").map(s -> {
+			try {
+				return UUID.fromString(s);
+			} catch (IllegalArgumentException e) {
+				return null;
+			}
+		}).orElse(null);
 	}
 
 	/** 今の標的より明らかに近い敵がいれば乗り換える。 */
@@ -238,6 +350,4 @@ public abstract class FactionMonster extends Monster implements FactionMob {
 		return 0;
 	}
 
-	@Override
-	public abstract Faction getFaction();
 }

@@ -1,6 +1,12 @@
 package jp.yakata.faction.entity;
 
 import jp.yakata.faction.Faction;
+import jp.yakata.faction.FactionEntities;
+import jp.yakata.faction.FactionEntities.Ability;
+import jp.yakata.faction.FactionEntities.ModelKind;
+import jp.yakata.faction.FactionHooks;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -17,6 +23,22 @@ import org.jspecify.annotations.Nullable;
 
 /** 冬虫夏草 (菌類感染) 陣営: ランナー / クリッカー / ブローター。胞子で他陣営を鈍らせる。 */
 public final class CordycepsMobs {
+	public static final Faction FACTION = Faction.builder("cordyceps").names("冬虫夏草", "Cordyceps").color(ChatFormatting.GREEN)
+		.home("kitchen").cap(22)
+		.seed(() -> CordycepsMobs.RUNNER, 5).seed(() -> CordycepsMobs.CLICKER, 2).seed(() -> CordycepsMobs.BLOATER, 1)
+		.conversion(() -> CordycepsMobs.RUNNER, 1)
+		.register();
+
+	public static final EntityType<Runner> RUNNER = FactionEntities.register("cordyceps_runner", FACTION, ModelKind.ZOMBIE,
+		EntityType.Builder.of(Runner::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.74F),
+		Runner::createAttributes, 1, 10, 0);
+	public static final EntityType<Clicker> CLICKER = FactionEntities.register("cordyceps_clicker", FACTION, ModelKind.ZOMBIE,
+		EntityType.Builder.of(Clicker::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.74F),
+		Clicker::createAttributes, 1, 5, 0, false, Ability.SPORES);
+	public static final EntityType<Bloater> BLOATER = FactionEntities.register("cordyceps_bloater", FACTION, ModelKind.ZOMBIE,
+		EntityType.Builder.of(Bloater::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.74F),
+		Bloater::createAttributes, 1, 2, 2, false, Ability.SPORES);
+
 	private CordycepsMobs() {}
 
 	/** 胞子を浴びた敵を鈍化 (+弱体化) させる。同陣営には効かない。 */
@@ -60,8 +82,8 @@ public final class CordycepsMobs {
 		}
 
 		@Override
-		public Faction getFaction() {
-			return Faction.CORDYCEPS;
+		protected Faction baseFaction() {
+			return FACTION;
 		}
 	}
 

@@ -2,6 +2,11 @@ package jp.yakata.faction.entity;
 
 import jp.yakata.faction.Faction;
 import jp.yakata.faction.FactionEntities;
+import jp.yakata.faction.FactionEntities.Ability;
+import jp.yakata.faction.FactionEntities.ModelKind;
+import jp.yakata.faction.FactionHooks;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -18,6 +23,22 @@ import org.jspecify.annotations.Nullable;
 
 /** 寄生体陣営 (SRP 風): 虫の群れ / 寄生クローラー / 同化された人間。 */
 public final class ParasiteMobs {
+	public static final Faction FACTION = Faction.builder("parasite").names("寄生体", "Parasite").color(ChatFormatting.GOLD)
+		.home("gallery").cap(22)
+		.seed(() -> ParasiteMobs.SWARMER, 6).seed(() -> ParasiteMobs.CRAWLER, 2).seed(() -> ParasiteMobs.ASSIMILATED, 1)
+		.conversion(() -> ParasiteMobs.ASSIMILATED, 1)
+		.register();
+
+	public static final EntityType<Swarmer> SWARMER = FactionEntities.register("parasite_swarmer", FACTION, ModelKind.SILVERFISH,
+		EntityType.Builder.of(Swarmer::new, MobCategory.MONSTER).sized(0.4F, 0.3F).eyeHeight(0.13F),
+		Swarmer::createAttributes, 1, 10, 0);
+	public static final EntityType<Crawler> CRAWLER = FactionEntities.register("parasite_crawler", FACTION, ModelKind.SPIDER,
+		EntityType.Builder.of(Crawler::new, MobCategory.MONSTER).sized(1.4F, 0.9F).eyeHeight(0.65F),
+		Crawler::createAttributes, 1, 5, 0, false, Ability.POUNCE);
+	public static final EntityType<Assimilated> ASSIMILATED = FactionEntities.register("parasite_assimilated", FACTION, ModelKind.ZOMBIE,
+		EntityType.Builder.of(Assimilated::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.74F),
+		Assimilated::createAttributes, 1, 3, 4);
+
 	private ParasiteMobs() {}
 
 	/** 群体虫。弱いが数で押す小さな寄生虫。 */
@@ -57,8 +78,8 @@ public final class ParasiteMobs {
 		}
 
 		@Override
-		public Faction getFaction() {
-			return Faction.PARASITE;
+		protected Faction baseFaction() {
+			return FACTION;
 		}
 	}
 
@@ -89,8 +110,8 @@ public final class ParasiteMobs {
 		}
 
 		@Override
-		public Faction getFaction() {
-			return Faction.PARASITE;
+		protected Faction baseFaction() {
+			return FACTION;
 		}
 	}
 
@@ -117,7 +138,7 @@ public final class ParasiteMobs {
 				return;
 			}
 			LivingEntity target = this.getTarget();
-			if (target != null && target.isAlive() && MobUtil.countNear(this, FactionEntities.SWARMER, 16.0) < 8) {
+			if (target != null && target.isAlive() && MobUtil.countNear(this, SWARMER, 16.0) < 8) {
 				this.releaseBrood(level, 2);
 				this.broodCooldown = 300;
 			}
@@ -125,7 +146,7 @@ public final class ParasiteMobs {
 
 		private void releaseBrood(ServerLevel level, int count) {
 			for (int i = 0; i < count; i++) {
-				MobUtil.spawnNear(level, FactionEntities.SWARMER, this, 1.5);
+				MobUtil.spawnNear(level, SWARMER, this, 1.5);
 			}
 			level.sendParticles(ParticleTypes.ITEM_SLIME, this.getX(), this.getY() + 1.2, this.getZ(), 15, 0.3, 0.3, 0.3, 0.1);
 			this.playSound(SoundEvents.SLIME_SQUISH, 1.0F, 0.5F);
@@ -142,8 +163,8 @@ public final class ParasiteMobs {
 		}
 
 		@Override
-		public Faction getFaction() {
-			return Faction.PARASITE;
+		protected Faction baseFaction() {
+			return FACTION;
 		}
 	}
 }

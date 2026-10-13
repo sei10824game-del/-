@@ -2,6 +2,11 @@ package jp.yakata.faction.entity;
 
 import jp.yakata.faction.Faction;
 import jp.yakata.faction.FactionEntities;
+import jp.yakata.faction.FactionEntities.Ability;
+import jp.yakata.faction.FactionEntities.ModelKind;
+import jp.yakata.faction.FactionHooks;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -22,6 +27,22 @@ import org.jspecify.annotations.Nullable;
 
 /** G-ウイルス陣営: バーキン型変異体 (成長段階あり) / G 成体 / G 胚。 */
 public final class GVirusMobs {
+	public static final Faction FACTION = Faction.builder("gvirus").names("G-ウイルス", "G-Virus").color(ChatFormatting.LIGHT_PURPLE)
+		.home("cellar").cap(20).virus()
+		.seed(() -> GVirusMobs.BIRKIN, 1).seed(() -> GVirusMobs.G_ADULT, 2).seed(() -> GVirusMobs.G_EMBRYO, 4)
+		.conversion(() -> GVirusMobs.G_EMBRYO, 2) // G 胚は体内で増殖する
+		.register();
+
+	public static final EntityType<Birkin> BIRKIN = FactionEntities.register("g_birkin", FACTION, ModelKind.ZOMBIE,
+		EntityType.Builder.of(Birkin::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.74F),
+		Birkin::createAttributes, 3, 1, 1, true, Ability.SLAM);
+	public static final EntityType<GAdult> G_ADULT = FactionEntities.register("g_adult", FACTION, ModelKind.SPIDER,
+		EntityType.Builder.of(GAdult::new, MobCategory.MONSTER).sized(1.3F, 0.9F).eyeHeight(0.65F),
+		GAdult::createAttributes, 1, 4, 8, false, Ability.POUNCE);
+	public static final EntityType<GEmbryo> G_EMBRYO = FactionEntities.register("g_embryo", FACTION, ModelKind.SILVERFISH,
+		EntityType.Builder.of(GEmbryo::new, MobCategory.MONSTER).sized(0.5F, 0.35F).eyeHeight(0.15F),
+		GEmbryo::createAttributes, 1, 8, 0);
+
 	private GVirusMobs() {}
 
 	/**
@@ -146,8 +167,8 @@ public final class GVirusMobs {
 		}
 
 		@Override
-		public Faction getFaction() {
-			return Faction.GVIRUS;
+		protected Faction baseFaction() {
+			return FACTION;
 		}
 	}
 
@@ -164,8 +185,8 @@ public final class GVirusMobs {
 
 		@Override
 		protected void onMeleeHit(ServerLevel level, LivingEntity target) {
-			if (this.random.nextFloat() < 0.25F && MobUtil.countNear(this, FactionEntities.G_EMBRYO, 16.0) < 6) {
-				MobUtil.spawnNear(level, FactionEntities.G_EMBRYO, target, 1.5);
+			if (this.random.nextFloat() < 0.25F && MobUtil.countNear(this, G_EMBRYO, 16.0) < 6) {
+				MobUtil.spawnNear(level, G_EMBRYO, target, 1.5);
 				this.playSound(SoundEvents.SLIME_SQUISH, 1.0F, 0.6F);
 			}
 		}
@@ -176,8 +197,8 @@ public final class GVirusMobs {
 		}
 
 		@Override
-		public Faction getFaction() {
-			return Faction.GVIRUS;
+		protected Faction baseFaction() {
+			return FACTION;
 		}
 	}
 
@@ -205,7 +226,7 @@ public final class GVirusMobs {
 			super.customServerAiStep(level);
 			if (++this.ageTicks >= GROW_TICKS) {
 				this.ageTicks = 0;
-				GAdult adult = this.convertTo(FactionEntities.G_ADULT, ConversionParams.single(this, false, false), a -> {});
+				GAdult adult = this.convertTo(G_ADULT, ConversionParams.single(this, false, false), a -> {});
 				if (adult != null) {
 					adult.playSound(SoundEvents.ZOMBIE_VILLAGER_CONVERTED, 1.0F, 0.6F);
 				}
@@ -245,8 +266,8 @@ public final class GVirusMobs {
 		}
 
 		@Override
-		public Faction getFaction() {
-			return Faction.GVIRUS;
+		protected Faction baseFaction() {
+			return FACTION;
 		}
 	}
 }

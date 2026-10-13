@@ -1,6 +1,12 @@
 package jp.yakata.faction.entity;
 
 import jp.yakata.faction.Faction;
+import jp.yakata.faction.FactionEntities;
+import jp.yakata.faction.FactionEntities.Ability;
+import jp.yakata.faction.FactionEntities.ModelKind;
+import jp.yakata.faction.FactionHooks;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.entity.MobCategory;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -16,6 +22,25 @@ import org.jspecify.annotations.Nullable;
 
 /** t-ウイルス陣営: ゾンビ / クリムゾンヘッド / リッカー / タイラント。 */
 public final class TVirusMobs {
+	public static final Faction FACTION = Faction.builder("tvirus").names("t-ウイルス", "T-Virus").color(ChatFormatting.RED)
+		.home("library").cap(22).virus()
+		.seed(() -> TVirusMobs.T_ZOMBIE, 5).seed(() -> TVirusMobs.CRIMSON_HEAD, 2).seed(() -> TVirusMobs.LICKER, 1).seed(() -> TVirusMobs.TYRANT, 1)
+		.conversion(() -> TVirusMobs.T_ZOMBIE, 1)
+		.register();
+
+	public static final EntityType<TZombie> T_ZOMBIE = FactionEntities.register("t_zombie", FACTION, ModelKind.ZOMBIE,
+		EntityType.Builder.of(TZombie::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.74F),
+		TZombie::createAttributes, 1, 10, 0);
+	public static final EntityType<CrimsonHead> CRIMSON_HEAD = FactionEntities.register("crimson_head", FACTION, ModelKind.ZOMBIE,
+		EntityType.Builder.of(CrimsonHead::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.74F),
+		CrimsonHead::createAttributes, 1, 5, 0, false, Ability.POUNCE);
+	public static final EntityType<Licker> LICKER = FactionEntities.register("licker", FACTION, ModelKind.SPIDER,
+		EntityType.Builder.of(Licker::new, MobCategory.MONSTER).sized(1.2F, 0.85F).eyeHeight(0.6F),
+		Licker::createAttributes, 1, 3, 6, false, Ability.POUNCE);
+	public static final EntityType<Tyrant> TYRANT = FactionEntities.register("tyrant", FACTION, ModelKind.ZOMBIE,
+		EntityType.Builder.of(Tyrant::new, MobCategory.MONSTER).sized(0.6F, 1.95F).eyeHeight(1.74F),
+		Tyrant::createAttributes, 1, 1, 1, true, Ability.SLAM);
+
 	private TVirusMobs() {}
 
 	/** t-ウイルスゾンビ。遅いが掴みかかる (命中時に短い鈍化)。 */
@@ -36,8 +61,8 @@ public final class TVirusMobs {
 		}
 
 		@Override
-		public Faction getFaction() {
-			return Faction.TVIRUS;
+		protected Faction baseFaction() {
+			return FACTION;
 		}
 	}
 
@@ -72,8 +97,8 @@ public final class TVirusMobs {
 		}
 
 		@Override
-		public Faction getFaction() {
-			return Faction.TVIRUS;
+		protected Faction baseFaction() {
+			return FACTION;
 		}
 	}
 
@@ -113,8 +138,8 @@ public final class TVirusMobs {
 		}
 
 		@Override
-		public Faction getFaction() {
-			return Faction.TVIRUS;
+		protected Faction baseFaction() {
+			return FACTION;
 		}
 	}
 
@@ -161,8 +186,8 @@ public final class TVirusMobs {
 		}
 
 		@Override
-		public Faction getFaction() {
-			return Faction.TVIRUS;
+		protected Faction baseFaction() {
+			return FACTION;
 		}
 	}
 }

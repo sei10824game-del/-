@@ -10,9 +10,11 @@ public final class FactionInit {
 	private FactionInit() {}
 
 	public static void init() {
+		Factions.bootstrap();
 		FactionEntities.init();
 		ServerLifecycleEvents.SERVER_STARTED.register(FactionDirector::onServerStarted);
 		ServerTickEvents.END_SERVER_TICK.register(FactionDirector::onServerTick);
+		ServerLivingEntityEvents.ALLOW_DEATH.register(FactionEvents::allowDeath);
 		ServerLivingEntityEvents.AFTER_DEATH.register(FactionEvents::afterDeath);
 		CommandRegistrationCallback.EVENT.register((dispatcher, context, selection) -> FactionCommands.register(dispatcher));
 	}
