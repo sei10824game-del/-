@@ -1,0 +1,5711 @@
+{
+  "restorations": {
+    "golemRegisteredDataCount": 189,
+    "golemBehaviorFamilyCount": 21,
+    "golemWorldRuntime": true,
+    "staticCraftingRecipeCount": 822,
+    "fuelCount": 248,
+    "note": "Verified subset only; see RESTORED_ABILITIES.md. All-faction canonical completion remains unverified.",
+    "runtimeEmbedded": true,
+    "projectileHookInCorrectFunction": true,
+    "projectileBlastDamageForwarded": true,
+    "golemDataKeys": [
+      "eg_acacia_log",
+      "eg_amethyst",
+      "eg_ancient_debris",
+      "eg_andesite",
+      "eg_bamboo_wood",
+      "eg_basalt",
+      "eg_bedrock",
+      "eg_birch_log",
+      "eg_black_concrete",
+      "eg_black_glazed_terracotta",
+      "eg_black_stained_glass",
+      "eg_black_terracotta",
+      "eg_black_wool",
+      "eg_blackstone",
+      "eg_blue_concrete",
+      "eg_blue_glazed_terracotta",
+      "eg_blue_stained_glass",
+      "eg_blue_terracotta",
+      "eg_blue_wool",
+      "eg_bone",
+      "eg_bookshelf",
+      "eg_brain_coral",
+      "eg_brick",
+      "eg_brown_concrete",
+      "eg_brown_glazed_terracotta",
+      "eg_brown_mushroom",
+      "eg_brown_stained_glass",
+      "eg_brown_terracotta",
+      "eg_brown_wool",
+      "eg_bubble_coral",
+      "eg_cherry_log",
+      "eg_clay",
+      "eg_coal",
+      "eg_copper",
+      "eg_crafting",
+      "eg_crimson_stem",
+      "eg_crying_obsidian",
+      "eg_cyan_concrete",
+      "eg_cyan_glazed_terracotta",
+      "eg_cyan_stained_glass",
+      "eg_cyan_terracotta",
+      "eg_cyan_wool",
+      "eg_dark_oak_log",
+      "eg_dead_brain_coral",
+      "eg_dead_bubble_coral",
+      "eg_dead_fire_coral",
+      "eg_dead_horn_coral",
+      "eg_dead_tube_coral",
+      "eg_deepslate",
+      "eg_diamond",
+      "eg_diorite",
+      "eg_dispenser",
+      "eg_dried_kelp",
+      "eg_emerald",
+      "eg_end_stone",
+      "eg_exposed_copper",
+      "eg_fire_coral",
+      "eg_furnace",
+      "eg_glass",
+      "eg_glowstone",
+      "eg_gold",
+      "eg_granite",
+      "eg_gray_concrete",
+      "eg_gray_glazed_terracotta",
+      "eg_gray_stained_glass",
+      "eg_gray_terracotta",
+      "eg_gray_wool",
+      "eg_green_concrete",
+      "eg_green_glazed_terracotta",
+      "eg_green_stained_glass",
+      "eg_green_terracotta",
+      "eg_green_wool",
+      "eg_hay",
+      "eg_honey",
+      "eg_honeycomb",
+      "eg_horn_coral",
+      "eg_ice",
+      "eg_jungle_log",
+      "eg_lapis",
+      "eg_leaves",
+      "eg_light_blue_concrete",
+      "eg_light_blue_glazed_terracotta",
+      "eg_light_blue_stained_glass",
+      "eg_light_blue_terracotta",
+      "eg_light_blue_wool",
+      "eg_light_gray_concrete",
+      "eg_light_gray_glazed_terracotta",
+      "eg_light_gray_stained_glass",
+      "eg_light_gray_terracotta",
+      "eg_light_gray_wool",
+      "eg_lime_concrete",
+      "eg_lime_glazed_terracotta",
+      "eg_lime_stained_glass",
+      "eg_lime_terracotta",
+      "eg_lime_wool",
+      "eg_magenta_concrete",
+      "eg_magenta_glazed_terracotta",
+      "eg_magenta_stained_glass",
+      "eg_magenta_terracotta",
+      "eg_magenta_wool",
+      "eg_magma",
+      "eg_mangrove_log",
+      "eg_mangrove_roots",
+      "eg_melon",
+      "eg_moss",
+      "eg_mud",
+      "eg_muddy_mangrove_roots",
+      "eg_nether_brick",
+      "eg_nether_wart",
+      "eg_netherite",
+      "eg_oak_log",
+      "eg_obsidian",
+      "eg_ochre_froglight",
+      "eg_orange_concrete",
+      "eg_orange_glazed_terracotta",
+      "eg_orange_stained_glass",
+      "eg_orange_terracotta",
+      "eg_orange_wool",
+      "eg_oxidized_copper",
+      "eg_packed_mud",
+      "eg_pearlescent_froglight",
+      "eg_pink_concrete",
+      "eg_pink_glazed_terracotta",
+      "eg_pink_stained_glass",
+      "eg_pink_terracotta",
+      "eg_pink_wool",
+      "eg_prismarine",
+      "eg_purple_concrete",
+      "eg_purple_glazed_terracotta",
+      "eg_purple_stained_glass",
+      "eg_purple_terracotta",
+      "eg_purple_wool",
+      "eg_purpur",
+      "eg_quartz",
+      "eg_raw_copper",
+      "eg_raw_gold",
+      "eg_raw_iron",
+      "eg_red_concrete",
+      "eg_red_glazed_terracotta",
+      "eg_red_mushroom",
+      "eg_red_nether_brick",
+      "eg_red_sandstone",
+      "eg_red_stained_glass",
+      "eg_red_terracotta",
+      "eg_red_wool",
+      "eg_redstone",
+      "eg_redstone_lamp",
+      "eg_sandstone",
+      "eg_sculk",
+      "eg_sculk_catalyst",
+      "eg_sea_lantern",
+      "eg_shroomlight",
+      "eg_slime",
+      "eg_smooth_stone",
+      "eg_sponge",
+      "eg_spruce_log",
+      "eg_stripped_acacia_log",
+      "eg_stripped_bamboo_wood",
+      "eg_stripped_birch_log",
+      "eg_stripped_cherry_log",
+      "eg_stripped_crimson_stem",
+      "eg_stripped_dark_oak_log",
+      "eg_stripped_jungle_log",
+      "eg_stripped_mangrove_log",
+      "eg_stripped_oak_log",
+      "eg_stripped_spruce_log",
+      "eg_stripped_warped_stem",
+      "eg_terracotta",
+      "eg_tinted_glass",
+      "eg_tnt",
+      "eg_tube_coral",
+      "eg_verdant_froglight",
+      "eg_warped_stem",
+      "eg_warped_wart",
+      "eg_waxed_copper",
+      "eg_waxed_exposed_copper",
+      "eg_waxed_oxidized_copper",
+      "eg_waxed_weathered_copper",
+      "eg_weathered_copper",
+      "eg_white_concrete",
+      "eg_white_glazed_terracotta",
+      "eg_white_stained_glass",
+      "eg_white_terracotta",
+      "eg_white_wool",
+      "eg_yellow_concrete",
+      "eg_yellow_glazed_terracotta",
+      "eg_yellow_stained_glass",
+      "eg_yellow_terracotta",
+      "eg_yellow_wool"
+    ],
+    "bomberHeartbeat6000": true
+  },
+  "scope": "all selectable factions; implementation/document evidence, not exhaustive original-source comparison",
+  "date": "2026-10-22",
+  "species": 1055,
+  "factionCount": 63,
+  "confirmedFactions": 11,
+  "declaredAdaptationFactions": 4,
+  "sources": {
+    "function villageGolem(": {
+      "file": "mansion_war.html",
+      "line": 17748
+    },
+    "function cbFire(": {
+      "file": "mansion_war.html",
+      "line": 17649
+    },
+    "for(const [key,name,base,color] of CB_HERO_DATA)": {
+      "file": "mansion_war.html",
+      "line": 17530
+    },
+    "function exPlantBomb(": {
+      "file": "mansion_war.html",
+      "line": 17943
+    },
+    "function exeFire(": {
+      "file": "mansion_war.html",
+      "line": 18395
+    },
+    "function registerFiveFactions(": {
+      "file": "mansion_war.html",
+      "line": 18753
+    },
+    "function fiveBuildAttackRaw(": {
+      "file": "mansion_war.html",
+      "line": 18746
+    },
+    "function fiveFire(": {
+      "file": "mansion_war.html",
+      "line": 18840
+    },
+    "function explodeRocket(": {
+      "file": "mansion_war.html",
+      "line": 1285
+    },
+    "function thinkMonster(": {
+      "file": "mansion_war.html",
+      "line": 10337
+    },
+    "function navigationRadius(": {
+      "file": "mansion_war.html",
+      "line": 8833
+    },
+    "function drawUnit(": {
+      "file": "mansion_war.html",
+      "line": 5057
+    },
+    "function fovHalf(": {
+      "file": "mansion_war.html",
+      "line": 981
+    }
+  },
+  "factions": [
+    {
+      "key": "pd",
+      "name": "ピットドローン",
+      "species": [
+        {
+          "key": "pitDrone",
+          "name": "ピットドローン"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "em",
+      "name": "エンダーマン",
+      "species": [
+        {
+          "key": "enderMan",
+          "name": "エンダーマン"
+        },
+        {
+          "key": "enderMite",
+          "name": "エンダーマイト"
+        },
+        {
+          "key": "mutantEnderMan",
+          "name": "ミュータントエンダーマン"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "cp",
+      "name": "クリーパー",
+      "species": [
+        {
+          "key": "creeper",
+          "name": "クリーパー"
+        },
+        {
+          "key": "mutantCreeper",
+          "name": "ミュータントクリーパー"
+        },
+        {
+          "key": "miniCreeper",
+          "name": "ミニクリーパー"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "rz",
+      "name": "爆弾の悪魔",
+      "species": [
+        {
+          "key": "rezeBomb",
+          "name": "爆弾の悪魔（レゼ）"
+        },
+        {
+          "key": "typhoonChild",
+          "name": "台風の悪魔（幼体）"
+        },
+        {
+          "key": "typhoonAdult",
+          "name": "台風の悪魔（成体）"
+        }
+      ],
+      "status": "adaptation-declared-canon-comparison-needed"
+    },
+    {
+      "key": "hn",
+      "name": "ゴン・キルア",
+      "species": [
+        {
+          "key": "gon",
+          "name": "ゴン"
+        },
+        {
+          "key": "killua",
+          "name": "キルア"
+        }
+      ],
+      "status": "adaptation-declared-canon-comparison-needed"
+    },
+    {
+      "key": "bm",
+      "name": "ボマー",
+      "species": [
+        {
+          "key": "genthru",
+          "name": "ゲンスルー"
+        },
+        {
+          "key": "bomberSub",
+          "name": "サブ"
+        },
+        {
+          "key": "bomberBara",
+          "name": "バラ"
+        }
+      ],
+      "status": "simplification-or-substitution-confirmed"
+    },
+    {
+      "key": "cb",
+      "name": "コンバイン",
+      "species": [
+        {
+          "key": "cbShotgun",
+          "name": "コンバインショットガンナー"
+        },
+        {
+          "key": "cbSMG",
+          "name": "コンバインSMG"
+        },
+        {
+          "key": "cbAR2",
+          "name": "コンバインAR2"
+        },
+        {
+          "key": "cbElite",
+          "name": "コンバインエリート"
+        },
+        {
+          "key": "cbMetro",
+          "name": "メトロコップ"
+        },
+        {
+          "key": "cbHunter",
+          "name": "ハンター"
+        },
+        {
+          "key": "cbStrider",
+          "name": "ストライダー"
+        },
+        {
+          "key": "cbManhack",
+          "name": "マンハック"
+        },
+        {
+          "key": "cbAssassin",
+          "name": "アサシン"
+        },
+        {
+          "key": "cbCremator",
+          "name": "クレメイター"
+        },
+        {
+          "key": "cbStalker",
+          "name": "ストーカー"
+        },
+        {
+          "key": "cbMortarSynth",
+          "name": "モーターシンス"
+        },
+        {
+          "key": "cbDropship",
+          "name": "コンバインドロップシップ"
+        },
+        {
+          "key": "cbSniper",
+          "name": "コンバインスナイパー"
+        },
+        {
+          "key": "cbScanner",
+          "name": "シティースキャナー"
+        },
+        {
+          "key": "cbGrunt",
+          "name": "コンバイングラント"
+        },
+        {
+          "key": "cbGuard",
+          "name": "コンバインガード"
+        },
+        {
+          "key": "cbSynth",
+          "name": "コンバインシンス"
+        },
+        {
+          "key": "cbSynthElite",
+          "name": "コンバインシンスエリート"
+        },
+        {
+          "key": "cbSuppressor",
+          "name": "コンバインサプレッサー"
+        },
+        {
+          "key": "cbCrabSynth",
+          "name": "クラブシンス"
+        },
+        {
+          "key": "cbTurret",
+          "name": "タレット"
+        },
+        {
+          "key": "cbRollermine",
+          "name": "ローラーマイン"
+        },
+        {
+          "key": "cbAiden2",
+          "name": "Unit 3650 / Aiden（Entropy: Zero 2）"
+        },
+        {
+          "key": "cbAiden1",
+          "name": "Unit 3650 / Aiden（Entropy: Zero）"
+        },
+        {
+          "key": "cbVictor",
+          "name": "ビクターシックスティー（Uprising）"
+        },
+        {
+          "key": "cbBec",
+          "name": "ベック / Unit 2810（Uprising）"
+        },
+        {
+          "key": "cbBloody",
+          "name": "ブラッドコップ（Uprising）"
+        },
+        {
+          "key": "cbShadow",
+          "name": "シャドウ（Shadow Apartment）"
+        },
+        {
+          "key": "cbEcho",
+          "name": "Echo-8824（Excalibur 1-6）"
+        },
+        {
+          "key": "cbCore",
+          "name": "City 17 コア"
+        }
+      ],
+      "status": "simplification-or-substitution-confirmed"
+    },
+    {
+      "key": "cc",
+      "name": "クローンコップ",
+      "species": [
+        {
+          "key": "cc_cbShotgun",
+          "name": "クローン コンバインショットガンナー"
+        },
+        {
+          "key": "cc_cbSMG",
+          "name": "クローン コンバインSMG"
+        },
+        {
+          "key": "cc_cbAR2",
+          "name": "クローン コンバインAR2"
+        },
+        {
+          "key": "cc_cbElite",
+          "name": "クローン コンバインエリート"
+        },
+        {
+          "key": "cc_cbMetro",
+          "name": "クローン メトロコップ"
+        },
+        {
+          "key": "cc_cbHunter",
+          "name": "クローン ハンター"
+        },
+        {
+          "key": "cc_cbStrider",
+          "name": "クローン ストライダー"
+        },
+        {
+          "key": "cc_cbManhack",
+          "name": "クローン マンハック"
+        },
+        {
+          "key": "cc_cbAssassin",
+          "name": "クローン アサシン"
+        },
+        {
+          "key": "cc_cbCremator",
+          "name": "クローン クレメイター"
+        },
+        {
+          "key": "cc_cbStalker",
+          "name": "クローン ストーカー"
+        },
+        {
+          "key": "cc_cbMortarSynth",
+          "name": "クローン モーターシンス"
+        },
+        {
+          "key": "cc_cbDropship",
+          "name": "クローン コンバインドロップシップ"
+        },
+        {
+          "key": "cc_cbSniper",
+          "name": "クローン コンバインスナイパー"
+        },
+        {
+          "key": "cc_cbScanner",
+          "name": "クローン シティースキャナー"
+        },
+        {
+          "key": "cc_cbGrunt",
+          "name": "クローン コンバイングラント"
+        },
+        {
+          "key": "cc_cbGuard",
+          "name": "クローン コンバインガード"
+        },
+        {
+          "key": "cc_cbSynth",
+          "name": "クローン コンバインシンス"
+        },
+        {
+          "key": "cc_cbSynthElite",
+          "name": "クローン コンバインシンスエリート"
+        },
+        {
+          "key": "cc_cbSuppressor",
+          "name": "クローン コンバインサプレッサー"
+        },
+        {
+          "key": "cc_cbCrabSynth",
+          "name": "クローン クラブシンス"
+        },
+        {
+          "key": "cc_cbTurret",
+          "name": "クローン タレット"
+        },
+        {
+          "key": "cc_cbRollermine",
+          "name": "クローン ローラーマイン"
+        },
+        {
+          "key": "ccCloneCop",
+          "name": "クローンコップ（3650）"
+        },
+        {
+          "key": "cc_cbVictor",
+          "name": "クローン ビクターシックスティー（Uprising）"
+        },
+        {
+          "key": "cc_cbBec",
+          "name": "クローン ベック / Unit 2810（Uprising）"
+        },
+        {
+          "key": "cc_cbBloody",
+          "name": "クローン ブラッドコップ（Uprising）"
+        },
+        {
+          "key": "cc_cbShadow",
+          "name": "クローン シャドウ（Shadow Apartment）"
+        },
+        {
+          "key": "cc_cbEcho",
+          "name": "クローン Echo-8824（Excalibur 1-6）"
+        }
+      ],
+      "status": "simplification-or-substitution-confirmed"
+    },
+    {
+      "key": "vg",
+      "name": "村人・ゴーレム",
+      "species": [
+        {
+          "key": "mcVillager",
+          "name": "村人"
+        },
+        {
+          "key": "ironGolem",
+          "name": "アイアンゴーレム"
+        },
+        {
+          "key": "eg_acacia_log",
+          "name": "Acacia Log Golem"
+        },
+        {
+          "key": "eg_amethyst",
+          "name": "Amethyst Golem"
+        },
+        {
+          "key": "eg_ancient_debris",
+          "name": "Ancient Debris Golem"
+        },
+        {
+          "key": "eg_andesite",
+          "name": "Polished Andesite Golem"
+        },
+        {
+          "key": "eg_bamboo_wood",
+          "name": "Bamboo Golem"
+        },
+        {
+          "key": "eg_basalt",
+          "name": "Polished Basalt Golem"
+        },
+        {
+          "key": "eg_bedrock",
+          "name": "Bedrock Golem"
+        },
+        {
+          "key": "eg_birch_log",
+          "name": "Birch Log Golem"
+        },
+        {
+          "key": "eg_black_concrete",
+          "name": "Black Concrete Golem"
+        },
+        {
+          "key": "eg_black_glazed_terracotta",
+          "name": "Black Glazed Terracotta Golem"
+        },
+        {
+          "key": "eg_black_stained_glass",
+          "name": "Black Stained Glass Golem"
+        },
+        {
+          "key": "eg_black_terracotta",
+          "name": "Black Terracotta Golem"
+        },
+        {
+          "key": "eg_black_wool",
+          "name": "Black Wool Golem"
+        },
+        {
+          "key": "eg_blackstone",
+          "name": "Polished Blackstone Golem"
+        },
+        {
+          "key": "eg_blue_concrete",
+          "name": "Blue Concrete Golem"
+        },
+        {
+          "key": "eg_blue_glazed_terracotta",
+          "name": "Blue Glazed Terracotta Golem"
+        },
+        {
+          "key": "eg_blue_stained_glass",
+          "name": "Blue Stained Glass Golem"
+        },
+        {
+          "key": "eg_blue_terracotta",
+          "name": "Blue Terracotta Golem"
+        },
+        {
+          "key": "eg_blue_wool",
+          "name": "Blue Wool Golem"
+        },
+        {
+          "key": "eg_bone",
+          "name": "Bone Golem"
+        },
+        {
+          "key": "eg_bookshelf",
+          "name": "Librarian Golem"
+        },
+        {
+          "key": "eg_brain_coral",
+          "name": "Brain Coral Golem"
+        },
+        {
+          "key": "eg_brick",
+          "name": "Brick Golem"
+        },
+        {
+          "key": "eg_brown_concrete",
+          "name": "Brown Concrete Golem"
+        },
+        {
+          "key": "eg_brown_glazed_terracotta",
+          "name": "Brown Glazed Terracotta Golem"
+        },
+        {
+          "key": "eg_brown_mushroom",
+          "name": "Brown Mushroom Golem"
+        },
+        {
+          "key": "eg_brown_stained_glass",
+          "name": "Brown Stained Glass Golem"
+        },
+        {
+          "key": "eg_brown_terracotta",
+          "name": "Brown Terracotta Golem"
+        },
+        {
+          "key": "eg_brown_wool",
+          "name": "Brown Wool Golem"
+        },
+        {
+          "key": "eg_bubble_coral",
+          "name": "Bubble Coral Golem"
+        },
+        {
+          "key": "eg_cherry_log",
+          "name": "Cherry Log Golem"
+        },
+        {
+          "key": "eg_clay",
+          "name": "Clay Golem"
+        },
+        {
+          "key": "eg_coal",
+          "name": "Coal Golem"
+        },
+        {
+          "key": "eg_copper",
+          "name": "Copper Golem"
+        },
+        {
+          "key": "eg_crafting",
+          "name": "Crafting Golem"
+        },
+        {
+          "key": "eg_crimson_stem",
+          "name": "Crimson Stem Golem"
+        },
+        {
+          "key": "eg_crying_obsidian",
+          "name": "Crying Obsidian Golem"
+        },
+        {
+          "key": "eg_cyan_concrete",
+          "name": "Cyan Concrete Golem"
+        },
+        {
+          "key": "eg_cyan_glazed_terracotta",
+          "name": "Cyan Glazed Terracotta Golem"
+        },
+        {
+          "key": "eg_cyan_stained_glass",
+          "name": "Cyan Stained Glass Golem"
+        },
+        {
+          "key": "eg_cyan_terracotta",
+          "name": "Cyan Terracotta Golem"
+        },
+        {
+          "key": "eg_cyan_wool",
+          "name": "Cyan Wool Golem"
+        },
+        {
+          "key": "eg_dark_oak_log",
+          "name": "Dark Oak Log Golem"
+        },
+        {
+          "key": "eg_dead_brain_coral",
+          "name": "Dead Brain Coral Golem"
+        },
+        {
+          "key": "eg_dead_bubble_coral",
+          "name": "Dead Bubble Coral Golem"
+        },
+        {
+          "key": "eg_dead_fire_coral",
+          "name": "Dead Fire Coral Golem"
+        },
+        {
+          "key": "eg_dead_horn_coral",
+          "name": "Dead Horn Coral Golem"
+        },
+        {
+          "key": "eg_dead_tube_coral",
+          "name": "Dead Tube Coral Golem"
+        },
+        {
+          "key": "eg_deepslate",
+          "name": "Polished Deepslate Golem"
+        },
+        {
+          "key": "eg_diamond",
+          "name": "Diamond Golem"
+        },
+        {
+          "key": "eg_diorite",
+          "name": "Polished Diorite Golem"
+        },
+        {
+          "key": "eg_dispenser",
+          "name": "Dispenser Golem"
+        },
+        {
+          "key": "eg_dried_kelp",
+          "name": "Dried Kelp Golem"
+        },
+        {
+          "key": "eg_emerald",
+          "name": "Emerald Golem"
+        },
+        {
+          "key": "eg_end_stone",
+          "name": "Endstone Golem"
+        },
+        {
+          "key": "eg_exposed_copper",
+          "name": "Exposed Copper Golem"
+        },
+        {
+          "key": "eg_fire_coral",
+          "name": "Fire Coral Golem"
+        },
+        {
+          "key": "eg_furnace",
+          "name": "Furnace Golem"
+        },
+        {
+          "key": "eg_glass",
+          "name": "Glass Golem"
+        },
+        {
+          "key": "eg_glowstone",
+          "name": "Glowstone Golem"
+        },
+        {
+          "key": "eg_gold",
+          "name": "Gold Golem"
+        },
+        {
+          "key": "eg_granite",
+          "name": "Polished Granite Golem"
+        },
+        {
+          "key": "eg_gray_concrete",
+          "name": "Gray Concrete Golem"
+        },
+        {
+          "key": "eg_gray_glazed_terracotta",
+          "name": "Gray Glazed Terracotta Golem"
+        },
+        {
+          "key": "eg_gray_stained_glass",
+          "name": "Gray Stained Glass Golem"
+        },
+        {
+          "key": "eg_gray_terracotta",
+          "name": "Gray Terracotta Golem"
+        },
+        {
+          "key": "eg_gray_wool",
+          "name": "Gray Wool Golem"
+        },
+        {
+          "key": "eg_green_concrete",
+          "name": "Green Concrete Golem"
+        },
+        {
+          "key": "eg_green_glazed_terracotta",
+          "name": "Green Glazed Terracotta Golem"
+        },
+        {
+          "key": "eg_green_stained_glass",
+          "name": "Green Stained Glass Golem"
+        },
+        {
+          "key": "eg_green_terracotta",
+          "name": "Green Terracotta Golem"
+        },
+        {
+          "key": "eg_green_wool",
+          "name": "Green Wool Golem"
+        },
+        {
+          "key": "eg_hay",
+          "name": "Straw Golem"
+        },
+        {
+          "key": "eg_honey",
+          "name": "Honey Golem"
+        },
+        {
+          "key": "eg_honeycomb",
+          "name": "Honeycomb Golem"
+        },
+        {
+          "key": "eg_horn_coral",
+          "name": "Horn Coral Golem"
+        },
+        {
+          "key": "eg_ice",
+          "name": "Ice Golem"
+        },
+        {
+          "key": "eg_jungle_log",
+          "name": "Jungle Log Golem"
+        },
+        {
+          "key": "eg_lapis",
+          "name": "Lapis Lazuli Golem"
+        },
+        {
+          "key": "eg_leaves",
+          "name": "Leaf Golem"
+        },
+        {
+          "key": "eg_light_blue_concrete",
+          "name": "Light Blue Concrete Golem"
+        },
+        {
+          "key": "eg_light_blue_glazed_terracotta",
+          "name": "Light Blue Glazed Terracotta Golem"
+        },
+        {
+          "key": "eg_light_blue_stained_glass",
+          "name": "Light Blue Stained Glass Golem"
+        },
+        {
+          "key": "eg_light_blue_terracotta",
+          "name": "Light Blue Terracotta Golem"
+        },
+        {
+          "key": "eg_light_blue_wool",
+          "name": "Light Blue Wool Golem"
+        },
+        {
+          "key": "eg_light_gray_concrete",
+          "name": "Light Gray Concrete Golem"
+        },
+        {
+          "key": "eg_light_gray_glazed_terracotta",
+          "name": "Light Gray Glazed Terracotta Golem"
+        },
+        {
+          "key": "eg_light_gray_stained_glass",
+          "name": "Light Gray Stained Glass Golem"
+        },
+        {
+          "key": "eg_light_gray_terracotta",
+          "name": "Light Gray Terracotta Golem"
+        },
+        {
+          "key": "eg_light_gray_wool",
+          "name": "Light Gray Wool Golem"
+        },
+        {
+          "key": "eg_lime_concrete",
+          "name": "Lime Concrete Golem"
+        },
+        {
+          "key": "eg_lime_glazed_terracotta",
+          "name": "Lime Glazed Terracotta Golem"
+        },
+        {
+          "key": "eg_lime_stained_glass",
+          "name": "Lime Stained Glass Golem"
+        },
+        {
+          "key": "eg_lime_terracotta",
+          "name": "Lime Terracotta Golem"
+        },
+        {
+          "key": "eg_lime_wool",
+          "name": "Lime Wool Golem"
+        },
+        {
+          "key": "eg_magenta_concrete",
+          "name": "Magenta Concrete Golem"
+        },
+        {
+          "key": "eg_magenta_glazed_terracotta",
+          "name": "Magenta Glazed Terracotta Golem"
+        },
+        {
+          "key": "eg_magenta_stained_glass",
+          "name": "Magenta Stained Glass Golem"
+        },
+        {
+          "key": "eg_magenta_terracotta",
+          "name": "Magenta Terracotta Golem"
+        },
+        {
+          "key": "eg_magenta_wool",
+          "name": "Magenta Wool Golem"
+        },
+        {
+          "key": "eg_magma",
+          "name": "Magma Golem"
+        },
+        {
+          "key": "eg_mangrove_log",
+          "name": "Mangrove Log Golem"
+        },
+        {
+          "key": "eg_mangrove_roots",
+          "name": "Mangrove Roots Golem"
+        },
+        {
+          "key": "eg_melon",
+          "name": "Melon Golem"
+        },
+        {
+          "key": "eg_moss",
+          "name": "Moss Golem"
+        },
+        {
+          "key": "eg_mud",
+          "name": "Muddy Golem"
+        },
+        {
+          "key": "eg_muddy_mangrove_roots",
+          "name": "Muddy Mangrove Roots Golem"
+        },
+        {
+          "key": "eg_nether_brick",
+          "name": "Nether Brick Golem"
+        },
+        {
+          "key": "eg_nether_wart",
+          "name": "Nether Wart Golem"
+        },
+        {
+          "key": "eg_netherite",
+          "name": "Netherite Golem"
+        },
+        {
+          "key": "eg_oak_log",
+          "name": "Oak Log Golem"
+        },
+        {
+          "key": "eg_obsidian",
+          "name": "Obsidian Golem"
+        },
+        {
+          "key": "eg_ochre_froglight",
+          "name": "Ochre Froglight Golem"
+        },
+        {
+          "key": "eg_orange_concrete",
+          "name": "Orange Concrete Golem"
+        },
+        {
+          "key": "eg_orange_glazed_terracotta",
+          "name": "Orange Glazed Terracotta Golem"
+        },
+        {
+          "key": "eg_orange_stained_glass",
+          "name": "Orange Stained Glass Golem"
+        },
+        {
+          "key": "eg_orange_terracotta",
+          "name": "Orange Terracotta Golem"
+        },
+        {
+          "key": "eg_orange_wool",
+          "name": "Orange Wool Golem"
+        },
+        {
+          "key": "eg_oxidized_copper",
+          "name": "Oxidized Copper Golem"
+        },
+        {
+          "key": "eg_packed_mud",
+          "name": "Packed Mud Golem"
+        },
+        {
+          "key": "eg_pearlescent_froglight",
+          "name": "Pearlescent Froglight Golem"
+        },
+        {
+          "key": "eg_pink_concrete",
+          "name": "Pink Concrete Golem"
+        },
+        {
+          "key": "eg_pink_glazed_terracotta",
+          "name": "Pink Glazed Terracotta Golem"
+        },
+        {
+          "key": "eg_pink_stained_glass",
+          "name": "Pink Stained Glass Golem"
+        },
+        {
+          "key": "eg_pink_terracotta",
+          "name": "Pink Terracotta Golem"
+        },
+        {
+          "key": "eg_pink_wool",
+          "name": "Pink Wool Golem"
+        },
+        {
+          "key": "eg_prismarine",
+          "name": "Prismarine Golem"
+        },
+        {
+          "key": "eg_purple_concrete",
+          "name": "Purple Concrete Golem"
+        },
+        {
+          "key": "eg_purple_glazed_terracotta",
+          "name": "Purple Glazed Terracotta Golem"
+        },
+        {
+          "key": "eg_purple_stained_glass",
+          "name": "Purple Stained Glass Golem"
+        },
+        {
+          "key": "eg_purple_terracotta",
+          "name": "Purple Terracotta Golem"
+        },
+        {
+          "key": "eg_purple_wool",
+          "name": "Purple Wool Golem"
+        },
+        {
+          "key": "eg_purpur",
+          "name": "Purpur Golem"
+        },
+        {
+          "key": "eg_quartz",
+          "name": "Quartz Golem"
+        },
+        {
+          "key": "eg_raw_copper",
+          "name": "Raw Copper Golem"
+        },
+        {
+          "key": "eg_raw_gold",
+          "name": "Raw Gold Golem"
+        },
+        {
+          "key": "eg_raw_iron",
+          "name": "Raw Iron Golem"
+        },
+        {
+          "key": "eg_red_concrete",
+          "name": "Red Concrete Golem"
+        },
+        {
+          "key": "eg_red_glazed_terracotta",
+          "name": "Red Glazed Terracotta Golem"
+        },
+        {
+          "key": "eg_red_mushroom",
+          "name": "Red Mushroom Golem"
+        },
+        {
+          "key": "eg_red_nether_brick",
+          "name": "Red Nether Brick Golem"
+        },
+        {
+          "key": "eg_red_sandstone",
+          "name": "Red Sandstone Golem"
+        },
+        {
+          "key": "eg_red_stained_glass",
+          "name": "Red Stained Glass Golem"
+        },
+        {
+          "key": "eg_red_terracotta",
+          "name": "Red Terracotta Golem"
+        },
+        {
+          "key": "eg_red_wool",
+          "name": "Red Wool Golem"
+        },
+        {
+          "key": "eg_redstone",
+          "name": "Redstone Golem"
+        },
+        {
+          "key": "eg_redstone_lamp",
+          "name": "Redstone Lamp Golem"
+        },
+        {
+          "key": "eg_sandstone",
+          "name": "Sandstone Golem"
+        },
+        {
+          "key": "eg_sculk",
+          "name": "Sculk Golem"
+        },
+        {
+          "key": "eg_sculk_catalyst",
+          "name": "Sculk Catalyst Golem"
+        },
+        {
+          "key": "eg_sea_lantern",
+          "name": "Sea Lantern Golem"
+        },
+        {
+          "key": "eg_shroomlight",
+          "name": "Shroomlight Golem"
+        },
+        {
+          "key": "eg_slime",
+          "name": "Slimy Golem"
+        },
+        {
+          "key": "eg_smooth_stone",
+          "name": "Smooth Stone Golem"
+        },
+        {
+          "key": "eg_sponge",
+          "name": "Sponge Golem"
+        },
+        {
+          "key": "eg_spruce_log",
+          "name": "Spruce Log Golem"
+        },
+        {
+          "key": "eg_stripped_acacia_log",
+          "name": "Stripped Acacia Log Golem"
+        },
+        {
+          "key": "eg_stripped_bamboo_wood",
+          "name": "Stripped Bamboo Golem"
+        },
+        {
+          "key": "eg_stripped_birch_log",
+          "name": "Stripped Birch Log Golem"
+        },
+        {
+          "key": "eg_stripped_cherry_log",
+          "name": "Stripped Cherry Log Golem"
+        },
+        {
+          "key": "eg_stripped_crimson_stem",
+          "name": "Stripped Crimson Stem Golem"
+        },
+        {
+          "key": "eg_stripped_dark_oak_log",
+          "name": "Stripped Dark Oak Log Golem"
+        },
+        {
+          "key": "eg_stripped_jungle_log",
+          "name": "Stripped Jungle Log Golem"
+        },
+        {
+          "key": "eg_stripped_mangrove_log",
+          "name": "Stripped Mangrove Log Golem"
+        },
+        {
+          "key": "eg_stripped_oak_log",
+          "name": "Stripped Oak Log Golem"
+        },
+        {
+          "key": "eg_stripped_spruce_log",
+          "name": "Stripped Spruce Log Golem"
+        },
+        {
+          "key": "eg_stripped_warped_stem",
+          "name": "Stripped Warped Stem Golem"
+        },
+        {
+          "key": "eg_terracotta",
+          "name": "Terracotta Golem"
+        },
+        {
+          "key": "eg_tinted_glass",
+          "name": "Tinted Glass Golem"
+        },
+        {
+          "key": "eg_tnt",
+          "name": "TNT Golem"
+        },
+        {
+          "key": "eg_tube_coral",
+          "name": "Tube Coral Golem"
+        },
+        {
+          "key": "eg_verdant_froglight",
+          "name": "Verdant Froglight Golem"
+        },
+        {
+          "key": "eg_warped_stem",
+          "name": "Warped Stem Golem"
+        },
+        {
+          "key": "eg_warped_wart",
+          "name": "Warped Wart Golem"
+        },
+        {
+          "key": "eg_waxed_copper",
+          "name": "Waxed Copper Golem"
+        },
+        {
+          "key": "eg_waxed_exposed_copper",
+          "name": "Waxed Exposed Copper Golem"
+        },
+        {
+          "key": "eg_waxed_oxidized_copper",
+          "name": "Waxed Oxidized Copper Golem"
+        },
+        {
+          "key": "eg_waxed_weathered_copper",
+          "name": "Waxed Weathered Copper Golem"
+        },
+        {
+          "key": "eg_weathered_copper",
+          "name": "Weathered Copper Golem"
+        },
+        {
+          "key": "eg_white_concrete",
+          "name": "White Concrete Golem"
+        },
+        {
+          "key": "eg_white_glazed_terracotta",
+          "name": "White Glazed Terracotta Golem"
+        },
+        {
+          "key": "eg_white_stained_glass",
+          "name": "White Stained Glass Golem"
+        },
+        {
+          "key": "eg_white_terracotta",
+          "name": "White Terracotta Golem"
+        },
+        {
+          "key": "eg_white_wool",
+          "name": "White Wool Golem"
+        },
+        {
+          "key": "eg_yellow_concrete",
+          "name": "Yellow Concrete Golem"
+        },
+        {
+          "key": "eg_yellow_glazed_terracotta",
+          "name": "Yellow Glazed Terracotta Golem"
+        },
+        {
+          "key": "eg_yellow_stained_glass",
+          "name": "Yellow Stained Glass Golem"
+        },
+        {
+          "key": "eg_yellow_terracotta",
+          "name": "Yellow Terracotta Golem"
+        },
+        {
+          "key": "eg_yellow_wool",
+          "name": "Yellow Wool Golem"
+        },
+        {
+          "key": "mcHoneyBee",
+          "name": "ミツバチ（Honeycomb召喚）"
+        }
+      ],
+      "status": "simplification-or-substitution-confirmed"
+    },
+    {
+      "key": "T",
+      "name": "t-ウイルス",
+      "species": [
+        {
+          "key": "zombie",
+          "name": "ゾンビ"
+        },
+        {
+          "key": "crimson",
+          "name": "クリムゾンヘッド"
+        },
+        {
+          "key": "licker",
+          "name": "リッカー"
+        },
+        {
+          "key": "hunter",
+          "name": "ハンター"
+        },
+        {
+          "key": "zdog",
+          "name": "ゾンビ犬"
+        },
+        {
+          "key": "zcrow",
+          "name": "ゾンビカラス"
+        },
+        {
+          "key": "tyrantX",
+          "name": "タイラント(Mr.X)"
+        },
+        {
+          "key": "tyrant002",
+          "name": "タイラントT-002"
+        },
+        {
+          "key": "nemesis",
+          "name": "ネメシス"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "pg",
+      "name": "プラーガ",
+      "species": [
+        {
+          "key": "gvAxe",
+          "name": "村人(斧)"
+        },
+        {
+          "key": "gvTorch",
+          "name": "村人(松明)"
+        },
+        {
+          "key": "gvDyna",
+          "name": "村人(ダイナマイト)"
+        },
+        {
+          "key": "gvSickle",
+          "name": "村人(鎌)"
+        },
+        {
+          "key": "gvChainM",
+          "name": "チェーンソー男"
+        },
+        {
+          "key": "gvChainF",
+          "name": "チェーンソー姉妹"
+        },
+        {
+          "key": "gvGatling",
+          "name": "ガトリング男"
+        },
+        {
+          "key": "gvMendez",
+          "name": "ビトレス・メンデス"
+        },
+        {
+          "key": "gvCultSh",
+          "name": "邪教徒(盾)"
+        },
+        {
+          "key": "gvCultBow",
+          "name": "邪教徒(ボーガン)"
+        },
+        {
+          "key": "gvSoldStun",
+          "name": "戦闘員(スタンバトン)"
+        },
+        {
+          "key": "gvSoldDyna",
+          "name": "戦闘員(ダイナマイト)"
+        },
+        {
+          "key": "gvSoldRkt",
+          "name": "戦闘員(ロケット)"
+        },
+        {
+          "key": "gvSalazar",
+          "name": "ラモン・サラザール"
+        },
+        {
+          "key": "gvKrauser",
+          "name": "ジャック・クラウザー"
+        },
+        {
+          "key": "gvSaddler",
+          "name": "オズムンド・サドラー"
+        },
+        {
+          "key": "plagaA",
+          "name": "プラガA"
+        },
+        {
+          "key": "plagaB",
+          "name": "プラガB"
+        },
+        {
+          "key": "plagaC",
+          "name": "プラガC"
+        },
+        {
+          "key": "arana",
+          "name": "アラーニャ"
+        },
+        {
+          "key": "gvPitch",
+          "name": "村人(ピッチフォーク)"
+        },
+        {
+          "key": "gvKnife",
+          "name": "村人(包丁)"
+        },
+        {
+          "key": "gvBrick",
+          "name": "村人(レンガ投げ)"
+        },
+        {
+          "key": "gvSling",
+          "name": "村人(投石器)"
+        },
+        {
+          "key": "gvGigante",
+          "name": "エル・ヒガンテ"
+        },
+        {
+          "key": "gvDelLago",
+          "name": "デル・ラーゴ"
+        },
+        {
+          "key": "gvColmillos",
+          "name": "コルミロス"
+        },
+        {
+          "key": "gvGarrador",
+          "name": "ガラドール"
+        },
+        {
+          "key": "gvNovis",
+          "name": "ノビスタドール"
+        },
+        {
+          "key": "gvArmadura",
+          "name": "アルマデューラ"
+        },
+        {
+          "key": "gvVerdugo",
+          "name": "ヴェルデューゴ"
+        },
+        {
+          "key": "gvCultScythe",
+          "name": "邪教徒(大鎌)"
+        },
+        {
+          "key": "gvCultFlail",
+          "name": "邪教徒(フレイル)"
+        },
+        {
+          "key": "gvCultRkt",
+          "name": "邪教徒(ロケット)"
+        },
+        {
+          "key": "gvCultGat",
+          "name": "邪教徒(固定ガトリング)"
+        },
+        {
+          "key": "gvPriest",
+          "name": "司祭"
+        },
+        {
+          "key": "gvCultRed",
+          "name": "赤衣の上級教徒"
+        },
+        {
+          "key": "gvCultIron",
+          "name": "鉄仮面の盾教徒"
+        },
+        {
+          "key": "gvDrill",
+          "name": "削岩機のガナード"
+        },
+        {
+          "key": "gvSoldPistol",
+          "name": "戦闘員(拳銃)"
+        },
+        {
+          "key": "gvSoldRifle",
+          "name": "戦闘員(ライフル)"
+        },
+        {
+          "key": "gvSoldNade",
+          "name": "戦闘員(手榴弾)"
+        },
+        {
+          "key": "gvSoldShield",
+          "name": "戦闘員(盾)"
+        },
+        {
+          "key": "gvSoldHammer",
+          "name": "戦闘員(ハンマー)"
+        },
+        {
+          "key": "gvRegen",
+          "name": "リヘナラドール"
+        },
+        {
+          "key": "gvIronMaiden",
+          "name": "アイアンメイデン"
+        },
+        {
+          "key": "gvU3",
+          "name": "U-3"
+        },
+        {
+          "key": "gvSuperSalvador",
+          "name": "スーパーサルバドール"
+        },
+        {
+          "key": "gvDesnucado",
+          "name": "デスヌカド"
+        },
+        {
+          "key": "gvMartinico",
+          "name": "マルティニコ"
+        },
+        {
+          "key": "gvCowHead",
+          "name": "牛頭のガナード"
+        },
+        {
+          "key": "gvSalazarMon",
+          "name": "サラザール (融合体)"
+        },
+        {
+          "key": "gvSaddlerMon",
+          "name": "サドラー (最終形態)"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "X",
+      "name": "ゼノモーフ",
+      "species": [
+        {
+          "key": "drone",
+          "name": "ゼノモーフ・ドローン"
+        },
+        {
+          "key": "warrior",
+          "name": "ゼノモーフ・ウォリアー"
+        },
+        {
+          "key": "berserker",
+          "name": "ゼノモーフ・バーサーカー"
+        },
+        {
+          "key": "runner",
+          "name": "ゼノモーフ・ランナー"
+        },
+        {
+          "key": "praetorian",
+          "name": "ゼノモーフ・プラエトリアン"
+        },
+        {
+          "key": "predalien",
+          "name": "ゼノモーフ・プレデリアン"
+        },
+        {
+          "key": "queen",
+          "name": "ゼノモーフ・クイーン"
+        },
+        {
+          "key": "hugger",
+          "name": "フェイスハガー"
+        },
+        {
+          "key": "burster",
+          "name": "チェストバスター"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "D",
+      "name": "デスエンジェル",
+      "species": [
+        {
+          "key": "dangel",
+          "name": "デスエンジェル"
+        },
+        {
+          "key": "daqueen",
+          "name": "デスエンジェルクイーン"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "H",
+      "name": "リバイブド",
+      "species": [
+        {
+          "key": "headcrab",
+          "name": "ヘッドクラブ"
+        },
+        {
+          "key": "hczombie",
+          "name": "ヘッドクラブゾンビ"
+        },
+        {
+          "key": "hcfastz",
+          "name": "ヘッドクラブファーストゾンビ"
+        },
+        {
+          "key": "hcpoisonz",
+          "name": "ヘッドクラブポイズンゾンビ"
+        },
+        {
+          "key": "zombine",
+          "name": "ゾンバイン"
+        },
+        {
+          "key": "gonome",
+          "name": "ゴノーム"
+        },
+        {
+          "key": "gonarch",
+          "name": "ゴナーチ"
+        },
+        {
+          "key": "babycrab",
+          "name": "ベビーヘッドクラブ"
+        },
+        {
+          "key": "hcfast",
+          "name": "ファーストヘッドクラブ"
+        },
+        {
+          "key": "hcpoison",
+          "name": "ポイズンヘッドクラブ"
+        },
+        {
+          "key": "hcarmor",
+          "name": "アーマードヘッドクラブ"
+        },
+        {
+          "key": "hcrevive",
+          "name": "リバイブドヘッドクラブ"
+        },
+        {
+          "key": "hcarmz",
+          "name": "アーマードヘッドクラブゾンビ"
+        },
+        {
+          "key": "revivedz",
+          "name": "リバイブド・ゾンビ"
+        },
+        {
+          "key": "revfastz",
+          "name": "リバイブド・ファーストゾンビ"
+        },
+        {
+          "key": "revpoisonz",
+          "name": "リバイブド・ポイズンゾンビ"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "A",
+      "name": "アントライオン",
+      "species": [
+        {
+          "key": "antlion",
+          "name": "アントライオン"
+        },
+        {
+          "key": "aworker",
+          "name": "アントライオンワーカー"
+        },
+        {
+          "key": "aguard",
+          "name": "アントライオンガード"
+        },
+        {
+          "key": "aguardian",
+          "name": "アントライオンガーディアン"
+        },
+        {
+          "key": "aking",
+          "name": "アントライオンキング"
+        },
+        {
+          "key": "agrub",
+          "name": "アントライオングラブ"
+        },
+        {
+          "key": "aqueen",
+          "name": "アントライオンクイーン"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "G",
+      "name": "グリーン・フルー",
+      "species": [
+        {
+          "key": "gcommon",
+          "name": "通常感染者"
+        },
+        {
+          "key": "boomer",
+          "name": "ブーマー"
+        },
+        {
+          "key": "ghunter",
+          "name": "ハンター(L4D)"
+        },
+        {
+          "key": "gsmoker",
+          "name": "スモーカー"
+        },
+        {
+          "key": "tank",
+          "name": "タンク"
+        },
+        {
+          "key": "witch",
+          "name": "ウィッチ"
+        },
+        {
+          "key": "charger",
+          "name": "チャージャー"
+        },
+        {
+          "key": "spitter",
+          "name": "スピッター"
+        },
+        {
+          "key": "jockey",
+          "name": "ジョッキー"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "C",
+      "name": "冬虫夏草",
+      "species": [
+        {
+          "key": "crunner",
+          "name": "ランナー"
+        },
+        {
+          "key": "cstalker",
+          "name": "ストーカー"
+        },
+        {
+          "key": "cclicker",
+          "name": "クリッカー"
+        },
+        {
+          "key": "cbloater",
+          "name": "ブローター"
+        },
+        {
+          "key": "cshambler",
+          "name": "シャンブラー"
+        },
+        {
+          "key": "cratking",
+          "name": "ラットキング"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "W",
+      "name": "ホワイトスパイク",
+      "species": [
+        {
+          "key": "wspike",
+          "name": "ホワイトスパイク"
+        },
+        {
+          "key": "wsqueen",
+          "name": "ホワイトスパイククイーン"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fl",
+      "name": "フラッド",
+      "species": [
+        {
+          "key": "flInfect",
+          "name": "感染体"
+        },
+        {
+          "key": "flCarrier",
+          "name": "キャリアー"
+        },
+        {
+          "key": "flBiomass",
+          "name": "バイオマス"
+        },
+        {
+          "key": "flHuman",
+          "name": "人間戦闘体"
+        },
+        {
+          "key": "flElite",
+          "name": "エリート戦闘体"
+        },
+        {
+          "key": "flBrute",
+          "name": "ブルート戦闘体"
+        },
+        {
+          "key": "flBeast",
+          "name": "感染野獣"
+        },
+        {
+          "key": "flStalker",
+          "name": "ステルス変異"
+        },
+        {
+          "key": "flTank",
+          "name": "タンク変異"
+        },
+        {
+          "key": "flRanged",
+          "name": "レンジ変異"
+        },
+        {
+          "key": "flProto",
+          "name": "プロト・グレイブマインド"
+        },
+        {
+          "key": "flGravemind",
+          "name": "グレイブマインド"
+        },
+        {
+          "key": "flKeyMind",
+          "name": "キーマインド"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "nm",
+      "name": "ネクロモーフ",
+      "species": [
+        {
+          "key": "nmMarker",
+          "name": "マーカー"
+        },
+        {
+          "key": "nmInfector",
+          "name": "インフェクター"
+        },
+        {
+          "key": "nmLurker",
+          "name": "ラーカー"
+        },
+        {
+          "key": "nmSwarm",
+          "name": "スワーム"
+        },
+        {
+          "key": "nmCorruption",
+          "name": "腐生組織"
+        },
+        {
+          "key": "nmSlasher",
+          "name": "スラッシャー"
+        },
+        {
+          "key": "nmSpitter",
+          "name": "スピッター"
+        },
+        {
+          "key": "nmExploder",
+          "name": "エクスプローダー"
+        },
+        {
+          "key": "nmLeaper",
+          "name": "リーパー"
+        },
+        {
+          "key": "nmPuker",
+          "name": "プーカー"
+        },
+        {
+          "key": "nmStalker",
+          "name": "ストーカー"
+        },
+        {
+          "key": "nmGuardian",
+          "name": "ガーディアン"
+        },
+        {
+          "key": "nmPod",
+          "name": "ポッド"
+        },
+        {
+          "key": "nmTwitcher",
+          "name": "トゥイッチャー"
+        },
+        {
+          "key": "nmDivider",
+          "name": "ディバイダー"
+        },
+        {
+          "key": "nmDivHead",
+          "name": "ディバイダーの頭"
+        },
+        {
+          "key": "nmHunter",
+          "name": "ハンター (ウーバーモーフ)"
+        },
+        {
+          "key": "nmBrute",
+          "name": "ブルート"
+        },
+        {
+          "key": "nmLeviathan",
+          "name": "レヴァイアサン (ハイブマインド)"
+        },
+        {
+          "key": "nmMoon",
+          "name": "ブレザレン・ムーン"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "srp",
+      "name": "SRP寄生体",
+      "species": [
+        {
+          "key": "srpBuglin",
+          "name": "バグリン"
+        },
+        {
+          "key": "srpRupter",
+          "name": "ルプター"
+        },
+        {
+          "key": "srpMangler",
+          "name": "マングラー"
+        },
+        {
+          "key": "srpGnat",
+          "name": "グナット"
+        },
+        {
+          "key": "srpLice",
+          "name": "ライス"
+        },
+        {
+          "key": "srpWorker",
+          "name": "ワーカー"
+        },
+        {
+          "key": "srpFlyCarrier",
+          "name": "フライングキャリアー"
+        },
+        {
+          "key": "srpLightCarrier",
+          "name": "ライトキャリアー"
+        },
+        {
+          "key": "srpAsHuman",
+          "name": "同化人間"
+        },
+        {
+          "key": "srpAsAdventurer",
+          "name": "同化冒険者"
+        },
+        {
+          "key": "srpAsCow",
+          "name": "同化牛"
+        },
+        {
+          "key": "srpAsPig",
+          "name": "同化豚"
+        },
+        {
+          "key": "srpAsSheep",
+          "name": "同化羊"
+        },
+        {
+          "key": "srpAsHorse",
+          "name": "同化馬"
+        },
+        {
+          "key": "srpAsWolf",
+          "name": "同化狼"
+        },
+        {
+          "key": "srpAsBear",
+          "name": "同化熊"
+        },
+        {
+          "key": "srpAsSpider",
+          "name": "同化大グモ"
+        },
+        {
+          "key": "srpAsEnderman",
+          "name": "同化エンダーマン"
+        },
+        {
+          "key": "srpAsVillager",
+          "name": "同化村人"
+        },
+        {
+          "key": "srpHjGolem",
+          "name": "乗っ取りゴーレム"
+        },
+        {
+          "key": "srpHjBlaze",
+          "name": "乗っ取りブレイズ"
+        },
+        {
+          "key": "srpFeralHuman",
+          "name": "野生人間"
+        },
+        {
+          "key": "srpFeralWolf",
+          "name": "野生狼"
+        },
+        {
+          "key": "srpFeralBear",
+          "name": "野生熊"
+        },
+        {
+          "key": "srpFeralCow",
+          "name": "野生牛"
+        },
+        {
+          "key": "srpAssimaraHuman",
+          "name": "アシマラ人間"
+        },
+        {
+          "key": "srpAssimaraBear",
+          "name": "アシマラ熊"
+        },
+        {
+          "key": "srpAssimaraEnderman",
+          "name": "アシマラエンダーマン"
+        },
+        {
+          "key": "srpFlesh",
+          "name": "動く肉塊"
+        },
+        {
+          "key": "srpIncompS",
+          "name": "不完全体(小)"
+        },
+        {
+          "key": "srpIncompM",
+          "name": "不完全体(中)"
+        },
+        {
+          "key": "srpAirscrew",
+          "name": "エアスクリュー"
+        },
+        {
+          "key": "srpCrux",
+          "name": "クラックス"
+        },
+        {
+          "key": "srpDredge",
+          "name": "ドレッジ"
+        },
+        {
+          "key": "srpHeed",
+          "name": "ヒード"
+        },
+        {
+          "key": "srpHost",
+          "name": "ホスト"
+        },
+        {
+          "key": "srpThrall",
+          "name": "スロール"
+        },
+        {
+          "key": "srpHerd",
+          "name": "ハード"
+        },
+        {
+          "key": "srpPrLongarms",
+          "name": "原始ロングアームズ"
+        },
+        {
+          "key": "srpAdLongarms",
+          "name": "適応ロングアームズ"
+        },
+        {
+          "key": "srpPrReeker",
+          "name": "原始リーカー"
+        },
+        {
+          "key": "srpAdReeker",
+          "name": "適応リーカー"
+        },
+        {
+          "key": "srpPrYelloweye",
+          "name": "原始イエローアイ"
+        },
+        {
+          "key": "srpAdYelloweye",
+          "name": "適応イエローアイ"
+        },
+        {
+          "key": "srpPrSummoner",
+          "name": "原始サモナー"
+        },
+        {
+          "key": "srpAdSummoner",
+          "name": "適応サモナー"
+        },
+        {
+          "key": "srpPrManducater",
+          "name": "原始マンデュケーター"
+        },
+        {
+          "key": "srpAdManducater",
+          "name": "適応マンデュケーター"
+        },
+        {
+          "key": "srpPrBolster",
+          "name": "原始ボルスター"
+        },
+        {
+          "key": "srpAdBolster",
+          "name": "適応ボルスター"
+        },
+        {
+          "key": "srpPrArachnida",
+          "name": "原始アラクニダ"
+        },
+        {
+          "key": "srpAdArachnida",
+          "name": "適応アラクニダ"
+        },
+        {
+          "key": "srpPrBurrower",
+          "name": "原始バロワー"
+        },
+        {
+          "key": "srpAdBurrower",
+          "name": "適応バロワー"
+        },
+        {
+          "key": "srpPrDevourer",
+          "name": "原始デヴァウアー"
+        },
+        {
+          "key": "srpAdDevourer",
+          "name": "適応デヴァウアー"
+        },
+        {
+          "key": "srpPrTozoon",
+          "name": "原始トゾーン"
+        },
+        {
+          "key": "srpAdTozoon",
+          "name": "適応トゾーン"
+        },
+        {
+          "key": "srpPrViscera",
+          "name": "原始ヴィセラ"
+        },
+        {
+          "key": "srpAdViscera",
+          "name": "適応ヴィセラ"
+        },
+        {
+          "key": "srpAdVermin",
+          "name": "適応ヴァーミン"
+        },
+        {
+          "key": "srpBeckon",
+          "name": "ベコン"
+        },
+        {
+          "key": "srpDispatcher",
+          "name": "ディスパッチャー"
+        },
+        {
+          "key": "srpRooter",
+          "name": "ルーター"
+        },
+        {
+          "key": "srpGrunt",
+          "name": "グラント"
+        },
+        {
+          "key": "srpOverseer",
+          "name": "オーバーシーア"
+        },
+        {
+          "key": "srpSeeker",
+          "name": "シーカー"
+        },
+        {
+          "key": "srpVigilante",
+          "name": "ヴィジランテ"
+        },
+        {
+          "key": "srpMonarch",
+          "name": "モナーク"
+        },
+        {
+          "key": "srpBogle",
+          "name": "ボーグル"
+        },
+        {
+          "key": "srpHaunter",
+          "name": "ホーンター"
+        },
+        {
+          "key": "srpWraith",
+          "name": "レイス"
+        },
+        {
+          "key": "srpArchitect",
+          "name": "アーキテクト"
+        },
+        {
+          "key": "srpColonyCarrier",
+          "name": "コロニーキャリアー"
+        },
+        {
+          "key": "srpHeavyBomber",
+          "name": "ヘビーボンバー"
+        },
+        {
+          "key": "srpSuccor",
+          "name": "サッカー"
+        },
+        {
+          "key": "srpDreadnaut",
+          "name": "エンシェント・ドレッドノート"
+        },
+        {
+          "key": "srpOverlord",
+          "name": "エンシェント・オーバーロード"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "mz",
+      "name": "MCゾンビ",
+      "species": [
+        {
+          "key": "mzombie",
+          "name": "ゾンビ"
+        },
+        {
+          "key": "husk",
+          "name": "ハスク"
+        },
+        {
+          "key": "drowned",
+          "name": "ドラウンド"
+        },
+        {
+          "key": "mutZombie",
+          "name": "ミュータントゾンビ"
+        },
+        {
+          "key": "mutHusk",
+          "name": "ミュータントハスク"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "P",
+      "name": "ピグリン",
+      "species": [
+        {
+          "key": "pfort",
+          "name": "ピグリン要塞"
+        },
+        {
+          "key": "piglin",
+          "name": "ピグリン金の剣"
+        },
+        {
+          "key": "piglinxbow",
+          "name": "ピグリンクロスボウ"
+        },
+        {
+          "key": "pbrute",
+          "name": "ピグリンブルート"
+        },
+        {
+          "key": "hoglin",
+          "name": "ホグリン"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "R",
+      "name": "襲撃者",
+      "species": [
+        {
+          "key": "pillager",
+          "name": "ピリジャー"
+        },
+        {
+          "key": "vindicator",
+          "name": "ヴィンディケーター"
+        },
+        {
+          "key": "mwitch",
+          "name": "ウィッチ(MC)"
+        },
+        {
+          "key": "evoker",
+          "name": "エヴォーカー"
+        },
+        {
+          "key": "ravager",
+          "name": "ラヴェジャー"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "gd",
+      "name": "ガーディアン",
+      "species": [
+        {
+          "key": "guardian",
+          "name": "ガーディアン"
+        },
+        {
+          "key": "elderG",
+          "name": "エルダーガーディアン"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "sp",
+      "name": "スパイダー",
+      "species": [
+        {
+          "key": "spider",
+          "name": "スパイダー"
+        },
+        {
+          "key": "spWar",
+          "name": "スパイダーウォーリアー"
+        },
+        {
+          "key": "spCave",
+          "name": "洞窟蜘蛛"
+        },
+        {
+          "key": "spSpit",
+          "name": "スピッター"
+        },
+        {
+          "key": "spNurse",
+          "name": "ナースグモ"
+        },
+        {
+          "key": "spHang",
+          "name": "ハングドスパイダー"
+        },
+        {
+          "key": "spQueen",
+          "name": "クイーンスパイダー"
+        },
+        {
+          "key": "spDepth",
+          "name": "深層グモ"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "M",
+      "name": "スカイネット",
+      "species": [
+        {
+          "key": "skynet",
+          "name": "スカイネット・コア"
+        },
+        {
+          "key": "t600",
+          "name": "T-600"
+        },
+        {
+          "key": "t800",
+          "name": "T-800"
+        },
+        {
+          "key": "t850",
+          "name": "T-850"
+        },
+        {
+          "key": "t1000",
+          "name": "T-1000"
+        },
+        {
+          "key": "tx",
+          "name": "T-X"
+        },
+        {
+          "key": "t3000",
+          "name": "T-3000"
+        },
+        {
+          "key": "rev9",
+          "name": "Rev-9"
+        },
+        {
+          "key": "marcus",
+          "name": "マーカス・ライト"
+        },
+        {
+          "key": "t5000",
+          "name": "T-5000"
+        },
+        {
+          "key": "hkaerial",
+          "name": "HK-エアリアル"
+        },
+        {
+          "key": "hktank",
+          "name": "HK-タンク"
+        },
+        {
+          "key": "harvester",
+          "name": "ハーベスター"
+        },
+        {
+          "key": "moto",
+          "name": "モト-ターミネーター"
+        },
+        {
+          "key": "hydrobot",
+          "name": "ハイドロボット"
+        },
+        {
+          "key": "t1",
+          "name": "T-1"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "S",
+      "name": "SCP-939",
+      "species": [
+        {
+          "key": "scp939",
+          "name": "SCP-939 成体"
+        },
+        {
+          "key": "scp939pup",
+          "name": "SCP-939 幼体"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "I",
+      "name": "SCP-096",
+      "species": [
+        {
+          "key": "scp096",
+          "name": "SCP-096"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "3",
+      "name": "SCP-173",
+      "species": [
+        {
+          "key": "scp173",
+          "name": "SCP-173"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "4",
+      "name": "SCP-049",
+      "species": [
+        {
+          "key": "scp049",
+          "name": "SCP-049"
+        },
+        {
+          "key": "scp0492",
+          "name": "SCP-049-2"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "U",
+      "name": "呪怨",
+      "species": [
+        {
+          "key": "kayako",
+          "name": "伽倻子"
+        },
+        {
+          "key": "toshio",
+          "name": "俊雄"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "L",
+      "name": "リング",
+      "species": [
+        {
+          "key": "sadako",
+          "name": "貞子"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "V",
+      "name": "後藤家",
+      "species": [
+        {
+          "key": "anohito",
+          "name": "あの人"
+        },
+        {
+          "key": "villRifle",
+          "name": "村人(猟銃)"
+        },
+        {
+          "key": "villNata",
+          "name": "村人(ナタ)"
+        },
+        {
+          "key": "villAxe",
+          "name": "村人(斧)"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "hg",
+      "name": "ホルガ村",
+      "species": [
+        {
+          "key": "horgaHam",
+          "name": "ホルガ村人(ハンマー)"
+        },
+        {
+          "key": "horgaScythe",
+          "name": "ホルガ村人(鎌)"
+        },
+        {
+          "key": "horgaAxe",
+          "name": "ホルガ村人(斧)"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "F",
+      "name": "ゴーストフェイス",
+      "species": [
+        {
+          "key": "ghostface",
+          "name": "ゴーストフェイス"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "Q",
+      "name": "チャッキー",
+      "species": [
+        {
+          "key": "chucky",
+          "name": "チャッキー"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "B",
+      "name": "ミーガン",
+      "species": [
+        {
+          "key": "megan",
+          "name": "ミーガン"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "jk",
+      "name": "ジョーカー",
+      "species": [
+        {
+          "key": "joker",
+          "name": "ジョーカー"
+        },
+        {
+          "key": "jokerFan",
+          "name": "ジョーカー信者"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "J",
+      "name": "ジェフ・ザ・キラー",
+      "species": [
+        {
+          "key": "jeff",
+          "name": "ジェフ・ザ・キラー"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "0",
+      "name": "スレンダーマン",
+      "species": [
+        {
+          "key": "slender",
+          "name": "スレンダーマン"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "Y",
+      "name": "スマイル",
+      "species": [
+        {
+          "key": "smile",
+          "name": "スマイル"
+        },
+        {
+          "key": "nottoru",
+          "name": "取り憑かれ(自害待ち)"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "E",
+      "name": "FPE",
+      "species": [
+        {
+          "key": "missCircle",
+          "name": "ミス・サークル"
+        },
+        {
+          "key": "missThavel",
+          "name": "ミス・サベル"
+        },
+        {
+          "key": "missBloomie",
+          "name": "ミス・ブルーミー"
+        },
+        {
+          "key": "fpeAlice",
+          "name": "アリス"
+        },
+        {
+          "key": "dngCircle",
+          "name": "デンジャーサークル"
+        },
+        {
+          "key": "dngBloomie",
+          "name": "デンジャーブルーミー"
+        },
+        {
+          "key": "dngThavel",
+          "name": "デンジャータベル"
+        },
+        {
+          "key": "aliceTendril",
+          "name": "アリスの生体触手"
+        }
+      ],
+      "status": "adaptation-declared-canon-comparison-needed"
+    },
+    {
+      "key": "K",
+      "name": "キャラ",
+      "species": [
+        {
+          "key": "chara",
+          "name": "キャラ"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "5",
+      "name": "フェン",
+      "species": [
+        {
+          "key": "fen",
+          "name": "フェン"
+        }
+      ],
+      "status": "adaptation-declared-canon-comparison-needed"
+    },
+    {
+      "key": "6",
+      "name": "ローカスト",
+      "species": [
+        {
+          "key": "locust",
+          "name": "ローカスト"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "8",
+      "name": "ベリティー",
+      "species": [
+        {
+          "key": "verity",
+          "name": "ベリティー"
+        },
+        {
+          "key": "verityMon",
+          "name": "ベリティーモンスター"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "bk",
+      "name": "バラコア",
+      "species": [
+        {
+          "key": "barako",
+          "name": "太陽の導師バラコ"
+        },
+        {
+          "key": "barakoana",
+          "name": "バラコアナー"
+        },
+        {
+          "key": "bkDart",
+          "name": "バラコア(毒吹き矢)"
+        },
+        {
+          "key": "bkClub",
+          "name": "バラコア(棍棒)"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "nt",
+      "name": "ニタ",
+      "species": [
+        {
+          "key": "nita",
+          "name": "ニタ"
+        },
+        {
+          "key": "nBearH",
+          "name": "ヒーリングクマ"
+        },
+        {
+          "key": "nBearB",
+          "name": "バーサーカークマ"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "mp",
+      "name": "ミスターP",
+      "species": [
+        {
+          "key": "mrP",
+          "name": "ミスターP"
+        },
+        {
+          "key": "porter",
+          "name": "ポーター兵"
+        },
+        {
+          "key": "porterUp",
+          "name": "強化ポーター兵"
+        },
+        {
+          "key": "porterHub",
+          "name": "ポーター拠点"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "O",
+      "name": "スライム",
+      "species": [
+        {
+          "key": "slimeG",
+          "name": "緑スライム"
+        },
+        {
+          "key": "slimeB",
+          "name": "青スライム"
+        },
+        {
+          "key": "slimeP",
+          "name": "紫のスライム"
+        },
+        {
+          "key": "pinky",
+          "name": "ピンキー"
+        },
+        {
+          "key": "kingslime",
+          "name": "キングスライム"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "mk",
+      "name": "マキマ",
+      "species": [
+        {
+          "key": "makima",
+          "name": "マキマ"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "cs",
+      "name": "チェンソーマン",
+      "species": [
+        {
+          "key": "denji",
+          "name": "チェンソーマン"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "tv",
+      "name": "T-ベロニカ",
+      "species": [
+        {
+          "key": "alexia",
+          "name": "アレクシア・アッシュフォード"
+        },
+        {
+          "key": "nosferatu",
+          "name": "ノスフェラトゥ"
+        },
+        {
+          "key": "steveMon",
+          "name": "スティーブ(変異体)"
+        },
+        {
+          "key": "tvZombie",
+          "name": "T-ベロニカ感染者"
+        },
+        {
+          "key": "vPlant",
+          "name": "ベロニカ・プラント"
+        },
+        {
+          "key": "vWorm",
+          "name": "ベロニカ・ワーム"
+        },
+        {
+          "key": "vBee",
+          "name": "ベロニカ・ハチ"
+        },
+        {
+          "key": "vAnt",
+          "name": "ベロニカ・アリ"
+        },
+        {
+          "key": "albinoidJ",
+          "name": "アルビノイド(幼体)"
+        },
+        {
+          "key": "albinoidA",
+          "name": "アルビノイド(成体)"
+        },
+        {
+          "key": "alexiaBaby",
+          "name": "アレクシアの幼体"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "sh",
+      "name": "サイレンヘッド",
+      "species": [
+        {
+          "key": "sirenHead",
+          "name": "サイレンヘッド"
+        },
+        {
+          "key": "longHorse",
+          "name": "ロングホース"
+        },
+        {
+          "key": "cartoonCat",
+          "name": "カートゥーン・キャット"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "pv",
+      "name": "ゾンボス",
+      "species": [
+        {
+          "key": "pvZombie",
+          "name": "ゾンビ"
+        },
+        {
+          "key": "pvCone",
+          "name": "コーンヘッドゾンビ"
+        },
+        {
+          "key": "pvBucket",
+          "name": "バケットヘッドゾンビ"
+        },
+        {
+          "key": "pvPole",
+          "name": "ポールボールトゾンビ"
+        },
+        {
+          "key": "pvPaper",
+          "name": "ペーパーボーイゾンビ"
+        },
+        {
+          "key": "pvScreen",
+          "name": "スクリーンドアゾンビ"
+        },
+        {
+          "key": "pvFoot",
+          "name": "フットボールゾンビ"
+        },
+        {
+          "key": "pvCatapult",
+          "name": "カタパルトゾンビ"
+        },
+        {
+          "key": "pvJack",
+          "name": "ジャックインザボックスゾンビ"
+        },
+        {
+          "key": "pvZomboni",
+          "name": "ゾンボニ"
+        },
+        {
+          "key": "pvGarg",
+          "name": "ガーガンチュア"
+        },
+        {
+          "key": "pvBungee",
+          "name": "バンジーゾンビ"
+        },
+        {
+          "key": "pvZomboss",
+          "name": "ゾンボス"
+        }
+      ],
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "lx",
+      "name": "Lord X",
+      "species": [
+        {
+          "key": "lordX",
+          "name": "Lord X"
+        },
+        {
+          "key": "lxAlan",
+          "name": "Alan Rowper / Tails Vessel"
+        },
+        {
+          "key": "lxJulie",
+          "name": "Julie Donahue / Knuckles Vessel"
+        },
+        {
+          "key": "lxKylie",
+          "name": "Kylie / Amy Vessel"
+        },
+        {
+          "key": "lxKito",
+          "name": "Kito / 祈りのガーディアン"
+        },
+        {
+          "key": "lxKeno",
+          "name": "Ken’o / 嫌悪のガーディアン"
+        },
+        {
+          "key": "lxKofuku",
+          "name": "Kofuku / 喜びのガーディアン"
+        },
+        {
+          "key": "lxGekido",
+          "name": "Gekido / 怒りのガーディアン"
+        },
+        {
+          "key": "lxZetsubo",
+          "name": "Zetsubo / 絶望のガーディアン"
+        },
+        {
+          "key": "lxKyofu",
+          "name": "Kyofu / 恐怖のガーディアン"
+        },
+        {
+          "key": "lxYokubo",
+          "name": "Yokubo / 欲望のガーディアン"
+        }
+      ],
+      "status": "simplification-or-substitution-confirmed"
+    },
+    {
+      "key": "sx",
+      "name": "Sonic.EXE",
+      "species": [
+        {
+          "key": "sonicExe",
+          "name": "Sonic.EXE"
+        },
+        {
+          "key": "soulTails",
+          "name": "Tails / Soul Tails"
+        },
+        {
+          "key": "soulKnuckles",
+          "name": "Knuckles / Soul Knuckles"
+        },
+        {
+          "key": "soulEggman",
+          "name": "Eggman / Soul Eggman"
+        },
+        {
+          "key": "sallyExe",
+          "name": "Sally Acorn / Sally.EXE"
+        }
+      ],
+      "status": "simplification-or-substitution-confirmed"
+    },
+    {
+      "key": "pr",
+      "name": "プレデター",
+      "species": [
+        {
+          "key": "pr_jungle_hunter",
+          "name": "Jungle Hunter"
+        },
+        {
+          "key": "pr_city_hunter",
+          "name": "City Hunter"
+        },
+        {
+          "key": "pr_young_blood_celtic",
+          "name": "Young Blood / Celtic"
+        },
+        {
+          "key": "pr_young_blood_chopper",
+          "name": "Young Blood / Chopper"
+        },
+        {
+          "key": "pr_blooded_scar",
+          "name": "Blooded / Scar"
+        },
+        {
+          "key": "pr_elder_greyback",
+          "name": "Elder / Greyback"
+        },
+        {
+          "key": "pr_cleaner_wolf",
+          "name": "Cleaner / Wolf"
+        },
+        {
+          "key": "pr_super_predator_berserker",
+          "name": "Super Predator / Berserker"
+        },
+        {
+          "key": "pr_super_predator_falconer",
+          "name": "Super Predator / Falconer"
+        },
+        {
+          "key": "pr_super_predator_tracker",
+          "name": "Super Predator / Tracker"
+        },
+        {
+          "key": "pr_fugitive_predator",
+          "name": "Fugitive Predator"
+        },
+        {
+          "key": "pr_upgrade_assassin_predator",
+          "name": "Upgrade / Assassin Predator"
+        },
+        {
+          "key": "pr_feral_predator",
+          "name": "Feral Predator"
+        },
+        {
+          "key": "pr_viking_grendel",
+          "name": "Viking / Grendel"
+        },
+        {
+          "key": "pr_oni_predator",
+          "name": "Oni Predator"
+        },
+        {
+          "key": "pr_pilot_cyborg_predator",
+          "name": "Pilot / Cyborg Predator"
+        },
+        {
+          "key": "pr_warlord_grendel_king",
+          "name": "Warlord / Grendel King"
+        },
+        {
+          "key": "pr_badlands_dek",
+          "name": "Badlands / Dek"
+        },
+        {
+          "key": "pr_badlands_clan_leader_njohrr",
+          "name": "Badlands Clan Leader / Njohrr"
+        },
+        {
+          "key": "pr_yautja_hunting_hound",
+          "name": "Yautja Hunting Hound"
+        },
+        {
+          "key": "pr_upgraded_predator_hound",
+          "name": "Upgraded Predator Hound"
+        },
+        {
+          "key": "pr_falcon_recon_drone",
+          "name": "Falcon Recon Drone"
+        }
+      ],
+      "status": "simplification-or-substitution-confirmed"
+    },
+    {
+      "key": "cv",
+      "name": "コヴナント",
+      "species": [
+        {
+          "key": "cv_grunt_minor",
+          "name": "Grunt Minor"
+        },
+        {
+          "key": "cv_grunt_major",
+          "name": "Grunt Major"
+        },
+        {
+          "key": "cv_grunt_ultra",
+          "name": "Grunt Ultra"
+        },
+        {
+          "key": "cv_grunt_heavy",
+          "name": "Grunt Heavy"
+        },
+        {
+          "key": "cv_grunt_special_operations",
+          "name": "Grunt Special Operations"
+        },
+        {
+          "key": "cv_grunt_suicide",
+          "name": "Grunt Suicide"
+        },
+        {
+          "key": "cv_grunt_storm",
+          "name": "Grunt Storm"
+        },
+        {
+          "key": "cv_grunt_ranger",
+          "name": "Grunt Ranger"
+        },
+        {
+          "key": "cv_grunt_imperial",
+          "name": "Grunt Imperial"
+        },
+        {
+          "key": "cv_elite_minor",
+          "name": "Elite Minor"
+        },
+        {
+          "key": "cv_elite_major",
+          "name": "Elite Major"
+        },
+        {
+          "key": "cv_elite_ultra",
+          "name": "Elite Ultra"
+        },
+        {
+          "key": "cv_elite_zealot",
+          "name": "Elite Zealot"
+        },
+        {
+          "key": "cv_elite_general",
+          "name": "Elite General"
+        },
+        {
+          "key": "cv_elite_field_marshal",
+          "name": "Elite Field Marshal"
+        },
+        {
+          "key": "cv_elite_ranger",
+          "name": "Elite Ranger"
+        },
+        {
+          "key": "cv_elite_special_operations",
+          "name": "Elite Special Operations"
+        },
+        {
+          "key": "cv_elite_stealth",
+          "name": "Elite Stealth"
+        },
+        {
+          "key": "cv_elite_honor_guard",
+          "name": "Elite Honor Guard"
+        },
+        {
+          "key": "cv_elite_honor_guard_ultra",
+          "name": "Elite Honor Guard Ultra"
+        },
+        {
+          "key": "cv_elite_high_councilor",
+          "name": "Elite High Councilor"
+        },
+        {
+          "key": "cv_elite_arbiter_harness",
+          "name": "Elite Arbiter Harness"
+        },
+        {
+          "key": "cv_elite_storm",
+          "name": "Elite Storm"
+        },
+        {
+          "key": "cv_elite_warrior",
+          "name": "Elite Warrior"
+        },
+        {
+          "key": "cv_elite_commander",
+          "name": "Elite Commander"
+        },
+        {
+          "key": "cv_jackal_minor",
+          "name": "Jackal Minor"
+        },
+        {
+          "key": "cv_jackal_major",
+          "name": "Jackal Major"
+        },
+        {
+          "key": "cv_jackal_sniper_beam_rifle",
+          "name": "Jackal Sniper / Beam Rifle"
+        },
+        {
+          "key": "cv_jackal_marksman_carbine",
+          "name": "Jackal Marksman / Carbine"
+        },
+        {
+          "key": "cv_jackal_ranger",
+          "name": "Jackal Ranger"
+        },
+        {
+          "key": "cv_jackal_storm",
+          "name": "Jackal Storm"
+        },
+        {
+          "key": "cv_jackal_heavy",
+          "name": "Jackal Heavy"
+        },
+        {
+          "key": "cv_skirmisher_minor",
+          "name": "Skirmisher Minor"
+        },
+        {
+          "key": "cv_skirmisher_major",
+          "name": "Skirmisher Major"
+        },
+        {
+          "key": "cv_skirmisher_murmillo",
+          "name": "Skirmisher Murmillo"
+        },
+        {
+          "key": "cv_skirmisher_commando",
+          "name": "Skirmisher Commando"
+        },
+        {
+          "key": "cv_skirmisher_champion",
+          "name": "Skirmisher Champion"
+        },
+        {
+          "key": "cv_brute_minor",
+          "name": "Brute Minor"
+        },
+        {
+          "key": "cv_brute_major",
+          "name": "Brute Major"
+        },
+        {
+          "key": "cv_brute_ultra",
+          "name": "Brute Ultra"
+        },
+        {
+          "key": "cv_brute_captain",
+          "name": "Brute Captain"
+        },
+        {
+          "key": "cv_brute_captain_major",
+          "name": "Brute Captain Major"
+        },
+        {
+          "key": "cv_brute_captain_ultra",
+          "name": "Brute Captain Ultra"
+        },
+        {
+          "key": "cv_brute_bodyguard",
+          "name": "Brute Bodyguard"
+        },
+        {
+          "key": "cv_brute_honor_guard",
+          "name": "Brute Honor Guard"
+        },
+        {
+          "key": "cv_brute_stalker",
+          "name": "Brute Stalker"
+        },
+        {
+          "key": "cv_brute_jumper",
+          "name": "Brute Jumper"
+        },
+        {
+          "key": "cv_brute_jumper_major",
+          "name": "Brute Jumper Major"
+        },
+        {
+          "key": "cv_brute_jumper_captain",
+          "name": "Brute Jumper Captain"
+        },
+        {
+          "key": "cv_brute_chieftain_gravity_hammer",
+          "name": "Brute Chieftain / Gravity Hammer"
+        },
+        {
+          "key": "cv_brute_war_chieftain_plasma_cannon",
+          "name": "Brute War Chieftain / Plasma Cannon"
+        },
+        {
+          "key": "cv_drone_minor",
+          "name": "Drone Minor"
+        },
+        {
+          "key": "cv_drone_major",
+          "name": "Drone Major"
+        },
+        {
+          "key": "cv_drone_ultra",
+          "name": "Drone Ultra"
+        },
+        {
+          "key": "cv_drone_leader",
+          "name": "Drone Leader"
+        },
+        {
+          "key": "cv_hunter_fuel_rod",
+          "name": "Hunter / Fuel Rod"
+        },
+        {
+          "key": "cv_hunter_assault_beam",
+          "name": "Hunter / Assault Beam"
+        },
+        {
+          "key": "cv_engineer_huragok",
+          "name": "Engineer / Huragok"
+        },
+        {
+          "key": "cv_san_shyuum_gravity_throne",
+          "name": "San Shyuum / Gravity Throne"
+        },
+        {
+          "key": "cv_ghost",
+          "name": "Ghost"
+        },
+        {
+          "key": "cv_wraith_plasma_mortar",
+          "name": "Wraith / Plasma Mortar"
+        },
+        {
+          "key": "cv_anti_air_wraith",
+          "name": "Anti-Air Wraith"
+        },
+        {
+          "key": "cv_banshee",
+          "name": "Banshee"
+        },
+        {
+          "key": "cv_space_banshee",
+          "name": "Space Banshee"
+        },
+        {
+          "key": "cv_seraph",
+          "name": "Seraph"
+        },
+        {
+          "key": "cv_spirit_dropship",
+          "name": "Spirit Dropship"
+        },
+        {
+          "key": "cv_phantom_dropship",
+          "name": "Phantom Dropship"
+        },
+        {
+          "key": "cv_lich",
+          "name": "Lich"
+        },
+        {
+          "key": "cv_scarab_protos",
+          "name": "Scarab / Protos"
+        },
+        {
+          "key": "cv_scarab_deutoros",
+          "name": "Scarab / Deutoros"
+        },
+        {
+          "key": "cv_spectre_transport",
+          "name": "Spectre Transport"
+        },
+        {
+          "key": "cv_brute_prowler",
+          "name": "Brute Prowler"
+        },
+        {
+          "key": "cv_brute_chopper",
+          "name": "Brute Chopper"
+        },
+        {
+          "key": "cv_shade_plasma_turret",
+          "name": "Shade / Plasma Turret"
+        },
+        {
+          "key": "cv_shade_fuel_rod_turret",
+          "name": "Shade / Fuel Rod Turret"
+        },
+        {
+          "key": "cv_shade_anti_air_turret",
+          "name": "Shade / Anti-Air Turret"
+        },
+        {
+          "key": "cv_harvester",
+          "name": "Harvester"
+        },
+        {
+          "key": "cv_gravity_shield_chieftain_tartarus",
+          "name": "Gravity Shield Chieftain / Tartarus"
+        },
+        {
+          "key": "cv_huragok_explosive_harness",
+          "name": "Huragok / Explosive Harness"
+        }
+      ],
+      "status": "simplification-or-substitution-confirmed"
+    },
+    {
+      "key": "th",
+      "name": "物体X",
+      "species": [
+        {
+          "key": "th_dog_imitation",
+          "name": "Dog Imitation"
+        },
+        {
+          "key": "th_kennel_thing_split_dog",
+          "name": "Kennel Thing / Split Dog"
+        },
+        {
+          "key": "th_kennel_thing_escape_organism",
+          "name": "Kennel Thing / Escape Organism"
+        },
+        {
+          "key": "th_bennings_incomplete_imitation",
+          "name": "Bennings / Incomplete Imitation"
+        },
+        {
+          "key": "th_norris_chest_maw",
+          "name": "Norris / Chest Maw"
+        },
+        {
+          "key": "th_norris_head_spider",
+          "name": "Norris / Head Spider"
+        },
+        {
+          "key": "th_palmer_vertical_maw",
+          "name": "Palmer / Vertical Maw"
+        },
+        {
+          "key": "th_blood_test_fragment",
+          "name": "Blood Test Fragment"
+        },
+        {
+          "key": "th_windows_assimilating_body",
+          "name": "Windows / Assimilating Body"
+        },
+        {
+          "key": "th_blair_human_imitation",
+          "name": "Blair / Human Imitation"
+        },
+        {
+          "key": "th_blair_giant_composite",
+          "name": "Blair / Giant Composite"
+        },
+        {
+          "key": "th_original_thing_ice_escape",
+          "name": "Original Thing / Ice Escape"
+        },
+        {
+          "key": "th_griggs_split_face_and_chest",
+          "name": "Griggs / Split Face and Chest"
+        },
+        {
+          "key": "th_juliette_abdominal_maw",
+          "name": "Juliette / Abdominal Maw"
+        },
+        {
+          "key": "th_karl_partial_assimilation",
+          "name": "Karl / Partial Assimilation"
+        },
+        {
+          "key": "th_edvard_insectoid_body",
+          "name": "Edvard / Insectoid Body"
+        },
+        {
+          "key": "th_edvard_centipede_hand",
+          "name": "Edvard / Centipede Hand"
+        },
+        {
+          "key": "th_edvard_detached_arm",
+          "name": "Edvard / Detached Arm"
+        },
+        {
+          "key": "th_jonas_face_attachment",
+          "name": "Jonas / Face Attachment"
+        },
+        {
+          "key": "th_split_face_edvard_adam",
+          "name": "Split Face / Edvard Adam"
+        },
+        {
+          "key": "th_sander_final_composite",
+          "name": "Sander / Final Composite"
+        },
+        {
+          "key": "th_carter_human_imitation",
+          "name": "Carter / Human Imitation"
+        }
+      ],
+      "status": "simplification-or-substitution-confirmed"
+    },
+    {
+      "key": "dr",
+      "name": "DOORS",
+      "species": [
+        {
+          "key": "dr_figure",
+          "name": "Figure"
+        },
+        {
+          "key": "dr_seek_humanoid",
+          "name": "Seek / Humanoid"
+        },
+        {
+          "key": "dr_seek_dam",
+          "name": "Seek / Dam"
+        },
+        {
+          "key": "dr_seek_hand",
+          "name": "Seek Hand"
+        },
+        {
+          "key": "dr_seek_sludge",
+          "name": "Seek Sludge"
+        },
+        {
+          "key": "dr_seek_worm",
+          "name": "Seek Worm"
+        },
+        {
+          "key": "dr_rush",
+          "name": "Rush"
+        },
+        {
+          "key": "dr_ambush",
+          "name": "Ambush"
+        },
+        {
+          "key": "dr_eyes",
+          "name": "Eyes"
+        },
+        {
+          "key": "dr_screech",
+          "name": "Screech"
+        },
+        {
+          "key": "dr_dupe_hotel",
+          "name": "Dupe / Hotel"
+        },
+        {
+          "key": "dr_dupe_mines",
+          "name": "Dupe / Mines"
+        },
+        {
+          "key": "dr_halt",
+          "name": "Halt"
+        },
+        {
+          "key": "dr_sally",
+          "name": "Sally"
+        },
+        {
+          "key": "dr_hide",
+          "name": "Hide"
+        },
+        {
+          "key": "dr_jack",
+          "name": "Jack"
+        },
+        {
+          "key": "dr_timothy",
+          "name": "Timothy"
+        },
+        {
+          "key": "dr_dread",
+          "name": "Dread"
+        },
+        {
+          "key": "dr_snare",
+          "name": "Snare"
+        },
+        {
+          "key": "dr_void",
+          "name": "Void"
+        },
+        {
+          "key": "dr_el_goblino",
+          "name": "El Goblino"
+        },
+        {
+          "key": "dr_jeff",
+          "name": "Jeff"
+        },
+        {
+          "key": "dr_bob",
+          "name": "Bob"
+        },
+        {
+          "key": "dr_weirdo",
+          "name": "Weirdo"
+        },
+        {
+          "key": "dr_portrait",
+          "name": "Portrait"
+        },
+        {
+          "key": "dr_charles",
+          "name": "Charles"
+        },
+        {
+          "key": "dr_world_lotus",
+          "name": "World Lotus"
+        },
+        {
+          "key": "dr_moonlight_guiding_light",
+          "name": "Moonlight / Guiding Light"
+        },
+        {
+          "key": "dr_starlight_curious_light",
+          "name": "Starlight / Curious Light"
+        },
+        {
+          "key": "dr_red_light_modifying_light",
+          "name": "Red Light / Modifying Light"
+        },
+        {
+          "key": "dr_giggle",
+          "name": "Giggle"
+        },
+        {
+          "key": "dr_grumble",
+          "name": "Grumble"
+        },
+        {
+          "key": "dr_queen_grumble",
+          "name": "Queen Grumble"
+        },
+        {
+          "key": "dr_gloombat",
+          "name": "Gloombat"
+        },
+        {
+          "key": "dr_louie",
+          "name": "Louie"
+        },
+        {
+          "key": "dr_haste",
+          "name": "Haste"
+        },
+        {
+          "key": "dr_blitz",
+          "name": "Blitz"
+        },
+        {
+          "key": "dr_lookman",
+          "name": "Lookman"
+        },
+        {
+          "key": "dr_honcho",
+          "name": "Honcho"
+        },
+        {
+          "key": "dr_drone_archives",
+          "name": "Drone / Archives"
+        },
+        {
+          "key": "dr_forget_me_not",
+          "name": "Forget-Me-Not"
+        },
+        {
+          "key": "dr_teller",
+          "name": "Teller"
+        },
+        {
+          "key": "dr_bash",
+          "name": "Bash"
+        },
+        {
+          "key": "dr_scribbles",
+          "name": "Scribbles"
+        },
+        {
+          "key": "dr_ransom",
+          "name": "Ransom"
+        },
+        {
+          "key": "dr_alma",
+          "name": "Alma"
+        },
+        {
+          "key": "dr_fih",
+          "name": "Fih"
+        },
+        {
+          "key": "dr_groundskeeper",
+          "name": "Groundskeeper"
+        },
+        {
+          "key": "dr_eyestalk",
+          "name": "Eyestalk"
+        },
+        {
+          "key": "dr_bramble",
+          "name": "Bramble"
+        },
+        {
+          "key": "dr_surge",
+          "name": "Surge"
+        },
+        {
+          "key": "dr_mandrake",
+          "name": "Mandrake"
+        },
+        {
+          "key": "dr_monument",
+          "name": "Monument"
+        },
+        {
+          "key": "dr_caw",
+          "name": "Caw"
+        },
+        {
+          "key": "dr_grampy",
+          "name": "Grampy"
+        },
+        {
+          "key": "dr_creak",
+          "name": "Creak"
+        },
+        {
+          "key": "dr_meld",
+          "name": "Meld"
+        },
+        {
+          "key": "dr_cobbler",
+          "name": "Cobbler"
+        },
+        {
+          "key": "dr_noise",
+          "name": "Noise"
+        },
+        {
+          "key": "dr_stem",
+          "name": "Stem"
+        },
+        {
+          "key": "dr_hijack",
+          "name": "Hijack"
+        },
+        {
+          "key": "dr_a_60",
+          "name": "A-60"
+        },
+        {
+          "key": "dr_a_90",
+          "name": "A-90"
+        },
+        {
+          "key": "dr_a_120",
+          "name": "A-120"
+        },
+        {
+          "key": "dr_glitch",
+          "name": "Glitch"
+        },
+        {
+          "key": "dr_glitched_rush_rniushcg",
+          "name": "Glitched Rush / RNIUSHCg"
+        },
+        {
+          "key": "dr_glitched_ambush_ar0xmbush",
+          "name": "Glitched Ambush / AR0xMBUSH"
+        },
+        {
+          "key": "dr_glitched_screech_scjvereech",
+          "name": "Glitched Screech / SCJVEREECH"
+        }
+      ],
+      "status": "simplification-or-substitution-confirmed"
+    },
+    {
+      "key": "dm",
+      "name": "DOOM 悪魔軍",
+      "species": [
+        {
+          "key": "dm_zombieman",
+          "name": "Zombieman"
+        },
+        {
+          "key": "dm_shotgun_guy",
+          "name": "Shotgun Guy"
+        },
+        {
+          "key": "dm_chaingunner",
+          "name": "Chaingunner"
+        },
+        {
+          "key": "dm_imp_classic",
+          "name": "Imp / Classic"
+        },
+        {
+          "key": "dm_pinky_classic",
+          "name": "Pinky / Classic"
+        },
+        {
+          "key": "dm_spectre_classic",
+          "name": "Spectre / Classic"
+        },
+        {
+          "key": "dm_lost_soul_classic",
+          "name": "Lost Soul / Classic"
+        },
+        {
+          "key": "dm_cacodemon_classic",
+          "name": "Cacodemon / Classic"
+        },
+        {
+          "key": "dm_baron_of_hell_classic",
+          "name": "Baron of Hell / Classic"
+        },
+        {
+          "key": "dm_cyberdemon_classic",
+          "name": "Cyberdemon / Classic"
+        },
+        {
+          "key": "dm_spider_mastermind_classic",
+          "name": "Spider Mastermind / Classic"
+        },
+        {
+          "key": "dm_hell_knight_classic",
+          "name": "Hell Knight / Classic"
+        },
+        {
+          "key": "dm_revenant_classic",
+          "name": "Revenant / Classic"
+        },
+        {
+          "key": "dm_mancubus_classic",
+          "name": "Mancubus / Classic"
+        },
+        {
+          "key": "dm_arachnotron_classic",
+          "name": "Arachnotron / Classic"
+        },
+        {
+          "key": "dm_pain_elemental_classic",
+          "name": "Pain Elemental / Classic"
+        },
+        {
+          "key": "dm_arch_vile_classic",
+          "name": "Arch-vile / Classic"
+        },
+        {
+          "key": "dm_wolfenstein_ss_secret_map",
+          "name": "Wolfenstein SS / Secret Map"
+        },
+        {
+          "key": "dm_commander_keen_effigy",
+          "name": "Commander Keen / Effigy"
+        },
+        {
+          "key": "dm_icon_of_sin_wall",
+          "name": "Icon of Sin / Wall"
+        },
+        {
+          "key": "dm_nightmare_spectre_psx",
+          "name": "Nightmare Spectre / PSX"
+        },
+        {
+          "key": "dm_nightmare_imp_doom_64",
+          "name": "Nightmare Imp / Doom 64"
+        },
+        {
+          "key": "dm_mother_demon_doom_64",
+          "name": "Mother Demon / Doom 64"
+        },
+        {
+          "key": "dm_resurrector_lost_levels",
+          "name": "Resurrector / Lost Levels"
+        },
+        {
+          "key": "dm_banshee_legacy_of_rust",
+          "name": "Banshee / Legacy of Rust"
+        },
+        {
+          "key": "dm_ghoul_legacy_of_rust",
+          "name": "Ghoul / Legacy of Rust"
+        },
+        {
+          "key": "dm_mindweaver_legacy_of_rust",
+          "name": "Mindweaver / Legacy of Rust"
+        },
+        {
+          "key": "dm_shocktrooper_legacy_of_rust",
+          "name": "Shocktrooper / Legacy of Rust"
+        },
+        {
+          "key": "dm_tyrant_legacy_of_rust",
+          "name": "Tyrant / Legacy of Rust"
+        },
+        {
+          "key": "dm_vassago_legacy_of_rust",
+          "name": "Vassago / Legacy of Rust"
+        },
+        {
+          "key": "dm_arch_vile_doom_3",
+          "name": "Arch-vile / Doom 3"
+        },
+        {
+          "key": "dm_cacodemon_doom_3",
+          "name": "Cacodemon / Doom 3"
+        },
+        {
+          "key": "dm_tentacle_commando",
+          "name": "Tentacle Commando"
+        },
+        {
+          "key": "dm_chaingun_commando",
+          "name": "Chaingun Commando"
+        },
+        {
+          "key": "dm_cyberdemon_doom_3",
+          "name": "Cyberdemon / Doom 3"
+        },
+        {
+          "key": "dm_pinky_doom_3",
+          "name": "Pinky / Doom 3"
+        },
+        {
+          "key": "dm_hell_knight_doom_3",
+          "name": "Hell Knight / Doom 3"
+        },
+        {
+          "key": "dm_imp_doom_3",
+          "name": "Imp / Doom 3"
+        },
+        {
+          "key": "dm_lost_soul_doom_3",
+          "name": "Lost Soul / Doom 3"
+        },
+        {
+          "key": "dm_mancubus_doom_3",
+          "name": "Mancubus / Doom 3"
+        },
+        {
+          "key": "dm_revenant_doom_3",
+          "name": "Revenant / Doom 3"
+        },
+        {
+          "key": "dm_z_sec_pistol_guard",
+          "name": "Z-Sec Pistol Guard"
+        },
+        {
+          "key": "dm_z_sec_shotgun_guard",
+          "name": "Z-Sec Shotgun Guard"
+        },
+        {
+          "key": "dm_z_sec_machine_gunner",
+          "name": "Z-Sec Machine Gunner"
+        },
+        {
+          "key": "dm_z_sec_riot_shield",
+          "name": "Z-Sec Riot Shield"
+        },
+        {
+          "key": "dm_zombie_doom_3",
+          "name": "Zombie / Doom 3"
+        },
+        {
+          "key": "dm_chainsaw_zombie",
+          "name": "Chainsaw Zombie"
+        },
+        {
+          "key": "dm_flaming_zombie",
+          "name": "Flaming Zombie"
+        },
+        {
+          "key": "dm_fat_zombie",
+          "name": "Fat Zombie"
+        },
+        {
+          "key": "dm_cherub",
+          "name": "Cherub"
+        },
+        {
+          "key": "dm_guardian_of_hell",
+          "name": "Guardian of Hell"
+        },
+        {
+          "key": "dm_seeker_doom_3",
+          "name": "Seeker / Doom 3"
+        },
+        {
+          "key": "dm_maggot",
+          "name": "Maggot"
+        },
+        {
+          "key": "dm_tick",
+          "name": "Tick"
+        },
+        {
+          "key": "dm_trite",
+          "name": "Trite"
+        },
+        {
+          "key": "dm_vagary_doom_3",
+          "name": "Vagary / Doom 3"
+        },
+        {
+          "key": "dm_sabaoth",
+          "name": "Sabaoth"
+        },
+        {
+          "key": "dm_wraith_doom_3",
+          "name": "Wraith / Doom 3"
+        },
+        {
+          "key": "dm_bio_suit_zombie",
+          "name": "Bio-suit Zombie"
+        },
+        {
+          "key": "dm_bruiser",
+          "name": "Bruiser"
+        },
+        {
+          "key": "dm_forgotten_one",
+          "name": "Forgotten One"
+        },
+        {
+          "key": "dm_helltime_hunter",
+          "name": "Helltime Hunter"
+        },
+        {
+          "key": "dm_berserk_hunter",
+          "name": "Berserk Hunter"
+        },
+        {
+          "key": "dm_invulnerability_hunter",
+          "name": "Invulnerability Hunter"
+        },
+        {
+          "key": "dm_maledict",
+          "name": "Maledict"
+        },
+        {
+          "key": "dm_vulgar",
+          "name": "Vulgar"
+        },
+        {
+          "key": "dm_baron_of_hell_2016",
+          "name": "Baron of Hell / 2016"
+        },
+        {
+          "key": "dm_cacodemon_2016",
+          "name": "Cacodemon / 2016"
+        },
+        {
+          "key": "dm_cyberdemon_2016",
+          "name": "Cyberdemon / 2016"
+        },
+        {
+          "key": "dm_hell_knight_2016",
+          "name": "Hell Knight / 2016"
+        },
+        {
+          "key": "dm_imp_2016",
+          "name": "Imp / 2016"
+        },
+        {
+          "key": "dm_lost_soul_2016",
+          "name": "Lost Soul / 2016"
+        },
+        {
+          "key": "dm_mancubus_2016",
+          "name": "Mancubus / 2016"
+        },
+        {
+          "key": "dm_pinky_2016",
+          "name": "Pinky / 2016"
+        },
+        {
+          "key": "dm_possessed_scientist",
+          "name": "Possessed / Scientist"
+        },
+        {
+          "key": "dm_possessed_engineer",
+          "name": "Possessed Engineer"
+        },
+        {
+          "key": "dm_possessed_soldier",
+          "name": "Possessed Soldier"
+        },
+        {
+          "key": "dm_possessed_security",
+          "name": "Possessed Security"
+        },
+        {
+          "key": "dm_revenant_2016",
+          "name": "Revenant / 2016"
+        },
+        {
+          "key": "dm_spectre_2016",
+          "name": "Spectre / 2016"
+        },
+        {
+          "key": "dm_spider_mastermind_2016",
+          "name": "Spider Mastermind / 2016"
+        },
+        {
+          "key": "dm_cyber_mancubus_2016",
+          "name": "Cyber Mancubus / 2016"
+        },
+        {
+          "key": "dm_harvester_2016",
+          "name": "Harvester / 2016"
+        },
+        {
+          "key": "dm_hell_guard_shield",
+          "name": "Hell Guard / Shield"
+        },
+        {
+          "key": "dm_hell_guard_twin",
+          "name": "Hell Guard / Twin"
+        },
+        {
+          "key": "dm_hell_razer",
+          "name": "Hell Razer"
+        },
+        {
+          "key": "dm_prowler_2016",
+          "name": "Prowler / 2016"
+        },
+        {
+          "key": "dm_summoner_2016",
+          "name": "Summoner / 2016"
+        },
+        {
+          "key": "dm_unwilling",
+          "name": "Unwilling"
+        },
+        {
+          "key": "dm_arch_vile_eternal",
+          "name": "Arch-vile / Eternal"
+        },
+        {
+          "key": "dm_arachnotron_eternal",
+          "name": "Arachnotron / Eternal"
+        },
+        {
+          "key": "dm_baron_of_hell_eternal",
+          "name": "Baron of Hell / Eternal"
+        },
+        {
+          "key": "dm_cacodemon_eternal",
+          "name": "Cacodemon / Eternal"
+        },
+        {
+          "key": "dm_cyber_mancubus_eternal",
+          "name": "Cyber Mancubus / Eternal"
+        },
+        {
+          "key": "dm_dread_knight",
+          "name": "Dread Knight"
+        },
+        {
+          "key": "dm_hell_knight_eternal",
+          "name": "Hell Knight / Eternal"
+        },
+        {
+          "key": "dm_imp_eternal",
+          "name": "Imp / Eternal"
+        },
+        {
+          "key": "dm_mancubus_eternal",
+          "name": "Mancubus / Eternal"
+        },
+        {
+          "key": "dm_lost_soul_eternal",
+          "name": "Lost Soul / Eternal"
+        },
+        {
+          "key": "dm_pain_elemental_eternal",
+          "name": "Pain Elemental / Eternal"
+        },
+        {
+          "key": "dm_pinky_eternal",
+          "name": "Pinky / Eternal"
+        },
+        {
+          "key": "dm_prowler_eternal",
+          "name": "Prowler / Eternal"
+        },
+        {
+          "key": "dm_revenant_eternal",
+          "name": "Revenant / Eternal"
+        },
+        {
+          "key": "dm_soldier_blaster",
+          "name": "Soldier Blaster"
+        },
+        {
+          "key": "dm_soldier_shield",
+          "name": "Soldier Shield"
+        },
+        {
+          "key": "dm_spectre_eternal",
+          "name": "Spectre / Eternal"
+        },
+        {
+          "key": "dm_zombie_eternal",
+          "name": "Zombie / Eternal"
+        },
+        {
+          "key": "dm_mecha_zombie",
+          "name": "Mecha Zombie"
+        },
+        {
+          "key": "dm_buff_totem",
+          "name": "Buff Totem"
+        },
+        {
+          "key": "dm_carcass",
+          "name": "Carcass"
+        },
+        {
+          "key": "dm_doom_hunter_sled",
+          "name": "Doom Hunter / Sled"
+        },
+        {
+          "key": "dm_doom_hunter_detached",
+          "name": "Doom Hunter / Detached"
+        },
+        {
+          "key": "dm_gargoyle",
+          "name": "Gargoyle"
+        },
+        {
+          "key": "dm_gladiator_shield_phase",
+          "name": "Gladiator / Shield Phase"
+        },
+        {
+          "key": "dm_gladiator_twin_flails",
+          "name": "Gladiator / Twin Flails"
+        },
+        {
+          "key": "dm_icon_of_sin_armored",
+          "name": "Icon of Sin / Armored"
+        },
+        {
+          "key": "dm_icon_of_sin_exposed",
+          "name": "Icon of Sin / Exposed"
+        },
+        {
+          "key": "dm_khan_maykr",
+          "name": "Khan Maykr"
+        },
+        {
+          "key": "dm_marauder",
+          "name": "Marauder"
+        },
+        {
+          "key": "dm_maykr_drone",
+          "name": "Maykr Drone"
+        },
+        {
+          "key": "dm_tentacle_eternal",
+          "name": "Tentacle / Eternal"
+        },
+        {
+          "key": "dm_giant_tentacle_eternal",
+          "name": "Giant Tentacle / Eternal"
+        },
+        {
+          "key": "dm_tyrant_eternal",
+          "name": "Tyrant / Eternal"
+        },
+        {
+          "key": "dm_whiplash",
+          "name": "Whiplash"
+        },
+        {
+          "key": "dm_cueball",
+          "name": "Cueball"
+        },
+        {
+          "key": "dm_kalibas",
+          "name": "Kalibas"
+        },
+        {
+          "key": "dm_blood_maykr",
+          "name": "Blood Maykr"
+        },
+        {
+          "key": "dm_spirit",
+          "name": "Spirit"
+        },
+        {
+          "key": "dm_turret_ancient_gods",
+          "name": "Turret / Ancient Gods"
+        },
+        {
+          "key": "dm_whiplash_spectre",
+          "name": "Whiplash Spectre"
+        },
+        {
+          "key": "dm_trial_of_maligog",
+          "name": "Trial of Maligog"
+        },
+        {
+          "key": "dm_samur_maykr_seraphim",
+          "name": "Samur Maykr / Seraphim"
+        },
+        {
+          "key": "dm_armored_baron",
+          "name": "Armored Baron"
+        },
+        {
+          "key": "dm_cursed_prowler",
+          "name": "Cursed Prowler"
+        },
+        {
+          "key": "dm_demonic_trooper",
+          "name": "Demonic Trooper"
+        },
+        {
+          "key": "dm_riot_soldier",
+          "name": "Riot Soldier"
+        },
+        {
+          "key": "dm_screecher",
+          "name": "Screecher"
+        },
+        {
+          "key": "dm_stone_imp_eternal",
+          "name": "Stone Imp / Eternal"
+        },
+        {
+          "key": "dm_dark_lord_davoth",
+          "name": "Dark Lord / Davoth"
+        },
+        {
+          "key": "dm_marauder_spirit_wolf",
+          "name": "Marauder Spirit Wolf"
+        },
+        {
+          "key": "dm_agaddon_hunter",
+          "name": "Agaddon Hunter"
+        },
+        {
+          "key": "dm_arachnotron_dark_ages",
+          "name": "Arachnotron / Dark Ages"
+        },
+        {
+          "key": "dm_armored_arachnotron",
+          "name": "Armored Arachnotron"
+        },
+        {
+          "key": "dm_ballistatron",
+          "name": "Ballistatron"
+        },
+        {
+          "key": "dm_battle_knight",
+          "name": "Battle Knight"
+        },
+        {
+          "key": "dm_cacodemon_hybrid",
+          "name": "Cacodemon Hybrid"
+        },
+        {
+          "key": "dm_chaingunner_soldier_dark_ages",
+          "name": "Chaingunner Soldier / Dark Ages"
+        },
+        {
+          "key": "dm_cosmic_baron",
+          "name": "Cosmic Baron"
+        },
+        {
+          "key": "dm_cyberdemon_dark_ages",
+          "name": "Cyberdemon / Dark Ages"
+        },
+        {
+          "key": "dm_hell_knight_dark_ages",
+          "name": "Hell Knight / Dark Ages"
+        },
+        {
+          "key": "dm_imp_dark_ages",
+          "name": "Imp / Dark Ages"
+        },
+        {
+          "key": "dm_imp_stalker",
+          "name": "Imp Stalker"
+        },
+        {
+          "key": "dm_lost_soul_dark_ages",
+          "name": "Lost Soul / Dark Ages"
+        },
+        {
+          "key": "dm_mancubus_dark_ages",
+          "name": "Mancubus / Dark Ages"
+        },
+        {
+          "key": "dm_armored_mancubus",
+          "name": "Armored Mancubus"
+        },
+        {
+          "key": "dm_mortar_mancubus",
+          "name": "Mortar Mancubus"
+        },
+        {
+          "key": "dm_maykr_drone_dark_ages",
+          "name": "Maykr Drone / Dark Ages"
+        },
+        {
+          "key": "dm_nightmare_imp_stalker",
+          "name": "Nightmare Imp Stalker"
+        },
+        {
+          "key": "dm_pinky_rider",
+          "name": "Pinky Rider"
+        },
+        {
+          "key": "dm_armored_pinky_rider",
+          "name": "Armored Pinky Rider"
+        },
+        {
+          "key": "dm_revenant_dark_ages",
+          "name": "Revenant / Dark Ages"
+        },
+        {
+          "key": "dm_soldier_dark_ages",
+          "name": "Soldier / Dark Ages"
+        },
+        {
+          "key": "dm_shield_soldier_metal",
+          "name": "Shield Soldier / Metal"
+        },
+        {
+          "key": "dm_shield_soldier_plasma",
+          "name": "Shield Soldier / Plasma"
+        },
+        {
+          "key": "dm_stone_imp_dark_ages",
+          "name": "Stone Imp / Dark Ages"
+        },
+        {
+          "key": "dm_tentacle_dark_ages",
+          "name": "Tentacle / Dark Ages"
+        },
+        {
+          "key": "dm_giant_tentacle_dark_ages",
+          "name": "Giant Tentacle / Dark Ages"
+        },
+        {
+          "key": "dm_vagary_dark_ages",
+          "name": "Vagary / Dark Ages"
+        },
+        {
+          "key": "dm_whiplash_dark_ages",
+          "name": "Whiplash / Dark Ages"
+        },
+        {
+          "key": "dm_zombie_dark_ages",
+          "name": "Zombie / Dark Ages"
+        },
+        {
+          "key": "dm_acolyte",
+          "name": "Acolyte"
+        },
+        {
+          "key": "dm_hell_cultist",
+          "name": "Hell Cultist"
+        },
+        {
+          "key": "dm_hell_tank",
+          "name": "Hell Tank"
+        },
+        {
+          "key": "dm_komodo_mechanical_fist",
+          "name": "Komodo / Mechanical Fist"
+        },
+        {
+          "key": "dm_komodo_chainsaw_staff",
+          "name": "Komodo / Chainsaw Staff"
+        },
+        {
+          "key": "dm_cyclops_titan",
+          "name": "Cyclops Titan"
+        },
+        {
+          "key": "dm_giant_cacodemon",
+          "name": "Giant Cacodemon"
+        },
+        {
+          "key": "dm_hell_carrier",
+          "name": "Hell Carrier"
+        },
+        {
+          "key": "dm_hell_ship",
+          "name": "Hell Ship"
+        },
+        {
+          "key": "dm_titan_unarmored",
+          "name": "Titan / Unarmored"
+        },
+        {
+          "key": "dm_titan_armored",
+          "name": "Titan / Armored"
+        },
+        {
+          "key": "dm_titan_spear",
+          "name": "Titan / Spear"
+        },
+        {
+          "key": "dm_enhanced_ahzrak_ground",
+          "name": "Enhanced Ahzrak / Ground"
+        },
+        {
+          "key": "dm_enhanced_ahzrak_winged",
+          "name": "Enhanced Ahzrak / Winged"
+        },
+        {
+          "key": "dm_ahzrak_final",
+          "name": "Ahzrak / Final"
+        },
+        {
+          "key": "dm_witch",
+          "name": "Witch"
+        },
+        {
+          "key": "dm_kreed_maykr",
+          "name": "Kreed Maykr"
+        },
+        {
+          "key": "dm_the_old_one",
+          "name": "The Old One"
+        },
+        {
+          "key": "dm_champion_empowerment",
+          "name": "Champion / Empowerment"
+        },
+        {
+          "key": "dm_demonic_leader_empowerment",
+          "name": "Demonic Leader / Empowerment"
+        },
+        {
+          "key": "dm_enforcer_empowerment",
+          "name": "Enforcer / Empowerment"
+        },
+        {
+          "key": "dm_buzzsaw_revelations",
+          "name": "Buzzsaw / Revelations"
+        },
+        {
+          "key": "dm_warlock_revelations",
+          "name": "Warlock / Revelations"
+        },
+        {
+          "key": "dm_cosmic_elemental_revelations",
+          "name": "Cosmic Elemental / Revelations"
+        },
+        {
+          "key": "dm_arch_vile_revelations",
+          "name": "Arch-vile / Revelations"
+        },
+        {
+          "key": "dm_armored_arch_vile_revelations",
+          "name": "Armored Arch-vile / Revelations"
+        },
+        {
+          "key": "dm_agaddon_brute_revelations",
+          "name": "Agaddon Brute / Revelations"
+        },
+        {
+          "key": "dm_nightmare_revenant_revelations",
+          "name": "Nightmare Revenant / Revelations"
+        },
+        {
+          "key": "dm_nightmare_whiplash_revelations",
+          "name": "Nightmare Whiplash / Revelations"
+        },
+        {
+          "key": "dm_blighted_hell_knight_revelations",
+          "name": "Blighted Hell Knight / Revelations"
+        },
+        {
+          "key": "dm_blighted_zombie_revelations",
+          "name": "Blighted Zombie / Revelations"
+        },
+        {
+          "key": "dm_insurgent_revelations",
+          "name": "Insurgent / Revelations"
+        },
+        {
+          "key": "dm_vagary_leader_revelations",
+          "name": "Vagary Leader / Revelations"
+        },
+        {
+          "key": "dm_hallowed_zombie_revelations",
+          "name": "Hallowed Zombie / Revelations"
+        },
+        {
+          "key": "dm_marok_revelations",
+          "name": "Marok / Revelations"
+        },
+        {
+          "key": "dm_the_henchman_revelations",
+          "name": "The Henchman / Revelations"
+        },
+        {
+          "key": "dm_xal_goroth_the_imprisoned_revelations",
+          "name": "Xal Goroth the Imprisoned / Revelations"
+        }
+      ],
+      "status": "simplification-or-substitution-confirmed"
+    }
+  ],
+  "count": 1055,
+  "nonSelectableSpecies": [
+    {
+      "key": "human",
+      "name": "避難民",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "dog",
+      "name": "飼い犬",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "cat",
+      "name": "猫",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "rat",
+      "name": "ネズミ",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "crow",
+      "name": "カラス",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fpeClaire",
+      "name": "クレア",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fpeEngel",
+      "name": "エンゲル",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fpeZip",
+      "name": "ジップ",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fpeEdward",
+      "name": "エドワード",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fpeOliver",
+      "name": "オリバー",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fpeAbbie",
+      "name": "アビー",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fpeLana",
+      "name": "ラナ",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fpeBubble",
+      "name": "バブル",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fpeCubbie",
+      "name": "カビー",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fpePetunia",
+      "name": "ペチュニア",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fpeLizzy",
+      "name": "リジー",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fpeKevin",
+      "name": "ケビン",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fpeRobby",
+      "name": "ロビー",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fpeSkell",
+      "name": "スケル",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fpeRuby",
+      "name": "ルービー",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fpeRiley",
+      "name": "ライリー",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fpeChip",
+      "name": "チップ",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fpeDemi",
+      "name": "ミスター・デミ",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fpeSasha",
+      "name": "ミス・サシャ",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "fpeGrace",
+      "name": "ミス・グレース",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    },
+    {
+      "key": "mikeTyson",
+      "name": "マイクタイソン",
+      "faction": "N",
+      "status": "canon-comparison-not-completed"
+    }
+  ],
+  "golems": [
+    {
+      "key": "eg_acacia_log",
+      "name": "Acacia Log Golem",
+      "behaviorTags": [
+        "item_update_golem"
+      ]
+    },
+    {
+      "key": "eg_amethyst",
+      "name": "Amethyst Golem",
+      "behaviorTags": [
+        "summon"
+      ]
+    },
+    {
+      "key": "eg_bamboo_wood",
+      "name": "Bamboo Golem",
+      "behaviorTags": [
+        "item_update_golem"
+      ]
+    },
+    {
+      "key": "eg_birch_log",
+      "name": "Birch Log Golem",
+      "behaviorTags": [
+        "item_update_golem"
+      ]
+    },
+    {
+      "key": "eg_bone",
+      "name": "Bone Golem",
+      "behaviorTags": [
+        "burn_in_sun"
+      ]
+    },
+    {
+      "key": "eg_bookshelf",
+      "name": "Librarian Golem",
+      "behaviorTags": [
+        "effect"
+      ]
+    },
+    {
+      "key": "eg_brain_coral",
+      "name": "Brain Coral Golem",
+      "behaviorTags": [
+        "update_golem"
+      ]
+    },
+    {
+      "key": "eg_brown_mushroom",
+      "name": "Brown Mushroom Golem",
+      "behaviorTags": [
+        "effect",
+        "place"
+      ]
+    },
+    {
+      "key": "eg_bubble_coral",
+      "name": "Bubble Coral Golem",
+      "behaviorTags": [
+        "update_golem"
+      ]
+    },
+    {
+      "key": "eg_cherry_log",
+      "name": "Cherry Log Golem",
+      "behaviorTags": [
+        "item_update_golem"
+      ]
+    },
+    {
+      "key": "eg_coal",
+      "name": "Coal Golem",
+      "behaviorTags": [
+        "effect"
+      ]
+    },
+    {
+      "key": "eg_copper",
+      "name": "Copper Golem",
+      "behaviorTags": [
+        "item_update_golem",
+        "summon",
+        "update_golem"
+      ]
+    },
+    {
+      "key": "eg_crafting",
+      "name": "Crafting Golem",
+      "behaviorTags": [
+        "craft_menu"
+      ]
+    },
+    {
+      "key": "eg_crimson_stem",
+      "name": "Crimson Stem Golem",
+      "behaviorTags": [
+        "item_update_golem",
+        "place"
+      ]
+    },
+    {
+      "key": "eg_dark_oak_log",
+      "name": "Dark Oak Log Golem",
+      "behaviorTags": [
+        "item_update_golem"
+      ]
+    },
+    {
+      "key": "eg_dead_brain_coral",
+      "name": "Dead Brain Coral Golem",
+      "behaviorTags": [
+        "update_golem"
+      ]
+    },
+    {
+      "key": "eg_dead_bubble_coral",
+      "name": "Dead Bubble Coral Golem",
+      "behaviorTags": [
+        "update_golem"
+      ]
+    },
+    {
+      "key": "eg_dead_fire_coral",
+      "name": "Dead Fire Coral Golem",
+      "behaviorTags": [
+        "update_golem"
+      ]
+    },
+    {
+      "key": "eg_dead_horn_coral",
+      "name": "Dead Horn Coral Golem",
+      "behaviorTags": [
+        "update_golem"
+      ]
+    },
+    {
+      "key": "eg_dead_tube_coral",
+      "name": "Dead Tube Coral Golem",
+      "behaviorTags": [
+        "update_golem"
+      ]
+    },
+    {
+      "key": "eg_dispenser",
+      "name": "Dispenser Golem",
+      "behaviorTags": [
+        "shoot_arrows"
+      ]
+    },
+    {
+      "key": "eg_emerald",
+      "name": "Emerald Golem",
+      "behaviorTags": [
+        "follow"
+      ]
+    },
+    {
+      "key": "eg_end_stone",
+      "name": "Endstone Golem",
+      "behaviorTags": [
+        "teleport"
+      ]
+    },
+    {
+      "key": "eg_exposed_copper",
+      "name": "Exposed Copper Golem",
+      "behaviorTags": [
+        "item_update_golem",
+        "summon",
+        "update_golem"
+      ]
+    },
+    {
+      "key": "eg_fire_coral",
+      "name": "Fire Coral Golem",
+      "behaviorTags": [
+        "update_golem"
+      ]
+    },
+    {
+      "key": "eg_furnace",
+      "name": "Furnace Golem",
+      "behaviorTags": [
+        "light",
+        "tempt",
+        "update_golem",
+        "use_fuel"
+      ]
+    },
+    {
+      "key": "eg_glowstone",
+      "name": "Glowstone Golem",
+      "behaviorTags": [
+        "light"
+      ]
+    },
+    {
+      "key": "eg_hay",
+      "name": "Straw Golem",
+      "behaviorTags": [
+        "aoe_grow"
+      ]
+    },
+    {
+      "key": "eg_honey",
+      "name": "Honey Golem",
+      "behaviorTags": [
+        "effect",
+        "split"
+      ]
+    },
+    {
+      "key": "eg_honeycomb",
+      "name": "Honeycomb Golem",
+      "behaviorTags": [
+        "summon"
+      ]
+    },
+    {
+      "key": "eg_horn_coral",
+      "name": "Horn Coral Golem",
+      "behaviorTags": [
+        "update_golem"
+      ]
+    },
+    {
+      "key": "eg_ice",
+      "name": "Ice Golem",
+      "behaviorTags": [
+        "aoe_freeze"
+      ]
+    },
+    {
+      "key": "eg_jungle_log",
+      "name": "Jungle Log Golem",
+      "behaviorTags": [
+        "item_update_golem"
+      ]
+    },
+    {
+      "key": "eg_lapis",
+      "name": "Lapis Lazuli Golem",
+      "behaviorTags": [
+        "effect"
+      ]
+    },
+    {
+      "key": "eg_leaves",
+      "name": "Leaf Golem",
+      "behaviorTags": [
+        "effect"
+      ]
+    },
+    {
+      "key": "eg_magma",
+      "name": "Magma Golem",
+      "behaviorTags": [
+        "light",
+        "set_fire",
+        "split"
+      ]
+    },
+    {
+      "key": "eg_mangrove_log",
+      "name": "Mangrove Log Golem",
+      "behaviorTags": [
+        "item_update_golem"
+      ]
+    },
+    {
+      "key": "eg_mangrove_roots",
+      "name": "Mangrove Roots Golem",
+      "behaviorTags": [
+        "effect"
+      ]
+    },
+    {
+      "key": "eg_melon",
+      "name": "Melon Golem",
+      "behaviorTags": [
+        "effect",
+        "place"
+      ]
+    },
+    {
+      "key": "eg_moss",
+      "name": "Moss Golem",
+      "behaviorTags": [
+        "effect",
+        "place"
+      ]
+    },
+    {
+      "key": "eg_muddy_mangrove_roots",
+      "name": "Muddy Mangrove Roots Golem",
+      "behaviorTags": [
+        "effect"
+      ]
+    },
+    {
+      "key": "eg_nether_brick",
+      "name": "Nether Brick Golem",
+      "behaviorTags": [
+        "set_fire",
+        "shoot_fireballs"
+      ]
+    },
+    {
+      "key": "eg_nether_wart",
+      "name": "Nether Wart Golem",
+      "behaviorTags": [
+        "place"
+      ]
+    },
+    {
+      "key": "eg_oak_log",
+      "name": "Oak Log Golem",
+      "behaviorTags": [
+        "item_update_golem"
+      ]
+    },
+    {
+      "key": "eg_ochre_froglight",
+      "name": "Ochre Froglight Golem",
+      "behaviorTags": [
+        "light"
+      ]
+    },
+    {
+      "key": "eg_oxidized_copper",
+      "name": "Oxidized Copper Golem",
+      "behaviorTags": [
+        "item_update_golem",
+        "summon",
+        "update_golem"
+      ]
+    },
+    {
+      "key": "eg_pearlescent_froglight",
+      "name": "Pearlescent Froglight Golem",
+      "behaviorTags": [
+        "light"
+      ]
+    },
+    {
+      "key": "eg_purpur",
+      "name": "Purpur Golem",
+      "behaviorTags": [
+        "teleport"
+      ]
+    },
+    {
+      "key": "eg_red_mushroom",
+      "name": "Red Mushroom Golem",
+      "behaviorTags": [
+        "effect",
+        "place"
+      ]
+    },
+    {
+      "key": "eg_red_nether_brick",
+      "name": "Red Nether Brick Golem",
+      "behaviorTags": [
+        "set_fire",
+        "shoot_fireballs"
+      ]
+    },
+    {
+      "key": "eg_redstone",
+      "name": "Redstone Golem",
+      "behaviorTags": [
+        "power"
+      ]
+    },
+    {
+      "key": "eg_redstone_lamp",
+      "name": "Redstone Lamp Golem",
+      "behaviorTags": [
+        "item_update_golem",
+        "light"
+      ]
+    },
+    {
+      "key": "eg_sculk",
+      "name": "Sculk Golem",
+      "behaviorTags": [
+        "place"
+      ]
+    },
+    {
+      "key": "eg_sculk_catalyst",
+      "name": "Sculk Catalyst Golem",
+      "behaviorTags": [
+        "effect",
+        "place"
+      ]
+    },
+    {
+      "key": "eg_sea_lantern",
+      "name": "Sea Lantern Golem",
+      "behaviorTags": [
+        "light"
+      ]
+    },
+    {
+      "key": "eg_shroomlight",
+      "name": "Shroomlight Golem",
+      "behaviorTags": [
+        "light"
+      ]
+    },
+    {
+      "key": "eg_slime",
+      "name": "Slimy Golem",
+      "behaviorTags": [
+        "split"
+      ]
+    },
+    {
+      "key": "eg_sponge",
+      "name": "Sponge Golem",
+      "behaviorTags": [
+        "aoe_dry"
+      ]
+    },
+    {
+      "key": "eg_spruce_log",
+      "name": "Spruce Log Golem",
+      "behaviorTags": [
+        "item_update_golem"
+      ]
+    },
+    {
+      "key": "eg_stripped_crimson_stem",
+      "name": "Stripped Crimson Stem Golem",
+      "behaviorTags": [
+        "place"
+      ]
+    },
+    {
+      "key": "eg_stripped_warped_stem",
+      "name": "Stripped Warped Stem Golem",
+      "behaviorTags": [
+        "place"
+      ]
+    },
+    {
+      "key": "eg_tnt",
+      "name": "TNT Golem",
+      "behaviorTags": [
+        "explode"
+      ]
+    },
+    {
+      "key": "eg_tube_coral",
+      "name": "Tube Coral Golem",
+      "behaviorTags": [
+        "update_golem"
+      ]
+    },
+    {
+      "key": "eg_verdant_froglight",
+      "name": "Verdant Froglight Golem",
+      "behaviorTags": [
+        "light"
+      ]
+    },
+    {
+      "key": "eg_warped_stem",
+      "name": "Warped Stem Golem",
+      "behaviorTags": [
+        "item_update_golem",
+        "place"
+      ]
+    },
+    {
+      "key": "eg_waxed_copper",
+      "name": "Waxed Copper Golem",
+      "behaviorTags": [
+        "item_update_golem"
+      ]
+    },
+    {
+      "key": "eg_waxed_exposed_copper",
+      "name": "Waxed Exposed Copper Golem",
+      "behaviorTags": [
+        "item_update_golem"
+      ]
+    },
+    {
+      "key": "eg_waxed_oxidized_copper",
+      "name": "Waxed Oxidized Copper Golem",
+      "behaviorTags": [
+        "item_update_golem"
+      ]
+    },
+    {
+      "key": "eg_waxed_weathered_copper",
+      "name": "Waxed Weathered Copper Golem",
+      "behaviorTags": [
+        "item_update_golem"
+      ]
+    },
+    {
+      "key": "eg_weathered_copper",
+      "name": "Weathered Copper Golem",
+      "behaviorTags": [
+        "item_update_golem",
+        "summon",
+        "update_golem"
+      ]
+    }
+  ],
+  "commonExplosives": [
+    {
+      "key": "nemesis",
+      "name": "ネメシス",
+      "faction": "T",
+      "attack": "ロケットランチャー",
+      "listedDamage": 0,
+      "kind": "rocket",
+      "currentBlastPower": 65,
+      "canonicalDamageVerified": false
+    },
+    {
+      "key": "t850",
+      "name": "T-850",
+      "faction": "M",
+      "attack": "プラズマ",
+      "listedDamage": 22,
+      "kind": "rocket",
+      "currentBlastPower": 22,
+      "canonicalDamageVerified": false
+    },
+    {
+      "key": "tx",
+      "name": "T-X",
+      "faction": "M",
+      "attack": "プラズマキャノン",
+      "listedDamage": 26,
+      "kind": "rocket",
+      "currentBlastPower": 26,
+      "canonicalDamageVerified": false
+    },
+    {
+      "key": "hkaerial",
+      "name": "HK-エアリアル",
+      "faction": "M",
+      "attack": "プラズマ爆撃",
+      "listedDamage": 20,
+      "kind": "rocket",
+      "currentBlastPower": 20,
+      "canonicalDamageVerified": false
+    },
+    {
+      "key": "hktank",
+      "name": "HK-タンク",
+      "faction": "M",
+      "attack": "プラズマ砲",
+      "listedDamage": 34,
+      "kind": "rocket",
+      "currentBlastPower": 34,
+      "canonicalDamageVerified": false
+    },
+    {
+      "key": "gvDyna",
+      "name": "村人(ダイナマイト)",
+      "faction": "pg",
+      "attack": "ダイナマイト",
+      "listedDamage": 28,
+      "kind": "nade",
+      "currentBlastPower": 28,
+      "canonicalDamageVerified": false
+    },
+    {
+      "key": "gvSoldDyna",
+      "name": "戦闘員(ダイナマイト)",
+      "faction": "pg",
+      "attack": "ダイナマイト",
+      "listedDamage": 30,
+      "kind": "nade",
+      "currentBlastPower": 30,
+      "canonicalDamageVerified": false
+    },
+    {
+      "key": "gvSoldRkt",
+      "name": "戦闘員(ロケット)",
+      "faction": "pg",
+      "attack": "ロケットランチャー",
+      "listedDamage": 40,
+      "kind": "rocket",
+      "currentBlastPower": 40,
+      "canonicalDamageVerified": false
+    },
+    {
+      "key": "srpHeavyBomber",
+      "name": "ヘビーボンバー",
+      "faction": "srp",
+      "attack": "寄生爆弾",
+      "listedDamage": 30,
+      "kind": "nade",
+      "currentBlastPower": 30,
+      "canonicalDamageVerified": false
+    },
+    {
+      "key": "nmLeviathan",
+      "name": "レヴァイアサン (ハイブマインド)",
+      "faction": "nm",
+      "attack": "爆発嚢射出",
+      "listedDamage": 22,
+      "kind": "nade",
+      "currentBlastPower": 22,
+      "canonicalDamageVerified": false
+    },
+    {
+      "key": "gvCultRkt",
+      "name": "邪教徒(ロケット)",
+      "faction": "pg",
+      "attack": "ロケットランチャー",
+      "listedDamage": 38,
+      "kind": "rocket",
+      "currentBlastPower": 38,
+      "canonicalDamageVerified": false
+    },
+    {
+      "key": "gvSoldNade",
+      "name": "戦闘員(手榴弾)",
+      "faction": "pg",
+      "attack": "手榴弾",
+      "listedDamage": 30,
+      "kind": "nade",
+      "currentBlastPower": 30,
+      "canonicalDamageVerified": false
+    },
+    {
+      "key": "cbSMG",
+      "name": "コンバインSMG",
+      "faction": "cb",
+      "attack": "SMGグレネード",
+      "listedDamage": 22,
+      "kind": "nade",
+      "currentBlastPower": 22,
+      "canonicalDamageVerified": false
+    },
+    {
+      "key": "cbAR2",
+      "name": "コンバインAR2",
+      "faction": "cb",
+      "attack": "手榴弾",
+      "listedDamage": 25,
+      "kind": "nade",
+      "currentBlastPower": 25,
+      "canonicalDamageVerified": false
+    },
+    {
+      "key": "cbMortarSynth",
+      "name": "モーターシンス",
+      "faction": "cb",
+      "attack": "迫撃弾",
+      "listedDamage": 28,
+      "kind": "nade",
+      "currentBlastPower": 28,
+      "canonicalDamageVerified": false
+    },
+    {
+      "key": "cbGrunt",
+      "name": "コンバイングラント",
+      "faction": "cb",
+      "attack": "手榴弾",
+      "listedDamage": 22,
+      "kind": "nade",
+      "currentBlastPower": 22,
+      "canonicalDamageVerified": false
+    },
+    {
+      "key": "cbAiden1",
+      "name": "Unit 3650 / Aiden（Entropy: Zero）",
+      "faction": "cb",
+      "attack": "手榴弾",
+      "listedDamage": 25,
+      "kind": "nade",
+      "currentBlastPower": 25,
+      "canonicalDamageVerified": false
+    },
+    {
+      "key": "cc_cbSMG",
+      "name": "クローン コンバインSMG",
+      "faction": "cc",
+      "attack": "SMGグレネード",
+      "listedDamage": 28,
+      "kind": "nade",
+      "currentBlastPower": 28,
+      "canonicalDamageVerified": false
+    },
+    {
+      "key": "cc_cbAR2",
+      "name": "クローン コンバインAR2",
+      "faction": "cc",
+      "attack": "手榴弾",
+      "listedDamage": 31,
+      "kind": "nade",
+      "currentBlastPower": 31,
+      "canonicalDamageVerified": false
+    },
+    {
+      "key": "cc_cbMortarSynth",
+      "name": "クローン モーターシンス",
+      "faction": "cc",
+      "attack": "迫撃弾",
+      "listedDamage": 35,
+      "kind": "nade",
+      "currentBlastPower": 35,
+      "canonicalDamageVerified": false
+    },
+    {
+      "key": "cc_cbGrunt",
+      "name": "クローン コンバイングラント",
+      "faction": "cc",
+      "attack": "手榴弾",
+      "listedDamage": 28,
+      "kind": "nade",
+      "currentBlastPower": 28,
+      "canonicalDamageVerified": false
+    }
+  ]
+}

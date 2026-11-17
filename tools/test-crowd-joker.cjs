@@ -1,0 +1,15 @@
+const assert=require('node:assert/strict');const{vm,sandbox}=require('./audit-creatures.cjs');const run=s=>vm.runInContext('{'+s+'}',sandbox);
+run(`G.map=genMansion(120,84,74538);G.map.walk.fill(1);G.map.propGrid.fill(0);PF.init();G.units=[];G.corpses=[];G.facOff={};G.cfg.sound=false;Sfx.on=false;G.time=100;G.noises=[];
+for(const key of Object.keys(SP)){const u=spawnUnit(key,600,600,{force:true});if(!u)continue;if(jokerEligible(u)&&(!u.sp.mortal||u.sp.head!=='human'||u.sp.kind!=='biped'||u.atkList.length))throw Error('noncivilian eligible '+key);if(!jokerEligible(u)){u.jokerRate=2;updateJokerProtection(u);if(u.jokerRate)throw Error('residue '+key);startTransform(u,'jokerFan');if(u.state==='transform'&&u.transTo==='jokerFan')throw Error('direct bypass '+key);}u.gone=true;}
+G.units=[];const human=spawnUnit('human',600,600,{force:true});if(!jokerEligible(human))throw Error('refugee excluded');startTransform(human,'jokerFan');if(human.transTo!=='jokerFan')throw Error('civilian conversion blocked');human.atkList=[SP.zombie.atks[0]];finishTransform(human);if(human.key!=='human'||human.state==='transform')throw Error('finish bypass');
+G.units=[];G.noises=[];const pack=[];for(let i=0;i<16;i++){const u=spawnUnit('mzombie',600+(i%4)*5,600+Math.floor(i/4)*5,{force:true});pack.push(u);addNoise(u.x,u.y,180,u.fac);}Spatial.rebuild();for(const u of pack)if(hearAndTurn(u)||u.hearCommit)throw Error('friendly footstep magnet');
+// A foreign noise remains audible, but a reached sound does not continually renew a goal.
+addNoise(850,600,300,'N');Spatial.rebuild();if(!hearAndTurn(pack[0])||!pack[0].dest)throw Error('lost hearing');pack[0].x=850;pack[0].y=600;G.noises=G.noises.filter(n=>n.fac!=='mz');if(hearAndTurn(pack[0]))throw Error('reached sound reacquired');
+// Actual AI + movement: a pack with stale friendly aggro does not chase its own center.
+G.noises=[];for(const u of pack){u.x=600;u.y=600;u.state='idle';u.tgt=pack[(pack.indexOf(u)+1)%pack.length];u.aggro=u.tgt;u.aggroUntil=G.time+10;u.dest=null;u.path=null;u.thinkT=0;u.crowdStall=0;}
+for(let tick=0;tick<180;tick++){G.time+=1/30;Spatial.rebuild();for(const u of pack)updateUnit(u,1/30);Spatial.rebuild();separateUnits(1/30);updateNoises(1/30);}
+if(pack.some(u=>u.tgt&&u.tgt.fac===u.fac))throw Error('friendly aggro retained');if(pack.filter(u=>dist(u.x,u.y,600,600)>60).length<12)throw Error('pack remained clumped');
+// Impossible destination without an enemy is abandoned using a walkable local route; no teleport.
+const u=pack[0];u.tgt=null;u.state='idle';u.x=u.y=600;u.dest={x:100,y:100};u.crowdCheckpoint={x:600,y:600};u.crowdStall=0;for(let i=0;i<80;i++)crowdRouteWatch(u,1/30);if(u.x!==600||u.y!==600||!u.dest||dist(u.dest.x,u.dest.y,600,600)<50||!losWalk(u.x,u.y,u.dest.x,u.dest.y,navigationRadius(u)))throw Error('watchdog route/teleport');
+`);
+console.log('Civilian Joker/crowd passed: full species eligibility audit, accumulation/direct/finish guards, friendly/reached sounds ignored, enemy hearing preserved, actual 16-zombie AI pack dispersal, wall-safe local reroute without teleport.');

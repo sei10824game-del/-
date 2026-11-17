@@ -1,0 +1,48 @@
+{
+  "slots": {
+    "primary": [
+      "heavy",
+      "combat",
+      "plasma",
+      "chaingun",
+      "burst"
+    ],
+    "secondary": [
+      "rocket",
+      "ballista",
+      "ssg",
+      "gauss",
+      "hammer"
+    ],
+    "ultimate": [
+      "saw",
+      "crucible",
+      "etBfg",
+      "unmaykr"
+    ],
+    "equipment": [
+      "grenade",
+      "flame",
+      "ice",
+      "arc",
+      "acid"
+    ]
+  },
+  "defaults": {
+    "primary": "heavy",
+    "secondary": "rocket",
+    "ultimate": "etBfg",
+    "equipment": "grenade"
+  },
+  "secondaryCooldown": 10,
+  "ultimateCharge": {
+    "status": "unverified-crossover-projection",
+    "maximum": 20,
+    "gain": "clamp(ceil(enemy.mass),1,4)"
+  },
+  "equipmentCooldown": {
+    "status": "unverified-crossover-projection",
+    "seconds": 10
+  },
+  "status": "partial-original-fidelity; no rarity/level/skill/skin parity"
+}

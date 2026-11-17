@@ -1,0 +1,423 @@
+{
+  "note": "Deterministic Node VM with real performance clock, audit DOM/mock canvas; simulation/startup CPU only, not browser GPU/paint/FPS.",
+  "rows": [
+    {
+      "mode": "all",
+      "factions": 67,
+      "initialUnits": 956,
+      "unitsAfter": 790,
+      "startupMs": 344.59,
+      "stepMeanMs": 866.32,
+      "stepP95Ms": 1939.15,
+      "stepMaxMs": 2166.65,
+      "gameTime": 2.999999999999999,
+      "samples": {
+        "self": [
+          {
+            "name": "bodyClear",
+            "ms": 26210.52
+          },
+          {
+            "name": "losWalk",
+            "ms": 11011.18
+          },
+          {
+            "name": "hostileTo",
+            "ms": 9840.71
+          },
+          {
+            "name": "exAlive",
+            "ms": 5274.36
+          },
+          {
+            "name": "fiveProjectileStep",
+            "ms": 4615.4
+          },
+          {
+            "name": "dist",
+            "ms": 2714.52
+          },
+          {
+            "name": "(anonymous)",
+            "ms": 2429.59
+          },
+          {
+            "name": "updateSlayers",
+            "ms": 1588.17
+          },
+          {
+            "name": "updateUnit",
+            "ms": 1107.09
+          },
+          {
+            "name": "updateSans",
+            "ms": 829.53
+          },
+          {
+            "name": "(garbage collector)",
+            "ms": 815.17
+          },
+          {
+            "name": "updateTaken",
+            "ms": 753.73
+          },
+          {
+            "name": "updateExpansion",
+            "ms": 626.69
+          },
+          {
+            "name": "stepSim",
+            "ms": 617.84
+          },
+          {
+            "name": "walkAtPx",
+            "ms": 616.8
+          },
+          {
+            "name": "restBallStep",
+            "ms": 607.24
+          },
+          {
+            "name": "updateProjs",
+            "ms": 562.71
+          },
+          {
+            "name": "updateFive",
+            "ms": 560.89
+          },
+          {
+            "name": "findPath",
+            "ms": 541.79
+          },
+          {
+            "name": "slFire",
+            "ms": 358.46
+          },
+          {
+            "name": "separateUnits",
+            "ms": 286.87
+          },
+          {
+            "name": "pruneSightMem",
+            "ms": 259.65
+          },
+          {
+            "name": "fiveChooseTarget",
+            "ms": 248.97
+          },
+          {
+            "name": "tryMove",
+            "ms": 242.54
+          }
+        ],
+        "inclusive": [
+          {
+            "name": "(root)",
+            "ms": 78363.8
+          },
+          {
+            "name": "(anonymous)",
+            "ms": 77548.4
+          },
+          {
+            "name": "processTicksAndRejections",
+            "ms": 77548.4
+          },
+          {
+            "name": "runInContext",
+            "ms": 77471.48
+          },
+          {
+            "name": "run",
+            "ms": 77471.48
+          },
+          {
+            "name": "stepSim",
+            "ms": 77129.36
+          },
+          {
+            "name": "updateUnit",
+            "ms": 42094.62
+          },
+          {
+            "name": "losWalk",
+            "ms": 37517.83
+          },
+          {
+            "name": "updateAttack",
+            "ms": 32750.43
+          },
+          {
+            "name": "slFire",
+            "ms": 32635.02
+          },
+          {
+            "name": "fireAttack",
+            "ms": 32547.33
+          },
+          {
+            "name": "bodyClear",
+            "ms": 26210.52
+          },
+          {
+            "name": "updateExpansion",
+            "ms": 17038.82
+          },
+          {
+            "name": "updateProjs",
+            "ms": 15395.89
+          },
+          {
+            "name": "fiveProjectileStep",
+            "ms": 12973.4
+          },
+          {
+            "name": "hostileTo",
+            "ms": 9897.14
+          },
+          {
+            "name": "updateFive",
+            "ms": 7787.53
+          },
+          {
+            "name": "aiThink",
+            "ms": 6892.88
+          },
+          {
+            "name": "exAlive",
+            "ms": 5274.36
+          },
+          {
+            "name": "updateSlayers",
+            "ms": 4357.83
+          },
+          {
+            "name": "dist",
+            "ms": 2714.52
+          },
+          {
+            "name": "setPathTo",
+            "ms": 2572.07
+          },
+          {
+            "name": "setDest",
+            "ms": 2564.03
+          },
+          {
+            "name": "findPath",
+            "ms": 2502.42
+          }
+        ]
+      }
+    },
+    {
+      "mode": "two",
+      "factions": 2,
+      "initialUnits": 189,
+      "unitsAfter": 192,
+      "startupMs": 75.98,
+      "stepMeanMs": 72.53,
+      "stepP95Ms": 237.56,
+      "stepMaxMs": 579.83,
+      "gameTime": 2.999999999999999,
+      "samples": {
+        "self": [
+          {
+            "name": "bodyClear",
+            "ms": 1727.03
+          },
+          {
+            "name": "walkAtPx",
+            "ms": 1243.67
+          },
+          {
+            "name": "findPath",
+            "ms": 1143.78
+          },
+          {
+            "name": "losWalk",
+            "ms": 948.94
+          },
+          {
+            "name": "hFn",
+            "ms": 249.01
+          },
+          {
+            "name": "updateUnit",
+            "ms": 153.19
+          },
+          {
+            "name": "stepSim",
+            "ms": 131.18
+          },
+          {
+            "name": "dist",
+            "ms": 124.25
+          },
+          {
+            "name": "(garbage collector)",
+            "ms": 98.16
+          },
+          {
+            "name": "hpop",
+            "ms": 86.22
+          },
+          {
+            "name": "setPathTo",
+            "ms": 78.03
+          },
+          {
+            "name": "post",
+            "ms": 65.82
+          },
+          {
+            "name": "tryMove",
+            "ms": 46.32
+          },
+          {
+            "name": "(anonymous)",
+            "ms": 44.51
+          },
+          {
+            "name": "query",
+            "ms": 30.13
+          },
+          {
+            "name": "bakeFloors",
+            "ms": 29.09
+          },
+          {
+            "name": "updateExpansion",
+            "ms": 23.32
+          },
+          {
+            "name": "walkAtT",
+            "ms": 21.26
+          },
+          {
+            "name": "aiThink",
+            "ms": 17.99
+          },
+          {
+            "name": "separateUnits",
+            "ms": 17.96
+          },
+          {
+            "name": "floorDetail",
+            "ms": 17.47
+          },
+          {
+            "name": "effSpeed",
+            "ms": 16.78
+          },
+          {
+            "name": "updateEggs",
+            "ms": 16.66
+          },
+          {
+            "name": "canSee",
+            "ms": 15.03
+          }
+        ],
+        "inclusive": [
+          {
+            "name": "(root)",
+            "ms": 6669.46
+          },
+          {
+            "name": "(anonymous)",
+            "ms": 6571.3
+          },
+          {
+            "name": "processTicksAndRejections",
+            "ms": 6571.3
+          },
+          {
+            "name": "runInContext",
+            "ms": 6505.48
+          },
+          {
+            "name": "run",
+            "ms": 6505.48
+          },
+          {
+            "name": "stepSim",
+            "ms": 6427.56
+          },
+          {
+            "name": "updateUnit",
+            "ms": 6027.1
+          },
+          {
+            "name": "aiThink",
+            "ms": 5662.46
+          },
+          {
+            "name": "setDest",
+            "ms": 5474.53
+          },
+          {
+            "name": "setPathTo",
+            "ms": 5469.41
+          },
+          {
+            "name": "findPath",
+            "ms": 5391.34
+          },
+          {
+            "name": "thinkPrey",
+            "ms": 4847.73
+          },
+          {
+            "name": "losWalk",
+            "ms": 3092.87
+          },
+          {
+            "name": "bodyClear",
+            "ms": 1727.03
+          },
+          {
+            "name": "walkAtPx",
+            "ms": 1253.78
+          },
+          {
+            "name": "thinkFpeStu",
+            "ms": 1250.65
+          },
+          {
+            "name": "thinkPreyBird",
+            "ms": 347.53
+          },
+          {
+            "name": "hFn",
+            "ms": 249.01
+          },
+          {
+            "name": "thinkXeno",
+            "ms": 237.97
+          },
+          {
+            "name": "tryMove",
+            "ms": 128.5
+          },
+          {
+            "name": "dist",
+            "ms": 124.25
+          },
+          {
+            "name": "updateExpansion",
+            "ms": 123.44
+          },
+          {
+            "name": "followPath",
+            "ms": 110.1
+          },
+          {
+            "name": "thinkDog",
+            "ms": 99.85
+          }
+        ]
+      }
+    }
+  ]
+}

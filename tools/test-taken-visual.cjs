@@ -1,0 +1,8 @@
+const assert=require('node:assert/strict'),fs=require('node:fs');const{createCanvas}=require('@napi-rs/canvas');const{vm,sandbox}=require('./audit-creatures.cjs');const run=s=>vm.runInContext(s,sandbox);const cv=createCanvas(1500,960),ctx=cv.getContext('2d');sandbox.rasterCtx=ctx;
+run(`ctx=rasterCtx;G.units=[];G.facOff={};G.map=genMansion(120,84,74538);G.quality='high';G.lod=false;G.time=100;globalThis.newRenders=0;ctx.fillStyle='#27303d';ctx.fillRect(0,0,1500,960);
+const keys=[...TK_ROSTER,'tkAxion'];keys.forEach((key,index)=>{G.units=[];const u=spawnUnit(key,600,600,{force:true});u.sizeMul=1;u.state='idle';u.tkRevealUntil=G.time+1;u.faceA=0;const col=index%5,row=Math.floor(index/5);
+ for(const face of [0,Math.PI]){u.faceA=face;ctx.save();ctx.beginPath();ctx.rect(col*300,row*240,300,240);ctx.clip();ctx.translate(col*300+(face===0?75:225),row*240+215);ctx.scale(.85,.85);ctx.translate(-u.x,-u.y*SQ);drawUnit(u);ctx.restore();newRenders++;}
+ ctx.fillStyle='#dde4ed';ctx.font='13px sans-serif';ctx.fillText(key,col*300+12,row*240+20);
+});if(Object.keys(DRAW_ERRS).length)throw Error(JSON.stringify(DRAW_ERRS));
+G.units=[];const u=tkSpawn('tkGoblin',600,600),t=tkSpawn('tkOgre',650,600);u.tkTetherTarget=t;powerDummy=0;G.taken.fields.push({kind:'bubble',x:600,y:600,r:85,until:G.time+4,src:u});ctx.save();ctx.translate(1200-600,900-600*SQ);drawTakenEffects();ctx.restore();`);
+assert.equal(run('newRenders'),34);fs.writeFileSync('/home/user/taken-models.png',cv.toBuffer('image/png'));console.log('Native Taken model check: all 16 troops/supports + dart, both facings (34 calls), bubble/tether, 0 drawing errors. /home/user/taken-models.png');

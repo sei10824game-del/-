@@ -1,0 +1,21 @@
+const assert=require('node:assert/strict');const{vm,sandbox}=require('./audit-creatures.cjs');const run=s=>vm.runInContext(s,sandbox);sandbox.innerWidth=1280;sandbox.innerHeight=720;
+run(`G.units=[];G.corpses=[];G.items=[];G.facOff={};G.time=0;G.claimed=[];G.stats={};for(const f of FACTION_DEFS)G.stats[f.f]={kills:0,born:0,lost:0,conv:0};G.map=genMansion(120,84,74538);PF.init();globalThis.p=randWalkIn(G.map.rooms[0]);globalThis.h=spawnUnit('human',p.x,p.y,{force:true});h.hp=h.mhp=10000;G.cfg.invincibility=true;`);
+run('dealDamage(null,h,100,{});dealDamage(null,h,100,{})');assert.equal(run('h.hp'),9900);assert.equal(run('h.damageImmuneUntil'),.35);
+run('G.time=.2;dealDamage(null,h,100,{})');assert.equal(run('h.damageImmuneUntil'),.35);
+run('G.time=.36;dealDamage(null,h,100,{})');assert.equal(run('h.hp'),9800);
+run('G.cfg.invincibility=false;dealDamage(null,h,100,{});dealDamage(null,h,100,{})');assert.equal(run('h.hp'),9600);
+run(`G.units=[];spawnPitDrones();globalThis.a=G.units[0];globalThis.b=G.units[1];`);assert.equal(run('countFac("pd")'),6);assert.equal(run('hostileTo(a,b)'),false);
+run(`G.units=[a,b];a.x=b.x=p.x;a.y=b.y=p.y;a.state=b.state='idle';a.pdBreedAt=b.pdBreedAt=0;a.pdFood=b.pdFood=40;globalThis.v=spawnUnit('human',p.x,p.y,{force:true});dealDamage(null,v,10000,{});thinkPitDrone(a);updatePitDrones(3.1);`);
+assert.equal(run('G.corpses.length'),0);assert.ok(run('a.pdFood>80'));assert.equal(run('countFac("pd")'),2);
+run('b.pdFood=90;updatePitDrones(.01)');assert.equal(run('countFac("pd")'),3);assert.ok(run('a.pdFood<40&&b.pdFood<41'));
+run(`globalThis.child=G.units.find(u=>u.pdYoung);globalThis.size=child.sizeMul;updatePitDrones(.1);`);assert.equal(run('child.pdYoung'),true);assert.ok(run('child.sizeMul<.6'));
+run('child.age=36;updatePitDrones(.1)');assert.equal(run('child.pdYoung'),false);assert.equal(run('child.sizeMul'),1);
+run('updatePitDrones(.1)');assert.equal(run('countFac("pd")'),3);
+// Low-food pairs and juveniles cannot breed; dead owners release corpse claims.
+run('a.pdFood=b.pdFood=0;G.time=100;updatePitDrones(.1)');assert.equal(run('countFac("pd")'),3);
+run(`globalThis.g=spawnUnit('gon',p.x,p.y,{force:true});dealDamage(null,g,100000,{});`);assert.equal(run('g.hp'),24000);assert.ok(run('SP.gon.hp>=1800&&GON_ADULT_ATKS[1].dmg===2400'));
+run(`for(const q of ['high','mid','low'])for(const u of G.units.filter(u=>u.key==='pitDrone')){G.quality=q;drawUnit(u);}`);assert.equal(run('Object.keys(DRAW_ERRS).length'),0);
+run(`FAC_SEL=new Set(['pd','hn','T']);G.cfg.invincibility=true;startGame({size:'s'});`);assert.equal(run('countFac("pd")'),6);assert.equal(run('G.cfg.invincibility'),true);
+run('for(let i=0;i<450;i++)stepSim(1/30)');assert.ok(run('G.time>14.9'));assert.ok(run('G.units.every(u=>Number.isFinite(u.hp)&&Number.isFinite(u.x)&&Number.isFinite(u.y))'));
+run(`FAC_SEL=new Set(['T','X']);startGame({size:'s'});`);assert.equal(run('countFac("pd")'),0);
+console.log('Pit Drone/iframes passed: post-hit ON/OFF/expiry/non-refresh, feeding, food threshold, parents/cost/cooldown, juvenile growth, Gon buffs, rendering, bootstrap and reset.');

@@ -1,0 +1,37 @@
+"""Idempotent Doom Slayer engine/UI connections."""
+from pathlib import Path
+p=Path('mansion_war.html');s=p.read_text()
+def hook(marker,old,new):
+ global s
+ if marker not in s:
+  if old not in s:raise RuntimeError('Missing Slayer hook: '+old[:100])
+  s=s.replace(old,new,1)
+hook("f:'sl',name:",'const FAC_BY = {};',"FACTION_DEFS.push({f:'sl',name:'Doom Slayer',icon:'🛡️',col:'#a5c17b',group:'DOOM protagonists',panel:'panelSl',win:'Doom Slayerたちが屋敷を制圧した'});\nconst FAC_BY = {};")
+hook('  spawnSlayers();','  spawnTaken();','  spawnTaken();\n  spawnSlayers();')
+hook('  G.slayer=null;','function startGame(cfg) {','function startGame(cfg) {\n  G.slayer=null;')
+hook('  slInit(u);','  tkInitUnit(u);','  tkInitUnit(u);\n  slInit(u);')
+hook(' updateSlayers(dt);','function updateExpansion(dt){','function updateExpansion(dt){\n updateSlayers(dt);')
+hook("case 'slayer': thinkSlayer(u);","      case 'taken':", "      case 'slayer': thinkSlayer(u);break;\n      case 'slDecoy': u.dest=null;u.path=null;break;\n      case 'taken':")
+hook('if(d.slWeapon){slFire','function fireAttack(u, d, a) {','function fireAttack(u, d, a) {\n  if(d.slWeapon){slFire(u,d,a);return;}')
+hook('dmg=slDamage(att,tgt,dmg,o);','  dmg=tkDamage(att,tgt,dmg,o);','  dmg=slDamage(att,tgt,dmg,o);if(dmg<=0)return;\n  dmg=tkDamage(att,tgt,dmg,o);')
+s=s.replace('  slOnDeath(att,u);','  slOnDeath(att,u,o);')
+hook('  slOnDeath(att,u,o);','  tkOnDeath(u,att);','  tkOnDeath(u,att);\n  slOnDeath(att,u,o);')
+hook('if(sp.slUnit&&G.units.some', '  if (!sp) return null;', "  if (!sp) return null;\n  if(sp.slUnit&&G.units.some(u=>!u.gone&&!u.dead&&u.key===key))return null;")
+hook('if(u.sp.conversionImmune)return;', 'function startTransform(u, newKey, opts = {}) {','function startTransform(u, newKey, opts = {}) {\n  if(u.sp.conversionImmune)return;')
+hook('if(o.sp.conversionImmune)return;', 'function mkControl(o, mk, why) {','function mkControl(o, mk, why) {\n  if(o.sp.conversionImmune)return;')
+hook('if(host.sp.parasiteImmune)return;', 'function huggerAttach(h, host) {','function huggerAttach(h, host) {\n  if(host.sp.parasiteImmune)return;')
+hook('if(u.sp.conversionImmune){u.state=', 'function finishTransform(u) {', "function finishTransform(u) {\n  if(u.sp.conversionImmune){u.state='idle';u.transTo=null;return;}")
+hook('if(u.sp.slUnit)opts={...opts', 'function makeCorpse(u, opts = {}) {', 'function makeCorpse(u, opts = {}) {\n  if(u.sp.slUnit)opts={...opts,riseT:0,riseAs:null,virusFac:null,cSpore:false};')
+hook("if(u.fac==='sl'||o.fac==='sl')return u.fac!==o.fac;", "  if(u.fac==='sk'||o.fac==='sk')return u.fac!==o.fac;", "  if(u.fac==='sl'||o.fac==='sl')return u.fac!==o.fac;\n  if(u.fac==='sk'||o.fac==='sk')return u.fac!==o.fac;")
+hook('else if(u.sp.slUnit||u.sp.slDecoy)drawSlayer', '    else if(u.sp.tkUnit)', '    else if(u.sp.slUnit||u.sp.slDecoy)drawSlayer(u,pose);\n    else if(u.sp.tkUnit)')
+hook('drawSlayerEffects();drawTakenEffects();','function drawCountdownBombs(){drawTakenEffects();','function drawCountdownBombs(){drawSlayerEffects();drawTakenEffects();')
+hook('  slInspector(el,u);','  takenInspector(el,u);','  takenInspector(el,u);\n  slInspector(el,u);')
+hook("['sl','panelSl'",'  const extraFac = [',"  const extraFac = [\n    ['sl','panelSl','🛡️ Doom Slayer','#a5c17b',SL_ROSTER],")
+# Decoys must not keep an eliminated faction alive.
+hook("if(f==='sl')return G.units.filter",'function facPot(f) {',"function facPot(f) {\n  if(f==='sl')return G.units.filter(u=>!u.gone&&!u.dead&&u.fac==='sl'&&!u.sp.slDecoy).length;")
+s=s.replace('!u.sp.tkOrdnance) n++','!u.sp.tkOrdnance && !u.sp.slDecoy) n++')
+hook('  buildSlayerInfo(box);','  buildTakenCountPicker(box);','  buildTakenCountPicker(box);\n  buildSlayerInfo(box);')
+hook('  buildSlayerMightyPicker(box);','  buildSlayerInfo(box);','  buildSlayerInfo(box);\n  buildSlayerMightyPicker(box);')
+hook('if(u.sp.slEra===\'mini\')return slMightyPlayerAttack(u,index);','  let pick=null;\n  const targets=G.units.filter',"  if(u.sp.slEra==='mini')return slMightyPlayerAttack(u,index);\n  let pick=null;\n  const targets=G.units.filter")
+hook('dt * (u.slPower?.tempo||1)', 'a.t += dt * ((u.atkSlow || 0)', 'a.t += dt * (u.slPower?.tempo||1) * ((u.atkSlow || 0)')
+p.write_text(s)
